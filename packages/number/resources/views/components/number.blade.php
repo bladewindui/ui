@@ -75,8 +75,8 @@
             :name="$name"/>
 </span>
 <x-bladewind::script :nonce="$nonce">
-    changeCss('.bw-number-{{$name}} .prefix svg', '!size-4,size-6,!stroke-2', 'remove');
-    changeCss('.bw-number-{{$name}} .suffix svg', '!size-4,size-6,!stroke-2', 'remove');
+    changeCss('.bw-number-{{$name}} .prefix svg', '!size-4,!size-[18px],size-6,!stroke-2', 'remove');
+    changeCss('.bw-number-{{$name}} .suffix svg', '!size-4,!size-[18px],size-6,!stroke-2', 'remove');
     domEl('.bw-number-{{$name}} .suffix').addEventListener('click', () => {
     domEl('.bw-number-{{$name}} input.{{$name}}').value = parseInt(domEl('.bw-number-{{$name}} input.{{$name}}').value)
     + parseInt({{$step}});

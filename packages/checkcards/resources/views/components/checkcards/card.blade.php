@@ -67,9 +67,9 @@
             {{$slot}}
         </div>
     </div>
-    <div class="absolute inset-0 flex items-center justify-center pointer-events-none checkmark hidden">
+    <div class="absolute top-1/2 right-0 translate-x-1/2 -translate-y-1/2 pointer-events-none checkmark hidden">
         <x-bladewind::icon name="check-circle" type="solid"
-                           class="text-{{$border_colour}}-600 stroke-white !size-9"/>
+                           class="text-{{$border_colour}}-600 stroke-white !size-7"/>
     </div>
 </div>
 

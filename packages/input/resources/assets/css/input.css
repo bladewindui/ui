@@ -14,13 +14,13 @@
     .bw-input { /* outline-none! ! */
         @apply w-full text-gray-600 dark:text-dark-300 ring-0! dark:bg-transparent rounded-md text-sm
         focus:-outline-offset-1 focus:outline-2 dark:placeholder:text-dark-400/60 transition-all tracking-wider
-        px-3 py-[8.5px] placeholder:text-primary-900/40
+        px-3 py-[8.5px] placeholder:text-primary-900/40 border-2
     }
 
     .bw-textarea:not(.has-error),
     .bw-raw-select:not(.has-error),
     .bw-input:not(.has-error) {
-        @apply border-gray-400/60 hover:border-gray-400 dark:border-dark-600 dark:hover:border-dark-500/50
+        @apply border-gray-200! hover:border-gray-300! dark:border-dark-600/50! dark:hover:border-dark-500/40!
     }
 
     .bw-textarea.has-error,
@@ -78,7 +78,7 @@
     }
 
     .bw-select div.clickable.enabled {
-        @apply cursor-pointer border dark:bg-transparent border-gray-400/60 hover:border-gray-400 dark:border-dark-600 dark:hover:border-dark-500/50 focus:-outline-offset-1 focus:outline-2 focus:border-2
+        @apply cursor-pointer border-2 dark:bg-transparent border-gray-200! hover:border-gray-300! dark:border-dark-600/50! dark:hover:border-dark-500/40! focus:-outline-offset-1 focus:outline-2
     }
 
     .prefix svg, .suffix svg {
@@ -86,7 +86,7 @@
     }
 
     .ql-toolbar.ql-snow {
-        @apply rounded-t-lg! border-2! border-gray-300/50! dark:border-dark-600! dark:bg-transparent!
+        @apply rounded-t-lg! border-2! border-gray-200! dark:border-dark-600/50! dark:bg-transparent!
     }
 
     .ql-toolbar.ql-snow .ql-stroke, .ql-stroke.ql-thin {
@@ -98,7 +98,7 @@
     }
 
     .ql-container.ql-snow {
-        @apply rounded-b-lg! border-2! border-gray-300/50! dark:border-dark-600! dark:bg-transparent!
+        @apply rounded-b-lg! border-2! border-gray-200! dark:border-dark-600/50! dark:bg-transparent!
     }
 
     .ql-editor.ql-blank::before {
