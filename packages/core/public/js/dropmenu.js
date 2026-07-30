@@ -15,6 +15,7 @@
             show = () => {
                 // do this is only there are items
                 if (this.hasItems()) {
+                    changeCss(`.${this.name}`, 'z-50!');
                     changeCss(this.items, 'opacity-0,hidden', 'remove');
                     domEl(this.items).setAttribute('data-open', '1');
                     if (this.options.hideAfterClick && domEls(`${this.items} .bw-item`)) {
@@ -38,6 +39,7 @@
                 setTimeout(() => {
                     changeCss(this.items, 'opacity-0,hidden,animate__fadeIn');
                     changeCss(this.items, 'animate__fadeOut', 'remove');
+                    changeCss(`.${this.name}`, 'z-50!', 'remove');
                     window.clearTimeout();
                 }, 500);
             }
