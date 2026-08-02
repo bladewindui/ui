@@ -15,6 +15,7 @@
 /* ── Per-component CSS ─────────────────────────────────────────────────────── */
 @import "./packages/core/public/css/animate.min.css";
 @import "./packages/button/resources/assets/css/button.css";
+@import "./packages/card/resources/assets/css/card.css";
 @import "./packages/input/resources/assets/css/input.css";
 @import "./packages/datepicker/resources/assets/css/datepicker.css";
 @import "./packages/slider/resources/assets/css/slider.css";

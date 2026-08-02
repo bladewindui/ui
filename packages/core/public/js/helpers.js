@@ -472,9 +472,10 @@ const removeFromStorage = (key, storageType = 'localStorage') => {
  * @param {string} element - The css class (name) of the tab to navigate to.
  * @param {string} colour - The colour of the tab.
  * @param {string} scope - The scope within which to find <element>. More like a parent element.
+ * @param {HTMLElement|null} tabHeading - The tab heading that triggered the navigation.
  * @return {(void|boolean)}
  */
-const goToTab = (element, colour, scope) => {
+const goToTab = (element, colour, scope, tabHeading = null) => {
     let scope_ = scope.replace(/-/g, '_');
     let tabContent = domEl('.bw-tc-' + element);
     if (tabContent === null) return false;
@@ -487,7 +488,80 @@ const goToTab = (element, colour, scope) => {
         hide(element, true);
     });
     unhide(tabContent, true);
+    positionTabActiveLine(tabHeading?.closest('.bw-tab') ?? domEl(`.bw-tab-${scope}`));
 };
+
+/**
+ * Position the animated line under the active heading in a simple tab group.
+ * @param {HTMLElement|null} tabGroup - The tab group containing the active heading.
+ * @param {boolean} animate - Whether to animate to the new position.
+ * @return {void}
+ */
+const positionTabActiveLine = (tabGroup, animate = true) => {
+    if (!tabGroup?.classList.contains('simple')) return;
+
+    const activeHeading = tabGroup.querySelector('.atab span.is-active');
+    const activeLine = tabGroup.querySelector('.bw-tab-active-line');
+    if (!activeHeading || !activeLine) return;
+
+    const groupBounds = tabGroup.getBoundingClientRect();
+    const headingBounds = activeHeading.getBoundingClientRect();
+
+    // The group has no layout yet; it is hidden inside a modal, an accordion or a
+    // tab that has not been opened. Keep the line hidden until it can be measured.
+    if (headingBounds.width === 0) {
+        activeLine.style.opacity = '0';
+        return;
+    }
+
+    if (!animate) activeLine.style.transition = 'none';
+    activeLine.style.width = `${headingBounds.width}px`;
+    activeLine.style.transform = `translate(${headingBounds.left - groupBounds.left}px, ${headingBounds.bottom - groupBounds.top - 1}px)`;
+    activeLine.style.opacity = '1';
+
+    if (!animate) {
+        requestAnimationFrame(() => activeLine.style.removeProperty('transition'));
+    }
+};
+
+const observedTabGroups = new WeakSet();
+
+const tabActiveLineObserver = (typeof ResizeObserver !== 'undefined')
+    ? new ResizeObserver((entries) => {
+        entries.forEach((entry) => positionTabActiveLine(entry.target, false));
+    })
+    : null;
+
+/**
+ * Measure every simple tab group and keep its active line in sync with its heading.
+ * Each group is watched for size changes, so groups that are hidden at page load
+ * (in a modal, an accordion or another tab) position themselves when they appear.
+ * Safe to call again after adding tab groups to the page.
+ * @return {void}
+ */
+const initialiseTabActiveLines = () => {
+    domEls('.bw-tab.simple').forEach((tabGroup) => {
+        positionTabActiveLine(tabGroup, false);
+
+        if (tabActiveLineObserver === null || observedTabGroups.has(tabGroup)) return;
+        observedTabGroups.add(tabGroup);
+        tabActiveLineObserver.observe(tabGroup);
+    });
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initialiseTabActiveLines);
+} else {
+    initialiseTabActiveLines();
+}
+
+window.addEventListener('resize', initialiseTabActiveLines);
+
+// A page that loads in a background tab does not run the rendering loop, so the
+// observer has nothing to report until the tab is looked at.
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) initialiseTabActiveLines();
+});
 
 /**
  * Get the offsetWidth of a prefix/suffix label
