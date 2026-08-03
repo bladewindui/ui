@@ -56,7 +56,7 @@
         <span class="grow text-left">
             {!! $label !!}
             @if($description !== '')
-                <span class="block text-sm leading-snug text-gray-500 dark:text-dark-400 group-hover:text-primary-100">{!! $description !!}</span>
+                <span class="block text-sm leading-snug opacity-70">{!! $description !!}</span>
             @endif
         </span>
         <x-bladewind::icon name="check-circle" class="text-slate-400 size-5 hidden shrink-0 svg-{{$value }}"/>
