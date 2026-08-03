@@ -18,6 +18,8 @@
             enabled;
             metaData;
             skipReset;
+            typeAheadBuffer;
+            typeAheadTimer;
 
             constructor(name, placeholder) {
                 this.name = name;
@@ -37,6 +39,8 @@
                 this.enabled = true;
                 this.selectedItem = null;
                 this.metaData = domEl(this.rootElement).getAttribute('data-meta-data') || null;
+                this.typeAheadBuffer = '';
+                this.typeAheadTimer = null;
             }
 
             activate = (options = {}) => {
@@ -81,19 +85,72 @@
                             return el.getAttribute('data-unselectable') === null;
                         });
 
+                        let next;
                         if (!this.selectedItem) {
-                            this.selectedItem = e.key === 'ArrowDown' ? els[0] : els[els.length - 1];
+                            next = e.key === 'ArrowDown' ? els[0] : els[els.length - 1];
                         } else {
                             let idx = els.indexOf(this.selectedItem);
 
-                            this.selectedItem = e.key === 'ArrowDown' ? els[idx + 1] : els[idx - 1];
+                            next = e.key === 'ArrowDown' ? els[idx + 1] : els[idx - 1];
                         }
-                        changeCssForDomArray(`${this.rootElement} .bw-select-item`, 'bg-slate-100/90', 'remove');
-                        changeCss(this.selectedItem, 'bg-slate-100/90', 'add', true);
+
+                        // already at either end of the list, or there is nothing to move to
+                        if (!next) return;
+
+                        this.selectedItem = next;
+                        this.highlightItem(this.selectedItem);
                         this.setValue(this.selectedItem);
                         this.callUserFunction(this.selectedItem);
                     }
+
+                    if (this.isTypeAheadKey(e)) this.typeAhead(e.key);
                 });
+            }
+
+            /**
+             * Printable characters typed while the select has focus are used to
+             * jump to an item. Anything typed in the search box is left alone.
+             */
+            isTypeAheadKey = (e) => {
+                if (e.key.length !== 1 || e.ctrlKey || e.metaKey || e.altKey) return false;
+
+                return !e.target.classList.contains('bw_search');
+            }
+
+            /**
+             * Jump to the first selectable item whose label starts with what has been
+             * typed so far. Typing 'gha' selects Ghana without opening the select.
+             * The typed characters are forgotten after a short pause.
+             */
+            typeAhead = (key) => {
+                clearTimeout(this.typeAheadTimer);
+                this.typeAheadBuffer += key.toLowerCase();
+                this.typeAheadTimer = setTimeout(() => this.typeAheadBuffer = '', 700);
+
+                let match = [...domEls(this.selectItems)].find((el) => {
+                    if (el.classList.contains('hidden')) return false;
+                    if (el.getAttribute('data-unselectable') !== null) return false;
+
+                    return (el.getAttribute('data-label') || '').toLowerCase().startsWith(this.typeAheadBuffer);
+                });
+
+                if (!match) return;
+
+                this.selectedItem = match;
+                this.highlightItem(match);
+                match.scrollIntoView({block: 'nearest'});
+
+                // in multiple mode setValue toggles, so a second pass over an
+                // already selected item would silently unselect it
+                if (this.isMultiple && domEl(this.formInput).value.split(',').includes(match.getAttribute('data-value'))) return;
+
+                this.setValue(match);
+                this.callUserFunction(match);
+            }
+
+            highlightItem = (item) => {
+                changeCssForDomArray(`${this.rootElement} .bw-select-item`, 'bg-slate-100/90', 'remove');
+                changeCss(item, 'bg-slate-100/90', 'add', true);
             }
 
 
