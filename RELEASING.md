@@ -207,7 +207,9 @@ Aggregate packages are `type: metapackage` — they contain no code, only a `req
 
 1. Create `packages/<name>/` with:
    - `composer.json` (name: `mkocansey/bladewind-<name>`, type: `library`) — list only the leaf packages it actually depends on in `require` (grep the blade file for `<x-bladewind::*` to find them)
-   - `src/Bladewind<Name>ServiceProvider.php` — use the `is_dir()` guard pattern for `bladewind-public` (see below)
+   - `src/Bladewind<Name>ServiceProvider.php` — see the template below
+   - any CSS in `resources/assets/css/`, imported from the root `tailwind.css` so it lands in the compiled bundle
+   - any JavaScript in `packages/core/public/js/` — **not** in a `public/` directory of its own (see below)
    - `config/bladewind.php` (just this component's config keys)
    - `resources/views/components/` (blade files)
 
@@ -233,9 +235,17 @@ Aggregate packages are `type: metapackage` — they contain no code, only a `req
 
 9. Release a new minor version
 
+### Where assets live
+
+All published assets live in `packages/core/public`, and `BladewindCoreServiceProvider` is the only provider that publishes them (tag: `bladewind-public`). Every component package requires `mkocansey/bladewind-core`, so a user who installs a single component still gets the assets.
+
+Do not give a component package its own `public/` directory. Nothing publishes it, so the file is never served — it just becomes a second copy that drifts. That is exactly what happened to `select.js`: the copy left behind in `packages/select/public` missed the `filter()` fix in 65d3525 for two releases before it was removed.
+
+Component CSS is the one exception to "assets live in core": it stays in `packages/<name>/resources/assets/css/` because it is a *source* file, imported by the root `tailwind.css` and compiled into `packages/core/public/css/bladewind-ui.min.css`. It is never published raw.
+
 ### Service provider template for new components
 
-Use this exact pattern — the `is_dir()` guards prevent errors when a package has no CSS or no `public/` directory:
+Use this exact pattern:
 
 ```php
 <?php
@@ -258,17 +268,8 @@ class Bladewind<Name>ServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../resources/views/components/' => resource_path('views/components/bladewind'),
         ], 'bladewind-components');
-
-        $bladewindPublicPaths = [];
-        if (is_dir(__DIR__.'/../resources/assets/css')) {
-            $bladewindPublicPaths[__DIR__.'/../resources/assets/css/'] = public_path('vendor/bladewind/css');
-        }
-        if (is_dir(__DIR__.'/../public')) {
-            $bladewindPublicPaths[__DIR__.'/../public/'] = public_path('vendor/bladewind');
-        }
-        if (!empty($bladewindPublicPaths)) {
-            $this->publishes($bladewindPublicPaths, 'bladewind-public');
-        }
     }
 }
 ```
+
+Component providers publish views and nothing else. Assets are core's job.
