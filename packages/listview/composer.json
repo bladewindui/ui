@@ -29,7 +29,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Mkocansey\\Bladewind\\Listview\\ListviewServiceProvider"
+                "Mkocansey\\Bladewind\\Listview\\BladewindListviewServiceProvider"
             ]
         }
     }

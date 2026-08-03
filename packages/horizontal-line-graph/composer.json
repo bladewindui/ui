@@ -29,7 +29,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Mkocansey\\Bladewind\\HorizontalLineGraph\\HorizontalLineGraphServiceProvider"
+                "Mkocansey\\Bladewind\\HorizontalLineGraph\\BladewindHorizontalLineGraphServiceProvider"
             ]
         }
     }

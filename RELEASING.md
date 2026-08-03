@@ -206,7 +206,7 @@ Aggregate packages are `type: metapackage` — they contain no code, only a `req
 ## Adding a new component
 
 1. Create `packages/<name>/` with:
-   - `composer.json` (name: `mkocansey/bladewind-<name>`, type: `library`) — list only the leaf packages it actually depends on in `require` (grep the blade file for `<x-bladewind::*` to find them)
+   - `composer.json` (name: `mkocansey/bladewind-<name>`, type: `library`) — list only the leaf packages it actually depends on in `require` (grep the blade file for `<x-bladewind::*` to find them), and declare its own provider in `extra.laravel.providers` as `"Mkocansey\\Bladewind\\<Name>\\Bladewind<Name>ServiceProvider"` — **keep the `Bladewind` prefix**, this is the entry the split package is installed with
    - `src/Bladewind<Name>ServiceProvider.php` — see the template below
    - any CSS in `resources/assets/css/`, imported from the root `tailwind.css` so it lands in the compiled bundle
    - any JavaScript in `packages/core/public/js/` — **not** in a `public/` directory of its own (see below)
@@ -273,3 +273,5 @@ class Bladewind<Name>ServiceProvider extends ServiceProvider
 ```
 
 Component providers publish views and nothing else. Assets are core's job.
+
+The class name in the package's own `extra.laravel.providers` must match this class exactly. Nothing in the monorepo exercises that entry — the root `composer.json` has its own list — so a wrong name stays invisible here and fatals on boot for anyone installing the split package. `php bin/validate-providers.php` checks every declaration and runs in CI.

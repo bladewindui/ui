@@ -30,7 +30,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Mkocansey\\Bladewind\\Tab\\TabServiceProvider"
+                "Mkocansey\\Bladewind\\Tab\\BladewindTabServiceProvider"
             ]
         }
     }

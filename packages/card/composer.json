@@ -28,7 +28,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Mkocansey\\Bladewind\\Card\\CardServiceProvider"
+                "Mkocansey\\Bladewind\\Card\\BladewindCardServiceProvider"
             ]
         }
     }

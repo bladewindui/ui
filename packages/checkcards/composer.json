@@ -34,7 +34,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Mkocansey\\Bladewind\\Checkcards\\CheckcardsServiceProvider"
+                "Mkocansey\\Bladewind\\Checkcards\\BladewindCheckcardsServiceProvider"
             ]
         }
     }

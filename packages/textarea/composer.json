@@ -30,7 +30,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Mkocansey\\Bladewind\\Textarea\\TextareaServiceProvider"
+                "Mkocansey\\Bladewind\\Textarea\\BladewindTextareaServiceProvider"
             ]
         }
     }

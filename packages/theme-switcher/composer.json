@@ -31,7 +31,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Mkocansey\\Bladewind\\ThemeSwitcher\\ThemeSwitcherServiceProvider"
+                "Mkocansey\\Bladewind\\ThemeSwitcher\\BladewindThemeSwitcherServiceProvider"
             ]
         }
     }

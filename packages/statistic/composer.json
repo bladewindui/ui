@@ -30,7 +30,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Mkocansey\\Bladewind\\Statistic\\StatisticServiceProvider"
+                "Mkocansey\\Bladewind\\Statistic\\BladewindStatisticServiceProvider"
             ]
         }
     }
