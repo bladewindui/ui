@@ -25,10 +25,13 @@
     $scrollable = parseBladewindVariable($scrollable);
     $hideAfterClick = parseBladewindVariable($hideAfterClick);
     $iconRight = parseBladewindVariable($iconRight);
+    $position = (!in_array($position, ['left', 'right'])) ? 'right' : $position;
 @endphp
 {{-- format-ignore-end --}}
 
-<div class="relative inline-block leading-none text-left bw-dropmenu {{$name}}" tabindex="0">
+<div class="relative inline-block leading-none text-left bw-dropmenu {{$name}}"
+     data-position="{{ $position }}"
+     tabindex="0">
     <div class="bw-trigger cursor-pointer inline-block">
         @if(str_ends_with($trigger, '-icon'))
             <x-bladewind::icon
@@ -41,10 +44,12 @@
     <div class="opacity-0 hidden bw-dropmenu-items animate__animated animate__fadeIn animate__faster"
          data-open="0">
         <div @class([
-                'absolute z-50! bg-white dark:bg-dark-700 mt-1 rounded-md',
-                'border border-transparent dark:border-dark-800/20 bw-items-list ring-1 ring-slate-800/5',
+                'bw-items-list absolute mt-1 rounded-md bg-white dark:bg-dark-700',
+                'border border-transparent dark:border-dark-800/20 ring-1 ring-slate-800/5',
                 'shadow-md shadow-slate-200/80 dark:shadow-dark-800/70 whitespace-nowrap',
-                '-right-1' => ($position=='right'),
+                '!z-[9999]',
+                '-right-1' => ($position === 'right'),
+                '-left-1' => ($position === 'left'),
                 'p-2' => $padded,
                 'p-0' => !$padded,
                 'divide-y divide-slate-100 dark:divide-dark-600/90' => $divided,

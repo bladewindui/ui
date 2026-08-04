@@ -29,13 +29,28 @@
     $justified = parseBladewindVariable($justified);
     $bar = (!in_array($bar, ['thin', 'thick', 'thicker'])) ? 'thick' : $bar;
     $colour = defaultBladewindColour($color);
-    $bar_colour = "peer-checked:bg-$colour-600 after:border-$colour-100 dark:after:border-red-700";
+    // Static class map so Tailwind JIT can detect peer-checked:bg-* (string
+    // interpolation like "peer-checked:bg-$colour-600" is invisible to JIT).
+    $bar_colours = [
+        'primary' => 'peer-checked:bg-primary-600 after:border-primary-100',
+        'red' => 'peer-checked:bg-red-600 after:border-red-100',
+        'yellow' => 'peer-checked:bg-yellow-600 after:border-yellow-100',
+        'green' => 'peer-checked:bg-green-600 after:border-green-100',
+        'pink' => 'peer-checked:bg-pink-600 after:border-pink-100',
+        'cyan' => 'peer-checked:bg-cyan-600 after:border-cyan-100',
+        'gray' => 'peer-checked:bg-slate-600 after:border-slate-100',
+        'purple' => 'peer-checked:bg-purple-600 after:border-purple-100',
+        'orange' => 'peer-checked:bg-orange-600 after:border-orange-100',
+        'blue' => 'peer-checked:bg-blue-600 after:border-blue-100',
+    ];
+    $bar_colour = $bar_colours[$colour] ?? $bar_colours['primary'];
 
-    // build size of the bar and circle
+    // Fixed translate distances (not translate-x-full) so the thumb stays inside
+    // the track: travel = track width - horizontal padding - thumb width.
     $bar_circle_size = [
-        'thin' => 'w-12 h-3 after:w-5 after:h-5',
-        'thick' => 'w-12 h-7 after:w-5 after:h-5',
-        'thicker' => 'w-[4.5rem] h-10 after:w-8 after:h-8',
+        'thin' => 'w-12 h-3 after:w-5 after:h-5 peer-checked:after:translate-x-5 rtl:peer-checked:after:-translate-x-5',
+        'thick' => 'w-12 h-7 after:w-5 after:h-5 peer-checked:after:translate-x-5 rtl:peer-checked:after:-translate-x-5',
+        'thicker' => 'w-[4.5rem] h-10 after:w-8 after:h-8 peer-checked:after:translate-x-8 rtl:peer-checked:after:-translate-x-8',
     ];
 @endphp
 {{-- format-ignore-end --}}
@@ -47,9 +62,10 @@
     <input type="checkbox" @if($checked) checked @endif @if($disabled) disabled @endif onclick="{!!$onclick!!}"
            name="{{$name}}"
            class="peer sr-only appearance-none {{$name}}"/>
-    <span class="flex items-center flex-shrink-0 p-1 bg-gray-900/10 dark:bg-dark-800 rounded-full cursor-pointer
-    peer-disabled:opacity-40 rtl:peer-checked:after:-translate-x-full peer-checked:after:translate-x-full transition
-    duration-200 ease-in-out after:transition after:duration-200 after:ease-in-out after:bg-white dark:after:bg-dark-400 after:shadow-sm after:ring-1 after:ring-slate-700/10
+    <span class="relative flex items-center flex-shrink-0 p-1 bg-gray-900/10 dark:bg-dark-800 rounded-full cursor-pointer
+    peer-disabled:opacity-40 transition duration-200 ease-in-out
+    after:content-[''] after:absolute after:start-1 after:top-1/2 after:-translate-y-1/2
+    after:transition after:duration-200 after:ease-in-out after:bg-white dark:after:bg-dark-400 after:shadow-sm after:ring-1 after:ring-slate-700/10
     after:rounded-full bw-tgl-sp-{{$name}} {{$bar_circle_size[$bar]}} {{$bar_colour}} {{$class}}"></span>
     @if($labelPosition=='right' && $label !== '')
         <span class="pl-4 rtl:pr-4 {{$class}}">{!!$label!!}</span>
