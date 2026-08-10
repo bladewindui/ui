@@ -32,27 +32,16 @@
             changeCss(this.items, 'opacity-0,hidden', 'remove');
             domEl(this.items).setAttribute('data-open', '1');
             this.reposition();
-
-            if (this.options.hideAfterClick && domEls(`${this.items} .bw-item`)) {
-                domEls(`${this.items} .bw-item`).forEach((item) => {
-                    item.addEventListener('click', () => {
-                        this.hide();
-                    });
-                });
-            }
+            this.bindItemActions();
 
             if (! this._outsideClickBound) {
                 this._outsideClickBound = true;
-                document.addEventListener('mouseup', (e) => {
+                document.addEventListener('mousedown', (e) => {
                     const container = domEl(`.${this.name}`);
-                    const list = this.listEl();
-                    if (! container) {
+                    if (! container || container.contains(e.target)) {
                         return;
                     }
-                    // Fixed menu is still inside container in the DOM.
-                    if (! container.contains(e.target) && (! list || ! list.contains(e.target))) {
-                        this.hide();
-                    }
+                    this.hide();
                 });
             }
 
@@ -67,6 +56,28 @@
                 window.addEventListener('resize', this._onViewportChange);
                 window.addEventListener('scroll', this._onViewportChange, true);
             }
+        };
+
+        bindItemActions = () => {
+            if (! this.shouldHideAfterClick()) {
+                return;
+            }
+
+            domEls(`${this.items} .bw-item`)?.forEach((item) => {
+                if (item.dataset.bwDropmenuBound === '1') {
+                    return;
+                }
+                item.dataset.bwDropmenuBound = '1';
+                item.addEventListener('click', () => {
+                    // Defer hide so inline onclick / navigation can run first.
+                    setTimeout(() => this.hide(), 0);
+                });
+            });
+        };
+
+        shouldHideAfterClick = () => {
+            const value = this.options?.hideAfterClick;
+            return value === true || value === 1 || value === '1' || value === 'true';
         };
 
         hide = () => {
