@@ -29,7 +29,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Mkocansey\\Bladewind\\Filepicker\\FilepickerServiceProvider"
+                "Mkocansey\\Bladewind\\Filepicker\\BladewindFilepickerServiceProvider"
             ]
         }
     }

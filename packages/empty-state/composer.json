@@ -28,7 +28,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Mkocansey\\Bladewind\\EmptyState\\EmptyStateServiceProvider"
+                "Mkocansey\\Bladewind\\EmptyState\\BladewindEmptyStateServiceProvider"
             ]
         }
     }

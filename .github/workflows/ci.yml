@@ -25,6 +25,11 @@ jobs:
       - name: Validate all package composer.json files
         run: vendor/bin/monorepo-builder validate
 
+      # a provider name that does not resolve only breaks the split packages,
+      # so nothing else in this repo would catch it
+      - name: Validate service provider declarations
+        run: php bin/validate-providers.php
+
   build_css:
     name: Build CSS bundle
     runs-on: ubuntu-latest
@@ -45,5 +50,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bladewind-ui-css
-          path: public/css/bladewind-ui.min.css
+          path: packages/core/public/css/bladewind-ui.min.css
           retention-days: 7

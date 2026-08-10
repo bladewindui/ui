@@ -33,7 +33,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Mkocansey\\Bladewind\\Timepicker\\TimepickerServiceProvider"
+                "Mkocansey\\Bladewind\\Timepicker\\BladewindTimepickerServiceProvider"
             ]
         }
     }

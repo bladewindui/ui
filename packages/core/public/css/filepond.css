@@ -1138,12 +1138,12 @@
     /* correct box sizing, line-height and positioning on child elements */
     border-radius: 0.5em;
     background-color: rgba(241, 245, 249, 0.2);
-    border: 1px dashed rgba(148, 163, 184, 0.6); /*rgba(202, 213, 226, 0.5);*/
+    border: 1px dashed rgba(209, 213, 219, 0.9); /* gray-300 */
     cursor: pointer;
 }
 
 .filepond--root:hover {
-    border: 1px dashed rgba(148, 163, 184, 1);; /*rgba(144, 161, 185, 0.5);*/
+    border: 1px dashed rgba(156, 163, 175, 0.9); /* gray-400 */
 }
 
 
@@ -1210,9 +1210,9 @@
 
 .dark .filepond--root {
     background-color: rgba(241, 245, 249, 0.03);
-    border: 1px dashed rgba(148, 163, 184, 0.4);
+    border: 1px dashed rgba(75, 85, 99, 0.5); /* gray-600 */
 }
 
 .dark .filepond--root:hover {
-    border: 1px dashed rgba(148, 163, 184, 0.8);
+    border: 1px dashed rgba(107, 114, 128, 0.7); /* gray-500 */
 }

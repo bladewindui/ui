@@ -30,7 +30,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Mkocansey\\Bladewind\\Checkbox\\CheckboxServiceProvider"
+                "Mkocansey\\Bladewind\\Checkbox\\BladewindCheckboxServiceProvider"
             ]
         }
     }

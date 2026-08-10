@@ -5,7 +5,7 @@
     }
 
     .bw-tab.simple {
-        @apply pb-[1px]
+        @apply relative pb-[1px]
     }
 
     .bw-tab.simple .atab {
@@ -21,7 +21,38 @@
     }
 
     .bw-tab.simple .atab span.is-active {
-        @apply border-b-2
+        @apply border-b-0
+    }
+
+    .bw-tab.simple .bw-tab-active-line {
+        @apply absolute left-0 top-0 h-0.5 opacity-0 pointer-events-none;
+        width: 0;
+        background-color: var(--bw-tab-active-line-color, var(--color-primary-500));
+        transform: translateX(0);
+        transition:
+            transform 250ms cubic-bezier(0.4, 0, 0.2, 1),
+            width 250ms cubic-bezier(0.4, 0, 0.2, 1),
+            opacity 150ms ease;
+    }
+
+    .bw-tab.simple.primary { --bw-tab-active-line-color: var(--color-primary-500); }
+    .bw-tab.simple.blue { --bw-tab-active-line-color: var(--color-blue-500); }
+    .bw-tab.simple.red { --bw-tab-active-line-color: var(--color-red-500); }
+    .bw-tab.simple.yellow { --bw-tab-active-line-color: var(--color-yellow-500); }
+    .bw-tab.simple.green { --bw-tab-active-line-color: var(--color-green-500); }
+    .bw-tab.simple.gray { --bw-tab-active-line-color: var(--color-gray-500); }
+    .bw-tab.simple.purple { --bw-tab-active-line-color: var(--color-purple-500); }
+    .bw-tab.simple.pink { --bw-tab-active-line-color: var(--color-pink-500); }
+    .bw-tab.simple.cyan { --bw-tab-active-line-color: var(--color-cyan-500); }
+    .bw-tab.simple.indigo { --bw-tab-active-line-color: var(--color-indigo-500); }
+    .bw-tab.simple.violet { --bw-tab-active-line-color: var(--color-violet-500); }
+    .bw-tab.simple.fuchsia { --bw-tab-active-line-color: var(--color-fuchsia-500); }
+    .bw-tab.simple.orange { --bw-tab-active-line-color: var(--color-orange-500); }
+
+    @media (prefers-reduced-motion: reduce) {
+        .bw-tab.simple .bw-tab-active-line {
+            transition: none;
+        }
     }
 
     .bw-tab .atab span.primary {

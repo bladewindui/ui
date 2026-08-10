@@ -11,5 +11,8 @@
     <ul class="flex flex-wrap -mb-px {{$name}}-headings" data-name="{{$name}}">
         {{ $headings }}
     </ul>
+    @if($style === 'simple')
+        <span class="bw-tab-active-line" aria-hidden="true"></span>
+    @endif
 </div>
 {{$slot}}

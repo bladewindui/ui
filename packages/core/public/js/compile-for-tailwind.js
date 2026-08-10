@@ -98,7 +98,7 @@ const css_classes_to_pre_compile =
                     focus:ring-gray-500 focus:ring-pink-500 focus:ring-cyan-500 focus:ring-violet-500
                     focus:ring-indigo-500 focus:ring-fuchsia-500`,
         },
-        sizes: `w-6 w-7 w-10 w-11 w-14 w-16 w-24 w-36 h-6 h-7 h-10 h-11 h-14 h-16 h-24 h-36 sm:w-1/6 
+        sizes: `w-6 w-7 w-10 w-11 w-14 w-16 w-24 w-36 h-6 h-7 h-10 h-11 h-14 h-16 h-24 h-36 size-6 size-7 size-10 size-11 size-14 size-16 sm:w-1/6 
                 sm:w-1/5 sm:w-1/4 sm:w-1/3 sm:w-2/5 sm:w-2/3 sm:w-11/12 lg:w-1/6 lg:w-1/5 lg:w-1/4 lg:w-1/3 
                 lg:w-2/5 lg:w-2/3 lg:w-11/12`,
         positions: "-bottom-1 -top-1",

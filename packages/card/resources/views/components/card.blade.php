@@ -45,8 +45,8 @@
     $contact_card_css =   ($isContactCard) ? 'bw-contact-card' : 'bw-card';
     $has_border_css =   ($hasBorder) ? 'border border-neutral-200 dark:border-dark-600/60 focus:outline-none' : '';
     $header_compact_css =   (!$header && ! $compact && !$noPadding) ? 'p-6' : (($compact) ? 'p-4' : '');
-    $shadow_css =   ($hasShadow) ? 'shadow-sm shadow-black/5 dark:shadow-dark-800/70' : '';
-    $hover_css =  ($hasHover || !empty($url)) ? 'hover:shadow-sm hover:shadow-black/10 hover:border hover:border-neutral-400/70 hover:dark:shadow-dark-900 cursor-pointer' : '';
+    $shadow_css =   ($hasShadow) ? 'shadowed' : '';
+    $hover_css =  ($hasHover || !empty($url)) ? 'shadowed-hover hover:border hover:border-neutral-400/70 cursor-pointer' : '';
 
     $classes = implode(' ', array_filter([
         $class,

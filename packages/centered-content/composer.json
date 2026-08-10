@@ -28,7 +28,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Mkocansey\\Bladewind\\CenteredContent\\CenteredContentServiceProvider"
+                "Mkocansey\\Bladewind\\CenteredContent\\BladewindCenteredContentServiceProvider"
             ]
         }
     }

@@ -31,7 +31,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Mkocansey\\Bladewind\\ContactCard\\ContactCardServiceProvider"
+                "Mkocansey\\Bladewind\\ContactCard\\BladewindContactCardServiceProvider"
             ]
         }
     }

@@ -29,7 +29,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Mkocansey\\Bladewind\\Tag\\TagServiceProvider"
+                "Mkocansey\\Bladewind\\Tag\\BladewindTagServiceProvider"
             ]
         }
     }

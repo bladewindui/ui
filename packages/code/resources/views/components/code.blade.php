@@ -50,6 +50,7 @@
                         add_clearing="false"
                         onkeydown="hidePinError('{{ $name }}')"
                         onkeyup="moveCursorNext('{{ $name }}', {{ $x }}, {{ $totalDigits }}, '{{ $onverify }}', event)"
+                        onpaste="pastePinCode('{{ $name }}', {{ $x }}, {{ $totalDigits }}, '{{ $onverify }}', event)"
                         class="shadow-sm text-center font-light text-black dark:text-dark-400 focus:!border-primary-600 {{$input_css}} {{ $name }}-pin-code {{ $name }}-pcode{{ $x }}"
                         maxlength="1"
                 />
@@ -87,6 +88,24 @@
     }
 
     (index < total_digits) ? domEl(`.${name}-pcode${index}`).focus() : setPin(name, user_function);
+    }
+
+    var pastePinCode = (name, index, total_digits, user_function, evt) => {
+    evt.preventDefault();
+    let pasted = (evt.clipboardData || window.clipboardData).getData('text') || '';
+    let is_numeric = domEl(`.${name}-pcode${index}`).type === 'number';
+    pasted = pasted.replace(/\s/g, '');
+    if (is_numeric) pasted = pasted.replace(/\D/g, '');
+    if (!pasted) return;
+
+    let boxes = pasted.slice(0, total_digits - index).split('');
+    boxes.forEach((digit, position) => {
+    domEl(`.${name}-pcode${index + position}`).value = digit;
+    });
+
+    hidePinError(name);
+    let next = index + boxes.length;
+    (next < total_digits) ? domEl(`.${name}-pcode${next}`).focus() : setPin(name, user_function);
     }
 
     var setPin = (name, user_function) => {

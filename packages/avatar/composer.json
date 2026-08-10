@@ -28,7 +28,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Mkocansey\\Bladewind\\Avatar\\AvatarServiceProvider"
+                "Mkocansey\\Bladewind\\Avatar\\BladewindAvatarServiceProvider"
             ]
         }
     }

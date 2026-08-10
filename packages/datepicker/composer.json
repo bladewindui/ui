@@ -30,7 +30,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Mkocansey\\Bladewind\\Datepicker\\DatepickerServiceProvider"
+                "Mkocansey\\Bladewind\\Datepicker\\BladewindDatepickerServiceProvider"
             ]
         }
     }

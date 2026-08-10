@@ -36,7 +36,7 @@
 {{-- format-ignore-end --}}
 
 <div @class([
-        'bg-white dark:bg-dark-800/30 bw-selectable-card cursor-pointer focus:outline-none flex',
+        'bg-white dark:bg-dark-800/30 bw-selectable-card cursor-pointer focus:outline-none flex relative',
         'items-center' => ($alignItems == 'center'),
         'items-start' => ($alignItems != 'center'),
         "border$border_width border-$border_colour-400/50 hover:border-$border_colour-500/80 dark:border-dark-500/80 dark:hover:border-dark-400/70",
@@ -67,12 +67,9 @@
             {{$slot}}
         </div>
     </div>
-    <div class="relative">
-        <div class="">
-            <x-bladewind::icon name="check-circle" type="solid"
-                               class="text-{{$border_colour}}-600 stroke-white !size-9 absolute checkmark hidden
-                               {{ ($compact) ? '-top-6 -right-8' : '-top-8 -right-9' }}"/>
-        </div>
+    <div class="absolute top-1/2 right-0 translate-x-1/2 -translate-y-1/2 pointer-events-none checkmark hidden">
+        <x-bladewind::icon name="check-circle" type="solid"
+                           class="text-{{$border_colour}}-600 stroke-white !size-7"/>
     </div>
 </div>
 

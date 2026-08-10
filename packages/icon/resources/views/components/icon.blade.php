@@ -17,7 +17,9 @@
     $path = 'vendor/bladewind/icons';
     $icons_dir = ($dir !== '') ? $dir : ((! in_array($type, [ 'outline', 'solid' ])) ? "$path/outline" : "$path/$type");
     $svg_file = file_exists(public_path("$icons_dir/$name.svg")) ? public_path("$icons_dir/$name.svg") : null;
-    $svg_class = (preg_match('/\b(h|w|size)-\S+/', $class)) ? "inline-block $class" : "size-6 inline-block $class";
+    $has_size = preg_match('/\b(h|w|size)-\S+/', $class);
+    $is_hidden = preg_match('/\bhidden\b/', $class);
+    $svg_class = trim(($has_size ? '' : 'size-6 ') . ($is_hidden ? '' : 'inline-block ') . $class);
 @endphp
 {{-- format-ignore-end --}}
 

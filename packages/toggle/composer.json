@@ -29,7 +29,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Mkocansey\\Bladewind\\Toggle\\ToggleServiceProvider"
+                "Mkocansey\\Bladewind\\Toggle\\BladewindToggleServiceProvider"
             ]
         }
     }

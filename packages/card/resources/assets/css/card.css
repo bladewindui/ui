@@ -1,0 +1,21 @@
+@layer components {
+    /*
+     | Cards read as hairline-outlined surfaces: a hard 1px spread shadow does
+     | the work of a border, with a whisper of lift underneath it.
+     */
+    .bw-card.shadowed {
+        box-shadow: 0 0 0 1px rgb(15 23 42 / 0.06), 0 1px 2px rgb(15 23 42 / 0.03);
+    }
+
+    .dark .bw-card.shadowed {
+        box-shadow: 0 0 0 1px rgb(226 232 240 / 0.08), 0 1px 2px rgb(2 6 23 / 0.4);
+    }
+
+    .bw-card.shadowed-hover:hover {
+        box-shadow: 0 0 0 1px rgb(15 23 42 / 0.1), 0 2px 6px rgb(15 23 42 / 0.06);
+    }
+
+    .dark .bw-card.shadowed-hover:hover {
+        box-shadow: 0 0 0 1px rgb(226 232 240 / 0.14), 0 2px 6px rgb(2 6 23 / 0.5);
+    }
+}

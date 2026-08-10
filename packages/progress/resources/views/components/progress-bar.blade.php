@@ -52,9 +52,9 @@
         'bg-slate-200/70 dark:bg-dark-800/70 w-full' => (!$transparent)
         ])>
         <div style="width: {{$percentage}}%"
-             class="text-center py-1 {{$bar_colour}} {{$cssOverride}} relative overflow-hidden h-full rounded-full bar-width animate__animated animate__fadeIn {{$barClass}}">
+             class="text-center {{$bar_colour}} {{$cssOverride}} relative overflow-hidden h-full rounded-full bar-width animate__animated animate__fadeIn flex items-center justify-center {{$barClass}}">
             @if($showPercentageLabel && $showPercentageLabelInline)
-                <span class="text-{{$colour}}-{{$text_colour_weight[$shade]}} dark:text-dark-600 px-2 text-xs inline-flex align-middle">
+                <span class="text-{{$colour}}-{{$text_colour_weight[$shade]}} dark:text-dark-600 px-2 text-xs leading-none">
             {{$percentagePrefix}} <span class="opacity-{{$percentageLabelOpacity}}">{{ $percentage}}%</span> {{$percentageSuffix}}
             </span>
             @endif

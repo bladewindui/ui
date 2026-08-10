@@ -30,7 +30,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Mkocansey\\Bladewind\\Number\\NumberServiceProvider"
+                "Mkocansey\\Bladewind\\Number\\BladewindNumberServiceProvider"
             ]
         }
     }

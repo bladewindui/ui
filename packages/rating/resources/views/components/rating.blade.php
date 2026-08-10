@@ -10,14 +10,15 @@
     'nonce' => config('bladewind.script.nonce', null),
 ])
 @php
-    $size_adjustment = ($size == 'big') ? 2 : 1;
     $clickable = parseBladewindVariable($clickable);
     $name = parseBladewindName($name);
+    $rating = (!is_numeric($rating) || $rating < 0) ? 0 : min((int) $rating, 5);
+    $size = (!in_array($size, ['small', 'medium', 'big'])) ? 'small' : $size;
 
-    $sizing = [
-        'small' => 6,
-        'medium' => 10,
-        'big' => 14,
+    $icon_sizes = [
+        'small' => 'size-6',
+        'medium' => 'size-10',
+        'big' => 'size-14',
     ];
 @endphp
 {{-- format-ignore-end --}}
@@ -26,15 +27,27 @@
     <x-bladewind::input type="hidden" name="{{$name}}" id="{{$name}}" class="rating-value-{{$name}}"
                         selected_value="{{$rating}}"/>
 @endif
-<div class="h-{{$sizing[$size]+$size_adjustment}} overflow-hidden inline-block">
+<div class="inline-flex items-center">
     @for ($x = 1; $x < 6; $x++)
         <div data-rating="{{$x}}"
-             class="inline bw-rating-{{$x}} {{$name}}@if($rating!= 0 && $x <= $rating*1) rated @endif"
-             @if($clickable) onmouseover="flipStars('{{$name}}', {{$rating}}, {{$x}}, 'on')"
-             onmouseout="flipStars('{{$name}}', {{$rating}}, {{$x}}, 'off')"
-             onclick="setRating('{{$name}}', {{$x}});{!!$onclick!!}" @endif>
+             @class([
+                'relative inline-flex items-center justify-center bw-rating-'.$x.' '.$name,
+                $icon_sizes[$size],
+                'rated' => ($x <= $rating),
+                'cursor-pointer' => $clickable,
+                'cursor-default' => !$clickable,
+             ])
+             @if($clickable)
+                 onmouseover="previewRating('{{$name}}', {{$x}})"
+                 onmouseout="restoreRating('{{$name}}')"
+                 onclick="setRating('{{$name}}', {{$x}});{!!$onclick!!}"
+             @endif>
             <svg xmlns="http://www.w3.org/2000/svg"
-                 class="h-{{$sizing[$size]+$size_adjustment}} w-{{$sizing[$size]+$size_adjustment}} filled @if($rating==0 || $x > $rating*1) hidden @endif inline text-{{$color}}-600 @if($clickable) cursor-pointer @else cursor-default @endif @if($size=='big') mx-[-3px] @else mr-[-2px] @endif mt-[-1px]"
+                 @class([
+                    'filled absolute inset-0 text-'.$color.'-600',
+                    $icon_sizes[$size],
+                    'hidden' => ($x > $rating),
+                 ])
                  viewBox="0 0 20 20" fill="currentColor">
                 @if($type == 'heart')
                     <path fill-rule="evenodd"
@@ -48,7 +61,11 @@
             </svg>
 
             <svg xmlns="http://www.w3.org/2000/svg"
-                 class="h-{{$sizing[$size]}} w-{{$sizing[$size]}} empty @if($x <= $rating*1) hidden @endif inline text-{{$color}}-600 @if($clickable) cursor-pointer @else cursor-default @endif !ml-[2px]"
+                 @class([
+                    'empty absolute inset-0 text-'.$color.'-600',
+                    $icon_sizes[$size],
+                    'hidden' => ($x <= $rating),
+                 ])
                  fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 @if($type == 'heart')
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -64,36 +81,36 @@
         </div>
     @endfor
 </div>
-<x-bladewind::script :nonce="$nonce">
-    flipStars = function (name, rating, current, mode) {
-    for (y = rating; y <= current; y++) {
-    if (domEl(`.bw-rating-${y}.${name}`)) {
-    if (!domEl(`.bw-rating-${y}.${name}`).classList.contains('rated')) {
-    if (mode == 'on') {
-    hide(`.bw-rating-${y}.${name} .empty`);
-    unhide(`.bw-rating-${y}.${name} .filled`);
-    } else {
-    unhide(`.bw-rating-${y}.${name} .empty`);
-    hide(`.bw-rating-${y}.${name} .filled`);
-    }
-    }
-    }
-    }
-    }
+@if($clickable)
+    <x-bladewind::script :nonce="$nonce">
+        if (typeof window.previewRating !== 'function') {
+        window.previewRating = function (name, hoverValue) {
+        for (let x = 1; x <= 5; x++) {
+        if (x <= hoverValue) {
+        hide(`.bw-rating-${x}.${name} .empty`);
+        unhide(`.bw-rating-${x}.${name} .filled`);
+        } else {
+        unhide(`.bw-rating-${x}.${name} .empty`);
+        hide(`.bw-rating-${x}.${name} .filled`);
+        }
+        }
+        };
 
-    setRating = function (name, rate) {
-    changeCssForDomArray(`.${name}.rated`, 'rated', 'remove');
-    if (rate < 5) {
-    for (x = rate; x <= 6; x++) {
-    unhide(`.bw-rating-${x}.${name} .empty`);
-    hide(`.bw-rating-${x}.${name} .filled`);
-    }
-    }
-    for (x = 1; x <= rate; x++) {
-    unhide(`.bw-rating-${x}.${name} .filled`);
-    hide(`.bw-rating-${x}.${name} .empty`);
-    changeCss(`.bw-rating-${x}.${name}`, 'rated');
-    }
-    domEl('.rating-value-{{$name}}').value = rate;
-    }
-</x-bladewind::script>
+        window.restoreRating = function (name) {
+        const input = domEl(`.rating-value-${name}`);
+        const rating = parseInt(input?.value || '0', 10) || 0;
+        previewRating(name, rating);
+        };
+
+        window.setRating = function (name, rate) {
+        changeCssForDomArray(`.${name}.rated`, 'rated', 'remove');
+        for (let x = 1; x <= 5; x++) {
+        if (x <= rate) changeCss(`.bw-rating-${x}.${name}`, 'rated');
+        }
+        const input = domEl(`.rating-value-${name}`);
+        if (input) input.value = rate;
+        previewRating(name, rate);
+        };
+        }
+    </x-bladewind::script>
+@endif

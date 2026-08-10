@@ -21,7 +21,7 @@
      data-open-multiple="{{$can_open_multiple ? '1':'0'}}">
     @if($grouped)
         <x-bladewind::card no-padding="true">
-            <div class="divide-y divide-gray-200/70 dark:divide-dark-600 @if($noPadding) space-y-0.5 py-0.5 @else space-y-2 py-2.5 @endif">
+            <div class="divide-y divide-gray-200/70 dark:divide-dark-600">
                 {!! $slot !!}
             </div>
         </x-bladewind::card>

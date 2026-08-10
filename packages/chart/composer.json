@@ -29,7 +29,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Mkocansey\\Bladewind\\Chart\\ChartServiceProvider"
+                "Mkocansey\\Bladewind\\Chart\\BladewindChartServiceProvider"
             ]
         }
     }

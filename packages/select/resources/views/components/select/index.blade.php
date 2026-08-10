@@ -43,6 +43,13 @@
     'labelKey' => 'label',
 
     /**
+     * What key in your data array should be used to display a second line under each label.
+     * Descriptions are ignored by default. If your data is something like
+     * [ {"id": 1, "name": "Burkina Faso", "capital": "Ouagadougou"} ] your descriptionKey will be 'capital'
+     */
+    'descriptionKey' => null,
+
+    /**
      * What key in your data array should be used to display flag icons next to the labels
      * [ {"id": 1, "name": "Burkina Faso", "flag": "/assets/images/bf-flag.png"} ] your flagKey will be 'flag'
      */
@@ -202,6 +209,7 @@
                     <x-bladewind::select.item
                             label="{{ $item[$labelKey] }}"
                             value="{{ $item[$valueKey] }}"
+                            description="{{ $item[$descriptionKey] ?? '' }}"
                             filter_by="{{ ($filterBy != '') ? $item[$filterBy] : '' }}"
                             onselect="{{ $onselect }}"
                             flag="{{ $item[$flagKey] ?? '' }}"
