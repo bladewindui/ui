@@ -153,15 +153,22 @@ vendor/bin/monorepo-builder validate
 # 4. Release — this command does everything:
 #    a) bumps all inter-package version constraints to the new version
 #    b) commits the change
-#    c) tags the monorepo commit as vX.Y.Z
+#    c) tags the monorepo commit with the string you pass below, verbatim
 #    d) pushes the tag to GitHub
 #    → GitHub Actions split-packages.yml fires automatically
 #    → each packages/* directory is pushed to its read-only repo
 #    → the same tag is applied to each split repo
 #    → Packagist picks up the new release via webhook
-vendor/bin/monorepo-builder release 2.1.0
+#
+#    INCLUDE THE "v" PREFIX. Every release since v3.0 is tagged vX.Y.Z, and the
+#    version string is used as the tag exactly as typed — no prefix is added for
+#    you. Passing "4.3.0" tags "4.3.0", which is what happened on 2026-08-10 and
+#    is why that one tag in the list has no v. Nothing breaks (the split workflow
+#    triggers on '*', and Composer normalises both forms to the same version), but
+#    the tag list stops being uniform and the tag no longer matches the release title.
+vendor/bin/monorepo-builder release v2.1.0
 
-# 5. Done. Monitor the Actions tab to confirm all 44 splits succeeded.
+# 5. Done. Monitor the Actions tab to confirm all 48 splits succeeded.
 ```
 
 ---
