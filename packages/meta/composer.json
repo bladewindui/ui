@@ -18,19 +18,19 @@
     ],
     "require": {
         "php": ">=8.1",
-        "mkocansey/bladewind-core": "^4.2.1",
-        "mkocansey/bladewind-icon": "^4.2.1",
-        "mkocansey/bladewind-script": "^4.2.1",
-        "mkocansey/bladewind-spinner": "^4.2.1",
-        "mkocansey/bladewind-button": "^4.2.1",
-        "mkocansey/bladewind-alert": "^4.2.1",
-        "mkocansey/bladewind-bell": "^4.2.1",
-        "mkocansey/bladewind-notification": "^4.2.1",
-        "mkocansey/bladewind-modal": "^4.2.1",
-        "mkocansey/bladewind-table": "^4.2.1",
-        "mkocansey/bladewind-forms": "^4.2.1",
-        "mkocansey/bladewind-content": "^4.2.1",
-        "mkocansey/bladewind-navigation": "^4.2.1"
+        "mkocansey/bladewind-core": "^4.3",
+        "mkocansey/bladewind-icon": "^4.3",
+        "mkocansey/bladewind-script": "^4.3",
+        "mkocansey/bladewind-spinner": "^4.3",
+        "mkocansey/bladewind-button": "^4.3",
+        "mkocansey/bladewind-alert": "^4.3",
+        "mkocansey/bladewind-bell": "^4.3",
+        "mkocansey/bladewind-notification": "^4.3",
+        "mkocansey/bladewind-modal": "^4.3",
+        "mkocansey/bladewind-table": "^4.3",
+        "mkocansey/bladewind-forms": "^4.3",
+        "mkocansey/bladewind-content": "^4.3",
+        "mkocansey/bladewind-navigation": "^4.3"
     },
     "autoload": {
         "psr-4": {

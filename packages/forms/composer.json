@@ -17,19 +17,19 @@
         }
     ],
     "require": {
-        "mkocansey/bladewind-input": "^4.2.1",
-        "mkocansey/bladewind-textarea": "^4.2.1",
-        "mkocansey/bladewind-select": "^4.2.1",
-        "mkocansey/bladewind-checkbox": "^4.2.1",
-        "mkocansey/bladewind-radio": "^4.2.1",
-        "mkocansey/bladewind-toggle": "^4.2.1",
-        "mkocansey/bladewind-datepicker": "^4.2.1",
-        "mkocansey/bladewind-timepicker": "^4.2.1",
-        "mkocansey/bladewind-colorpicker": "^4.2.1",
-        "mkocansey/bladewind-filepicker": "^4.2.1",
-        "mkocansey/bladewind-slider": "^4.2.1",
-        "mkocansey/bladewind-checkcards": "^4.2.1",
-        "mkocansey/bladewind-number": "^4.2.1",
-        "mkocansey/bladewind-code": "^4.2.1"
+        "mkocansey/bladewind-input": "^4.3",
+        "mkocansey/bladewind-textarea": "^4.3",
+        "mkocansey/bladewind-select": "^4.3",
+        "mkocansey/bladewind-checkbox": "^4.3",
+        "mkocansey/bladewind-radio": "^4.3",
+        "mkocansey/bladewind-toggle": "^4.3",
+        "mkocansey/bladewind-datepicker": "^4.3",
+        "mkocansey/bladewind-timepicker": "^4.3",
+        "mkocansey/bladewind-colorpicker": "^4.3",
+        "mkocansey/bladewind-filepicker": "^4.3",
+        "mkocansey/bladewind-slider": "^4.3",
+        "mkocansey/bladewind-checkcards": "^4.3",
+        "mkocansey/bladewind-number": "^4.3",
+        "mkocansey/bladewind-code": "^4.3"
     }
 }
