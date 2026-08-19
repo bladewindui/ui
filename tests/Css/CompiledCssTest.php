@@ -269,26 +269,40 @@ class CompiledCssTest extends TestCase
     }
 
     /**
-     * FINDING, pinned deliberately — see improvements.md item 2.
+     * #590: BladeWind used to ship 78 `!important` declarations inside .bw-* rules,
+     * and because CSS Cascade 5 reverses layer order for important declarations —
+     * earlier layers win, unlayered important is weakest — a consumer could not
+     * override any of them. Not with a plain utility, not with a Tailwind `!`
+     * utility in the later utilities layer, not with `!important` in their own
+     * stylesheet. There was no override path at all.
      *
-     * The library escalates to !important inside its own component rules, which is
-     * why a consumer's plain utility loses and they reach for `!` in turn. This
-     * asserts the count does not climb; item 2 should bring it down.
+     * Zero is the invariant now. A component rule that needs importance to win is a
+     * component rule that a consumer cannot restyle.
+     *
+     * Importance aimed at third-party CSS is a different matter and lives outside
+     * .bw-* selectors: the Quill rules in input.css, sortable.css (fighting
+     * SortableJS inline styles, published standalone) and the vendored popup
+     * stylesheet all keep theirs.
      */
     #[Test]
-    public function the_number_of_important_declarations_in_component_rules_does_not_grow(): void
+    public function no_component_rule_uses_important(): void
     {
-        $important = 0;
+        $offenders = [];
 
         foreach ($this->css->componentRules() as $rule) {
-            $important += substr_count($rule['declarations'], '!important');
+            $count = substr_count($rule['declarations'], '!important');
+
+            if ($count > 0) {
+                $offenders[] = $rule['selector'].' ('.$count.')';
+            }
         }
 
-        $this->assertLessThanOrEqual(
-            78,
-            $important,
-            'The bundle escalates to !important more than it used to. Every one of these is a '
-            .'declaration a consumer can only override with `!` of their own — see item 2.'
+        $this->assertSame(
+            [],
+            $offenders,
+            "These .bw-* rules use !important, which no consumer can override — not with a plain\n"
+            ."utility, not with a Tailwind `!` utility, not with !important of their own:\n  "
+            .implode("\n  ", $offenders)
         );
     }
 }
