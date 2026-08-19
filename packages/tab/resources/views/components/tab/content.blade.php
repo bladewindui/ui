@@ -16,6 +16,10 @@
 @endphp
 {{-- format-ignore-end --}}
 
-<div class="atab-content bw-tc-{{$name}} {{$active_css}}">
+<div class="atab-content bw-tc-{{$name}} {{$active_css}}"
+     role="tabpanel"
+     id="bw-tabpanel-{{$name}}"
+     aria-labelledby="bw-tab-{{$name}}"
+     tabindex="0">
     {{ $slot }}
 </div>

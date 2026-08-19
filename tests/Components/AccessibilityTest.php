@@ -197,4 +197,100 @@ class AccessibilityTest extends TestCase
 
         $this->assertAttribute($html, '//button', 'aria-label', 'Remove this order');
     }
+
+    // ---- tabs -----------------------------------------------------------
+
+    private function tabs(): string
+    {
+        return $this->render(
+            "<x-bladewind::tab name=\"t\">\n"
+            ."<x-slot:headings>\n"
+            ."<x-bladewind::tab.heading name=\"one\" label=\"One\" active=\"true\" />\n"
+            ."<x-bladewind::tab.heading name=\"two\" label=\"Two\" />\n"
+            ."<x-bladewind::tab.heading name=\"three\" label=\"Three\" disabled=\"true\" />\n"
+            ."</x-slot:headings>\n"
+            ."<x-bladewind::tab.content name=\"one\" active=\"true\">1</x-bladewind::tab.content>\n"
+            ."<x-bladewind::tab.content name=\"two\">2</x-bladewind::tab.content>\n"
+            ."</x-bladewind::tab>"
+        );
+    }
+
+    #[Test]
+    public function tabs_form_a_tablist_of_tabs(): void
+    {
+        $html = $this->tabs();
+
+        $this->assertElementCount($html, '//*[@role="tablist"]', 1);
+        $this->assertElementCount($html, '//*[@role="tab"]', 3);
+        $this->assertElementCount($html, '//*[@role="tabpanel"]', 2);
+    }
+
+    /**
+     * Roving tabindex: only the selected tab is in the tab order, arrow keys reach
+     * the rest. A disabled tab is never in the order.
+     */
+    #[Test]
+    public function only_the_active_tab_is_in_the_tab_order(): void
+    {
+        $html = $this->tabs();
+
+        $this->assertAttribute($html, $this->withClass('atab-one', 'li'), 'tabindex', '0');
+        $this->assertAttribute($html, $this->withClass('atab-two', 'li'), 'tabindex', '-1');
+        $this->assertAttribute($html, $this->withClass('atab-three', 'li'), 'tabindex', '-1');
+    }
+
+    #[Test]
+    public function the_active_tab_says_it_is_selected(): void
+    {
+        $html = $this->tabs();
+
+        $this->assertAttribute($html, $this->withClass('atab-one', 'li'), 'aria-selected', 'true');
+        $this->assertAttribute($html, $this->withClass('atab-two', 'li'), 'aria-selected', 'false');
+        $this->assertAttribute($html, $this->withClass('atab-three', 'li'), 'aria-disabled', 'true');
+    }
+
+    #[Test]
+    public function each_tab_is_wired_to_its_panel(): void
+    {
+        $html = $this->tabs();
+
+        $controls = $this->firstNode($html, $this->withClass('atab-one', 'li'))->getAttribute('aria-controls');
+
+        $this->assertAttribute($html, '//*[@id="'.$controls.'"]', 'role', 'tabpanel');
+        $this->assertAttribute($html, '//*[@id="'.$controls.'"]', 'aria-labelledby', 'bw-tab-one');
+    }
+
+    // ---- stateful controls ----------------------------------------------
+
+    #[Test]
+    public function a_toggle_is_a_switch(): void
+    {
+        $on = $this->render('<x-bladewind::toggle name="n" checked="true" />');
+        $off = $this->render('<x-bladewind::toggle name="n" />');
+
+        $this->assertAttribute($on, '//input[@type="checkbox"]', 'role', 'switch');
+        $this->assertAttribute($on, '//input[@type="checkbox"]', 'aria-checked', 'true');
+        $this->assertAttribute($off, '//input[@type="checkbox"]', 'aria-checked', 'false');
+    }
+
+    #[Test]
+    public function a_read_only_rating_is_an_image_with_a_text_alternative(): void
+    {
+        $html = $this->render('<x-bladewind::rating name="r" rating="4" clickable="false" />');
+
+        $this->assertAttribute($html, '//*[@role="img"]', 'aria-label', '4 out of 5');
+    }
+
+    #[Test]
+    public function a_clickable_rating_is_an_operable_slider(): void
+    {
+        $html = $this->render('<x-bladewind::rating name="r" rating="3" clickable="true" />');
+
+        $slider = '//*[@role="slider"]';
+
+        $this->assertAttribute($html, $slider, 'aria-valuenow', '3');
+        $this->assertAttribute($html, $slider, 'aria-valuemin', '0');
+        $this->assertAttribute($html, $slider, 'aria-valuemax', '5');
+        $this->assertAttribute($html, $slider, 'tabindex', '0');
+    }
 }

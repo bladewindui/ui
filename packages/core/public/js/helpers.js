@@ -489,7 +489,63 @@ const goToTab = (element, colour, scope, tabHeading = null) => {
     });
     unhide(tabContent, true);
     positionTabActiveLine(tabHeading?.closest('.bw-tab') ?? domEl(`.bw-tab-${scope}`));
+    syncTabAccessibility(scope, element);
 };
+
+/**
+ * Keep aria-selected and the roving tabindex in step with the visible selection.
+ * Only the selected tab stays in the tab order; the arrow keys reach the others.
+ */
+const syncTabAccessibility = (scope, activeName) => {
+    domEls(`.${scope}-headings li.atab`).forEach((tab) => {
+        const isActive = tab.classList.contains(`atab-${activeName}`);
+        const isDisabled = tab.getAttribute('aria-disabled') === 'true';
+
+        tab.setAttribute('aria-selected', String(isActive));
+        tab.setAttribute('tabindex', isActive && !isDisabled ? '0' : '-1');
+    });
+};
+
+/**
+ * Arrow-key navigation for a tab list, per the ARIA tabs pattern: Left/Right move
+ * between tabs, Home/End jump to the ends, and the newly focused tab is selected.
+ * Disabled tabs are skipped rather than focused and ignored.
+ */
+const enableTabKeyboardNavigation = () => {
+    domEls('[role="tablist"]').forEach((tablist) => {
+        if (tablist.dataset.bwKeyboard === '1') return;
+        tablist.dataset.bwKeyboard = '1';
+
+        tablist.addEventListener('keydown', (e) => {
+            const keys = ['ArrowLeft', 'ArrowRight', 'Home', 'End'];
+            if (!keys.includes(e.key)) return;
+
+            const tabs = [...tablist.querySelectorAll('li.atab')]
+                .filter((t) => t.getAttribute('aria-disabled') !== 'true');
+            if (tabs.length === 0) return;
+
+            const current = tabs.indexOf(document.activeElement.closest('li.atab'));
+            let next;
+
+            if (e.key === 'Home') next = tabs[0];
+            else if (e.key === 'End') next = tabs[tabs.length - 1];
+            else if (current === -1) next = tabs[0];
+            else {
+                // wrap around, which is what the pattern expects of a tab list
+                const step = e.key === 'ArrowRight' ? 1 : -1;
+                next = tabs[(current + step + tabs.length) % tabs.length];
+            }
+
+            if (!next) return;
+
+            e.preventDefault();
+            next.focus();
+            next.click();
+        });
+    });
+};
+
+document.addEventListener('DOMContentLoaded', enableTabKeyboardNavigation);
 
 /**
  * Position the animated line under the active heading in a simple tab group.
