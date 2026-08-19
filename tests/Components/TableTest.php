@@ -162,6 +162,9 @@ class TableTest extends TestCase
         $this->assertHasClasses($html, self::TABLE, ['paginated']);
     }
 
+
+
+
     /**
      * The data-driven layout is the path improvements.md item 4 proposes replacing
      * with a :columns model. Pinned so the new API has to stay additive.
@@ -230,51 +233,70 @@ class TableTest extends TestCase
     }
 
     /**
-     * BUG, pinned deliberately — do not "fix" this test, fix the component.
-     *
-     * The empty-data branch emits its <tr> without ever opening a <tbody>, then
-     * closes one anyway, so the table ships with a stray </tbody>. Browsers
-     * recover, but the DOM a consumer scripts against is not the one the markup
-     * describes.
+     * #601: the empty-data row used to be emitted with no opening <tbody> and a
+     * stray closing one, because <tbody> sat inside the has-rows branch while
+     * </tbody> sat after the @endif.
      */
     #[Test]
-    public function the_empty_data_row_is_currently_emitted_outside_a_tbody(): void
+    public function the_empty_data_row_sits_inside_a_balanced_tbody(): void
     {
         $html = $this->render('<x-bladewind::table name="tbl" :data="$rows" />', ['rows' => []]);
 
-        $this->assertNoElement($html, '//tbody/tr/td[@colspan]');
-        $this->assertStringContainsString('</tbody>', $html);
-        $this->assertSame(0, substr_count($html, '<tbody>'));
+        $this->assertElementCount($html, '//tbody/tr/td[@colspan]', 1);
+        $this->assertSame(1, substr_count($html, '<tbody>'));
+        $this->assertSame(1, substr_count($html, '</tbody>'));
+    }
+
+    #[Test]
+    public function a_populated_table_still_has_exactly_one_balanced_tbody(): void
+    {
+        $html = $this->render(
+            '<x-bladewind::table name="tbl" :data="$rows" />',
+            ['rows' => [['when' => 'today'], ['when' => 'tomorrow']]]
+        );
+
+        $this->assertSame(1, substr_count($html, '<tbody>'));
+        $this->assertSame(1, substr_count($html, '</tbody>'));
+        $this->assertElementCount($html, '//tbody/tr', 2);
     }
 
     /**
-     * BUG, pinned deliberately — do not "fix" this test, fix the component.
-     *
-     * The empty-data branch writes a raw <script :nonce="$nonce"> tag instead of
-     * going through <x-bladewind::script>. The Blade attribute is never evaluated,
-     * so it ships to the browser verbatim and the script carries no nonce at all —
-     * under a nonce-based CSP that inline script is blocked, and the table never
-     * loses its hover effect on an empty result.
+     * #602: this branch used to write a raw <script :nonce="$nonce">, so the Blade
+     * attribute shipped to the browser uncompiled and the script carried no nonce —
+     * blocked outright under a nonce-based CSP.
      */
     #[Test]
-    public function the_empty_data_script_tag_currently_leaks_an_uncompiled_blade_attribute(): void
+    public function the_empty_data_script_goes_through_the_script_component(): void
     {
         $html = $this->render('<x-bladewind::table name="tbl" :data="$rows" />', ['rows' => []]);
 
-        $this->assertStringContainsString('<script :nonce="$nonce">', $html);
+        $this->assertStringNotContainsString(':nonce=', $html);
+        $this->assertStringContainsString('has-no-data', $html);
+    }
+
+    #[Test]
+    public function the_empty_data_script_carries_a_configured_nonce(): void
+    {
+        config(['bladewind.script.nonce' => 'abc123']);
+
+        $html = $this->render('<x-bladewind::table name="tbl" :data="$rows" />', ['rows' => []]);
+
+        $this->assertStringContainsString('abc123', $html);
     }
 
     /**
-     * With no rows there are no headings either, so the placeholder cell spans
-     * nothing. Pinned because item 4's :columns API gives the component a column
-     * list that survives an empty result, which is the natural place to fix it.
+     * With no rows there are no headings either, so the placeholder cell used to
+     * render colspan="0", which is not a legal value. Item 4's :columns API gives
+     * the component a column list that survives an empty result; until then it
+     * spans at least one.
      */
     #[Test]
-    public function the_empty_data_cell_currently_spans_zero_columns(): void
+    public function the_empty_data_cell_spans_at_least_one_column(): void
     {
         $html = $this->render('<x-bladewind::table name="tbl" :data="$rows" />', ['rows' => []]);
 
-        $this->assertStringContainsString('colspan="0"', $html);
+        $this->assertStringNotContainsString('colspan="0"', $html);
+        $this->assertAttribute($html, '//tbody/tr/td[@colspan]', 'colspan', '1');
     }
 
     #[Test]
