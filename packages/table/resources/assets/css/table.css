@@ -20,7 +20,7 @@
     }
 
     .bw-table.celled th, .bw-table.celled td {
-        @apply border-x-0 border-r border-gray-300/50 dark:border-dark-600/80 border-collapse!
+        @apply border-x-0 border-r border-gray-300/50 dark:border-dark-600/80 border-collapse
     }
 
     .bw-table thead > tr > th {
@@ -36,11 +36,11 @@
     }
 
     .bw-table.celled th:first-child, .bw-table.celled td:first-child {
-        @apply border-x border-gray-300/50 dark:border-dark-600/80 border-collapse!
+        @apply border-x border-gray-300/50 dark:border-dark-600/80 border-collapse
     }
 
     .bw-table.has-no-data thead > tr {
-        @apply border-transparent!
+        @apply border-transparent
     }
 
     .bw-table.uppercase-headers thead > tr > th {
@@ -48,7 +48,7 @@
     }
 
     .bw-table-filter-bar-unhinged input {
-        @apply border-0 bg-transparent focus:outline-0 focus:border-0 mb-0!
+        @apply border-0 bg-transparent focus:outline-0 focus:border-0 mb-0
     }
 
     .bw-table-filter-bar {
@@ -60,11 +60,11 @@
     }
 
     .bw-table.compact thead > tr > th {
-        @apply py-2.5!
+        @apply py-2.5
     }
 
     .bw-table.compact tr > td {
-        @apply py-2!
+        @apply py-2
     }
 
     .bw-table td.double-underline {
@@ -104,17 +104,17 @@
     }
 
     .bw-table th:first-child input[type="checkbox"] {
-        @apply mt-1!
+        @apply mt-1
     }
 
     .bw-table td:first-child input[type="checkbox"] {
-        @apply mt-0.5!
+        @apply mt-0.5
     }
 
     .bw-table.transparent tr,
     .bw-table.transparent th,
     .bw-table.transparent td {
-        @apply bg-transparent! hover:bg-transparent!
+        @apply bg-transparent hover:bg-transparent
     }
 
 }
