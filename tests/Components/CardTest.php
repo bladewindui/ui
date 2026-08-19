@@ -103,17 +103,18 @@ class CardTest extends TestCase
     }
 
     /**
-     * getRadiusString() indexes its map directly, so an unrecognised radius is a
-     * fatal, not a fallback — the `?? ''` on the return is dead code because the
-     * array access is evaluated first. Pinned here so item 2's wider radius scale
-     * has to decide deliberately what an unknown value does.
+     * #603: an unrecognised radius used to take the page down with a ViewException.
+     * It now renders the card with no rounding class rather than failing.
      */
     #[Test]
-    public function an_unrecognised_radius_currently_throws(): void
+    public function an_unrecognised_radius_renders_without_a_rounding_class(): void
     {
-        $this->expectException(\Illuminate\View\ViewException::class);
+        $html = $this->render('<x-bladewind::card radius="full">c</x-bladewind::card>');
 
-        $this->render('<x-bladewind::card radius="full">c</x-bladewind::card>');
+        $this->assertHasClasses($html, $this->card(), ['bw-card']);
+        $this->assertMissingClasses($html, $this->card(), [
+            'rounded-none', 'rounded-lg', 'rounded-xl', 'rounded-2xl', 'rounded-3xl',
+        ]);
     }
 
     #[Test]

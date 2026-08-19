@@ -58,7 +58,11 @@ function parseBladewindVariable($variable, $parse_as = 'bool')
     switch ($parse_as) {
         case 'str':
         case 'string':
-            return filter_var($variable, FILTER_SANITIZE_STRING);
+            // FILTER_SANITIZE_STRING was deprecated in PHP 8.1 and is going away.
+            // It stripped tags and encoded quotes; the quote half is redundant here
+            // because every caller passes the result through Blade, which escapes on
+            // output. strip_tags() keeps the half that mattered.
+            return strip_tags((string) $variable);
         case 'int':
             return filter_var($variable, FILTER_VALIDATE_INT);
         case 'bool':
@@ -106,6 +110,15 @@ function getRadiusString($radius, $prefix = null): string
         'large' => 'rounded-2xl',
         'xl' => 'rounded-3xl',
     ];
-    return (!empty($prefix) ? str_replace('rounded-', "rounded-$prefix-",
-        $roundness[$radius]) : $roundness[$radius]) ?? '';
+    // an unrecognised radius yields no rounding class rather than a fatal. the
+    // `?? ''` this replaces could never run: $roundness[$radius] was evaluated
+    // first, so a typo in a radius prop raised "Undefined array key" and took the
+    // whole page down through a ViewException. see #603.
+    $rounded = $roundness[$radius] ?? '';
+
+    if ($rounded === '' || empty($prefix)) {
+        return $rounded;
+    }
+
+    return str_replace('rounded-', "rounded-$prefix-", $rounded);
 }
