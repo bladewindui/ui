@@ -21,7 +21,9 @@
         "illuminate/support": "^10.0|^11.0|^12.0|^13.0"
     },
     "require-dev": {
-        "symplify/monorepo-builder": "^11.0"
+        "symplify/monorepo-builder": "^11.0",
+        "orchestra/testbench": "^10.0",
+        "phpunit/phpunit": "^11.0"
     },
     "autoload": {
         "psr-4": {
@@ -75,6 +77,14 @@
         "files": [
             "packages/core/src/BladewindHelpers.php"
         ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Mkocansey\\Bladewind\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit"
     },
     "extra": {
         "laravel": {
