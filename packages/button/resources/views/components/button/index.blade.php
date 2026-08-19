@@ -122,14 +122,20 @@
     $tag = ($tag !== 'a' && $tag !== 'button') ? 'button' : $tag;
     $base_button_css = ($circular) ? 'bw-button-circle' : 'bw-button '.(($uppercasing) ? 'uppercase ' : '');
     $merged_attributes = $attributes->merge(['class' => "$base_button_css $size $type $name $primary_colour_css $disabled_css $radius_css $outline_css $has_icon_css"]);
+    // the type has to go through the attribute bag. building it as a string and
+    // echoing it through {{ }} escaped the quotes, so the markup read
+    // type=&quot;button&quot; and a parser saw the value '"button"' — not a valid
+    // keyword, so every button in a form fell back to the submit default. see #600
+    if ($tag === 'button') {
+        $merged_attributes = $merged_attributes->merge(['type' => $button_type]);
+    }
     $icon_css = ($circular) ? $icon_size['circular'][$size] : $icon_size[$size].' dark:text-white/80 ' . ((!$iconRight) ? '-ml-2! rtl:-mr-2! mr-2! rtl:ml-2!' : '-mr-2! rtl:-ml-2! ml-2! rtl:mr-2!');
 @endphp
 {{-- format-ignore-end --}}
 
 <{{ $tag }}
     {{ $merged_attributes }}
-    {{ $disabled ? 'disabled' : ''}}
-    {{($tag == 'button') ? 'type="'.$button_type.'"' : '' }}>
+    {{ $disabled ? 'disabled' : ''}}>
     @if(!empty($icon) && !$iconRight)
         <x-bladewind::icon :name="$icon" :type="$iconType" class="stroke-2 {{$icon_css}}" />
     @endif
