@@ -25,7 +25,7 @@
 @endphp
 {{-- format-ignore-end --}}
 <span
-    {{ $attributes->merge(['class' => "bw-tooltip inline-block {$class}"]) }}
+    {{ $attributes->exceptPropAliases(get_defined_vars())->merge(['class' => "bw-tooltip inline-block {$class}"]) }}
     @if(! empty($text))
         data-tooltip="{{ $text }}"
         data-position="{{ $data_position }}"

@@ -17,7 +17,7 @@
 {{-- format-ignore-end --}}
 
 <li @if(! is_null($value)) data-id="{{ $value }}" @endif
-    {{ $attributes->merge(['class' => "bw-sortable-item flex items-center gap-x-3 select-none rounded-lg border border-slate-200 dark:border-dark-700 bg-white dark:bg-dark-800 px-4 py-3 text-sm text-slate-700 dark:text-dark-200 shadow-sm {$class}"]) }}>
+    {{ $attributes->exceptPropAliases(get_defined_vars())->merge(['class' => "bw-sortable-item flex items-center gap-x-3 select-none rounded-lg border border-slate-200 dark:border-dark-700 bg-white dark:bg-dark-800 px-4 py-3 text-sm text-slate-700 dark:text-dark-200 shadow-sm {$class}"]) }}>
     @if($hasHandle)
         <x-bladewind::icon
                 name="{{ $handleIcon }}"

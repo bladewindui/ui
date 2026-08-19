@@ -45,7 +45,7 @@
         $name,
         'py-3 px-4' => ($compact),
         'p-5' => (!$compact)
-]) {{ $attributes->merge([ 'class' => ""]) }} onclick="selectCheckcard('{{$name}}', '{{$value}}', '{{$border_colour}}')"
+]) {{ $attributes->exceptPropAliases(get_defined_vars())->merge([ 'class' => ""]) }} onclick="selectCheckcard('{{$name}}', '{{$value}}', '{{$border_colour}}')"
      data-value="{{$value}}">
     <div class="flex">
         <span>

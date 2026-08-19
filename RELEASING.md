@@ -235,6 +235,25 @@ Aggregate packages are `type: metapackage` — they contain no code, only a `req
 
 9. Release a new minor version
 
+### Rendering the attribute bag
+
+If your component spreads `$attributes` onto its root element, call
+`exceptPropAliases(get_defined_vars())` first:
+
+```blade
+<div {{ $attributes->exceptPropAliases(get_defined_vars())->merge(['class' => $classes]) }}>
+```
+
+Blade camel-cases an attribute name into the component's data, so `has_shadow="false"`
+correctly sets `$hasShadow` — but `@props` only strips the camelCase and kebab-case
+spellings from the bag, so the snake_case key survives and renders onto the root as a
+literal `has_shadow="false"` attribute. Since the docs use snake_case throughout, that
+affects nearly every consumer. The macro is registered by `BladewindCoreServiceProvider`,
+which every component package depends on.
+
+`tests/Components/PropAliasLeakTest.php` covers every component that renders the bag.
+Add yours to its provider — that is what stops the next component reintroducing this.
+
 ### Where assets live
 
 All published assets live in `packages/core/public`, and `BladewindCoreServiceProvider` is the only provider that publishes them (tag: `bladewind-public`). Every component package requires `mkocansey/bladewind-core`, so a user who installs a single component still gets the assets.
