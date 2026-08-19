@@ -45,6 +45,25 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Pagination component
+    |--------------------------------------------------------------------------
+    |
+    | These apply to server mode, which the component switches to when it is
+    | handed a Laravel paginator. The DOM show/hide mode ignores them.
+    |
+    */
+
+    'pagination' => [
+        // page sizes offered in the per-page selector. empty hides the selector
+        'per_page_options' => [],
+        // query string parameter that selector writes to
+        'per_page_name' => 'per_page',
+        // how many page numbers to show either side of the current one
+        'on_each_side' => 1,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Alert component
     |--------------------------------------------------------------------------
     */

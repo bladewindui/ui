@@ -9,11 +9,73 @@
     'defaultPage' => 1,
     'table' => null,
     'label' => __("bladewind::bladewind.pagination_label"),
+
+    // a Laravel paginator. when present the component renders server-side links
+    // instead of the DOM show/hide mode, which cannot work against a paginator.
+    'paginator' => null,
+
+    // page sizes to offer in a per-page selector. empty hides the selector.
+    'perPageOptions' => config('bladewind.pagination.per_page_options', []),
+
+    // query string parameter the per-page selector writes to
+    'perPageName' => config('bladewind.pagination.per_page_name', 'per_page'),
+
+    // how many page numbers to show either side of the current one
+    'onEachSide' => config('bladewind.pagination.on_each_side', 1),
+
     'nonce' => config('bladewind.script.nonce', null),
 ])
 
 @php
     $showTotal = parseBladewindVariable($showTotal);
+    $onEachSide = parseBladewindVariable($onEachSide, 'int') ?: 0;
+
+    // ---- server mode -----------------------------------------------------
+    // a paginator switches the whole component over. everything below this block
+    // is the original client-side mode and is untouched.
+    $is_length_aware = $paginator instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator;
+    $is_paginator = $is_length_aware || $paginator instanceof \Illuminate\Contracts\Pagination\Paginator;
+
+    if ($is_paginator) {
+        $current_page = $paginator->currentPage();
+        $per_page = $paginator->perPage();
+        $from = $paginator->firstItem() ?? 0;
+        $to = $paginator->lastItem() ?? 0;
+        $total = $is_length_aware ? $paginator->total() : null;
+        $last_page = $is_length_aware ? max(1, (int) $paginator->lastPage()) : null;
+
+        // first and last are always reachable, with an ellipsis standing in for
+        // whatever the window leaves out. prev/next alone gives the reader no
+        // sense of position, which is why the audited app replaced this outright.
+        $pages = [];
+        if ($is_length_aware) {
+            $window_start = max(1, $current_page - $onEachSide);
+            $window_end = min($last_page, $current_page + $onEachSide);
+
+            foreach (range($window_start, $window_end) as $p) {
+                $pages[] = $p;
+            }
+            if ($window_start > 1) {
+                array_unshift($pages, ...($window_start > 2 ? [1, '...'] : [1]));
+            }
+            if ($window_end < $last_page) {
+                array_push($pages, ...($window_end < $last_page - 1 ? ['...', $last_page] : [$last_page]));
+            }
+        }
+
+        $server_label = str_replace(
+            [':a', ':b', ':c'],
+            [
+                '<span class="font-semibold from">'.$from.'</span>',
+                '<span class="font-semibold to">'.$to.'</span>',
+                '<strong>'.($total ?? '').'</strong>',
+            ],
+            $label
+        );
+
+        $per_page_options = is_array($perPageOptions) ? $perPageOptions : array_filter(explode(',', (string) $perPageOptions));
+    }
+
     $showPageNumber = parseBladewindVariable($showPageNumber);
     $showTotalPages = parseBladewindVariable($showTotalPages);
     $defaultPage = parseBladewindVariable($defaultPage, 'int');
@@ -35,7 +97,9 @@
 @endphp
 {{-- format-ignore-end --}}
 
-@if(!empty($totalRecords) && !empty($table))
+@if($is_paginator)
+    @include('bladewind::components.pagination-server')
+@elseif(!empty($totalRecords) && !empty($table))
     <x-bladewind::script :nonce="$nonce">
         var previousPage_{{$table}} = {{$defaultPage}};
         var totalPages_{{$table}} = {{$total_pages}};
@@ -124,6 +188,7 @@
         </div>
     </div>
 @endif
+@if(! $is_paginator)
 @once
     <span class="dots hidden"><x-bladewind::icon name="ellipsis-horizontal"/></span>
     <x-bladewind::script :nonce="$nonce">
@@ -272,3 +337,4 @@
         }
     </x-bladewind::script>
 @endonce
+@endif
