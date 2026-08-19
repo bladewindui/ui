@@ -54,10 +54,31 @@
                     this.selectItem();
                     this.enableKeyboardNavigation();
                     this.setEmptyStateMessage();
+                    this.prepareAccessibility();
                 } else {
                     this.selectItem();
                     this.enabled = false;
                 }
+            }
+
+            /**
+             * aria-activedescendant has to point at an id, so every option needs
+             * one. They are assigned here rather than in the blade template
+             * because a value is only unique within its own select.
+             */
+            prepareAccessibility = () => {
+                domEls(this.selectItems).forEach((el, index) => {
+                    if (!el.id) el.id = `bw-option-${this.name}-${index}`;
+                });
+
+                // the expanded state is only true while the list is actually open
+                let container = domEl(this.itemsContainer);
+                if (!container) return;
+
+                new MutationObserver(() => {
+                    let trigger = domEl(this.clickArea);
+                    if (trigger) trigger.setAttribute('aria-expanded', String(!container.classList.contains('hidden')));
+                }).observe(container, {attributes: true, attributeFilter: ['class']});
             }
 
             enableKeyboardNavigation = () => {
@@ -75,7 +96,7 @@
                         hide(this.itemsContainer);
                     }
 
-                    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+                    if (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Home" || e.key === "End") {
                         e.preventDefault();
                         let els = [...domEls(this.selectItems)].filter((el) => {
                             if (el.classList.contains('hidden')) {
@@ -86,7 +107,11 @@
                         });
 
                         let next;
-                        if (!this.selectedItem) {
+                        if (e.key === 'Home') {
+                            next = els[0];
+                        } else if (e.key === 'End') {
+                            next = els[els.length - 1];
+                        } else if (!this.selectedItem) {
                             next = e.key === 'ArrowDown' ? els[0] : els[els.length - 1];
                         } else {
                             let idx = els.indexOf(this.selectedItem);
@@ -151,6 +176,15 @@
             highlightItem = (item) => {
                 changeCssForDomArray(`${this.rootElement} .bw-select-item`, 'bg-slate-100/90', 'remove');
                 changeCss(item, 'bg-slate-100/90', 'add', true);
+
+                let trigger = domEl(this.clickArea);
+                if (trigger && item && item.id) trigger.setAttribute('aria-activedescendant', item.id);
+
+                // single select: only one option can carry aria-selected
+                if (!this.isMultiple) {
+                    domEls(this.selectItems).forEach((el) => el.setAttribute('aria-selected', 'false'));
+                }
+                if (item) item.setAttribute('aria-selected', 'true');
             }
 
 

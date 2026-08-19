@@ -1,5 +1,9 @@
 {{-- format-ignore-start --}}
 @props([
+    // accessible name for the trigger. required in practice when the trigger is
+    // only an icon, which otherwise reaches a screen reader as nothing at all.
+    'triggerLabel' => '',
+
     'name' => defaultBladewindName('bw-dropmenu-'),
     'trigger' => config('bladewind.dropmenu.trigger', 'ellipsis-horizontal-icon'),
     'triggerCss' => '',
@@ -32,7 +36,13 @@
 <div class="relative inline-block leading-none text-left bw-dropmenu {{$name}}"
      data-position="{{ $position }}"
      tabindex="0">
-    <div class="bw-trigger cursor-pointer inline-block">
+    <div class="bw-trigger cursor-pointer inline-block"
+         role="button"
+         tabindex="0"
+         aria-haspopup="menu"
+         aria-expanded="false"
+         aria-controls="bw-dropmenu-{{ $name }}"
+         @if(!empty($triggerLabel)) aria-label="{{ strip_tags($triggerLabel) }}" @endif>
         @if(str_ends_with($trigger, '-icon'))
             <x-bladewind::icon
                     name="{{ trim(str_replace('-icon','', $trigger)) }}"
@@ -42,6 +52,9 @@
         @endif
     </div>
     <div class="opacity-0 hidden bw-dropmenu-items animate__animated animate__fadeIn animate__faster"
+         id="bw-dropmenu-{{ $name }}"
+         role="menu"
+         aria-hidden="true"
          data-open="0">
         <div @class([
                 'bw-items-list absolute mt-1 rounded-md bg-white dark:bg-dark-700',

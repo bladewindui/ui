@@ -68,7 +68,10 @@
 @endphp
 {{-- format-ignore-end --}}
 
-<div class="w-full bw-alert animate__animated animate__fadeIn rounded-md flex p-3  {{$colours[$shade] }} {{ $class }}">
+<div class="w-full bw-alert animate__animated animate__fadeIn rounded-md flex p-3  {{$colours[$shade] }} {{ $class }}"
+     {{-- errors and warnings interrupt; info and success are announced politely --}}
+     role="{{ in_array($type, ['error', 'warning']) ? 'alert' : 'status' }}"
+     aria-live="{{ in_array($type, ['error', 'warning']) ? 'assertive' : 'polite' }}">
     @if($showIcon)
         <div class="pt-[1px]">
             @if($icon !== '')
