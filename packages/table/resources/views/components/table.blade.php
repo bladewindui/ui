@@ -251,8 +251,8 @@
                     @endif
                 </tr>
                 </thead>
+                <tbody>
                 @if($totalRecords > 0 && $layout == 'auto')
-                    <tbody>
                     @if($canGroup)
                         @foreach($groupedData as $heading => $rows)
                             <tr class="no-hover">
@@ -302,7 +302,7 @@
                     @endif
                     @else
                         <tr>
-                            <td colspan="{{count($tableHeadings)}}" class="text-center">
+                            <td colspan="{{ count($tableHeadings) ?: 1 }}" class="text-center">
                                 @if($messageAsEmptyState)
                                     <x-bladewind::empty-state
                                             :message="$noDataMessage"
@@ -314,10 +314,10 @@
                                 @else
                                     {{ $noDataMessage }}
                                 @endif
-                                <script :nonce="$nonce">
+                                <x-bladewind::script :nonce="$nonce">
                                     changeCss('.{{$name}}', 'with-hover-effect', 'remove');
                                     changeCss('.{{$name}}', 'has-no-data');
-                                </script>
+                                </x-bladewind::script>
                             </td>
                         </tr>
                     @endif
