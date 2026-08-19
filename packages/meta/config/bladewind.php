@@ -492,6 +492,11 @@ return [
         'icon_position' => 'left',
         'has_shadow' => true,
         'has_border' => true,
+        // named tone for the note and the trend arrow. the colour map is owned
+        // by the library. neutral, positive, negative, warning, info
+        'tone' => 'neutral',
+        // for metrics where down is good — arrears, churn, cost per unit
+        'invert_direction' => false,
     ],
 
     /*
