@@ -31,34 +31,36 @@ class ButtonTest extends TestCase
     }
 
     /**
-     * BUG, pinned deliberately — do not "fix" this test, fix the component.
-     *
-     * index.blade.php builds the type attribute as a string and echoes it through
-     * {{ }}, so the quotes are escaped and the markup reads type=&quot;button&quot;.
-     * An HTML parser reads that as type='"button"' — quote characters included —
-     * which is not a valid button type keyword, so the missing-value default
-     * applies and the element behaves as type="submit". Every BladeWind button
-     * inside a form therefore submits it, and can_submit="false" cannot stop it.
-     *
-     * Left as-is because correcting it changes what existing markup renders, which
-     * the working agreement puts behind an explicit decision. These two tests
-     * record the broken output so the fix is a visible, deliberate diff.
+     * #600: the type attribute was built as a string and echoed through {{ }}, so
+     * the quotes were escaped and the markup read type=&quot;button&quot;. A parser
+     * saw the value '"button"' — quote characters included — which is not a valid
+     * button type keyword, so the missing-value default applied and every BladeWind
+     * button inside a form behaved as type="submit". It now goes through the
+     * attribute bag like everything else.
      */
     #[Test]
-    public function the_type_attribute_is_currently_emitted_with_escaped_quotes(): void
+    public function it_renders_a_real_type_button_attribute(): void
     {
         $html = $this->render('<x-bladewind::button>Go</x-bladewind::button>');
 
-        $this->assertStringContainsString('type=&quot;button&quot;', $html);
-        $this->assertAttribute($html, self::BUTTON, 'type', '"button"');
+        $this->assertStringNotContainsString('&quot;', $html);
+        $this->assertAttribute($html, self::BUTTON, 'type', 'button');
     }
 
     #[Test]
-    public function can_submit_switches_the_type_keyword(): void
+    public function can_submit_makes_it_a_real_submit_button(): void
     {
         $html = $this->render('<x-bladewind::button can_submit="true">Go</x-bladewind::button>');
 
-        $this->assertStringContainsString('type=&quot;submit&quot;', $html);
+        $this->assertAttribute($html, self::BUTTON, 'type', 'submit');
+    }
+
+    #[Test]
+    public function an_anchor_button_gets_no_type_attribute(): void
+    {
+        $html = $this->render('<x-bladewind::button tag="a">Go</x-bladewind::button>');
+
+        $this->assertAttribute($html, '//a', 'type', null);
     }
 
     #[Test]
