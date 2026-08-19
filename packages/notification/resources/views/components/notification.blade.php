@@ -19,7 +19,12 @@
     ];
 @endphp
 {{-- format-ignore-end --}}
-<div class="fixed flex flex-col-reverse {{ $position_css[str_replace('-', '_', $position)] }} z-50 bw-notification-container w-11/12"></div>
+<div class="fixed flex flex-col-reverse {{ $position_css[str_replace('-', '_', $position)] }} z-50 bw-notification-container w-11/12"
+     {{-- notifications are injected by javascript, so the live region has to be
+          on the container that is already in the document --}}
+     role="status"
+     aria-live="polite"
+     aria-atomic="false"></div>
 {{--sm:w-1/4 sm:w-96 md:w-96  w-11/12--}}
 <div class="bw-notification-icons hidden">
     <x-bladewind::modal-icon class="hidden {{$css}}"/>

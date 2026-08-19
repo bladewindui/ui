@@ -129,6 +129,17 @@
     if ($tag === 'button') {
         $merged_attributes = $merged_attributes->merge(['type' => $button_type]);
     }
+
+    // a circular or icon-only button has no text, so without this it reaches a
+    // screen reader as an unlabelled control. title is the attribute consumers
+    // already tend to set on these, so it is the best guess available. see #597
+    $has_visible_text = ! $circular && trim(strip_tags((string) $slot)) !== '';
+    if (! $has_visible_text && ! $attributes->has('aria-label') && ! $attributes->has('aria-labelledby')) {
+        $derived_label = trim(strip_tags((string) ($attributes->get('title') ?: $slot ?: '')));
+        if ($derived_label !== '') {
+            $merged_attributes = $merged_attributes->merge(['aria-label' => $derived_label]);
+        }
+    }
     $icon_css = ($circular) ? $icon_size['circular'][$size] : $icon_size[$size].' dark:text-white/80 ' . ((!$iconRight) ? '-ml-2! rtl:-mr-2! mr-2! rtl:ml-2!' : '-mr-2! rtl:-ml-2! ml-2! rtl:mr-2!');
 @endphp
 {{-- format-ignore-end --}}

@@ -10,7 +10,9 @@ class SelectTest extends TestCase
 {
     use RendersComponents;
 
-    private const ROOT = '//div[@role="combobox"]';
+    // the root carries the hooks; role="combobox" moved to the trigger in #597,
+    // which is the element that actually owns the expanded state
+    private const ROOT = '//div[contains(concat(" ", normalize-space(@class), " "), " bw-select ")]';
 
     private const DATA = '[{"label":"Ghana","value":"GH"},{"label":"Kenya","value":"KE"}]';
 

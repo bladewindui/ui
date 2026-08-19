@@ -171,7 +171,6 @@
     }
 </style>
 <div class="relative bw-select bw-select-{{$input_name}} @if($addClearing) mb-3 @endif @if($searchable) searchable @endif"
-     role="combobox"
      data-multiple="{{$multiple}}" data-required="{{$required?'true':'false'}}"
      data-type="{{ $data !== 'manual' ? 'dynamic' : 'manual'}}"
      @if(!empty($filter)) data-filter="{{ $filter}}" @endif
@@ -179,6 +178,13 @@
      @if(!empty($emptyStateFrom)) data-copy-empty-state-from="{{ $emptyStateFrom}}" @endif
      @if($data == 'manual' && $selectedValue != '') data-selected-value="{{implode(',',$selectedValue)}}" @endif>
     <div tabindex="0"
+         role="combobox"
+         aria-haspopup="listbox"
+         aria-expanded="false"
+         aria-controls="bw-select-list-{{$input_name}}"
+         @if(!empty($label)) aria-label="{{ strip_tags($label) }}" @elseif(!empty($placeholder)) aria-label="{{ strip_tags($placeholder) }}" @endif
+         @if($required) aria-required="true" @endif
+         @if($disabled) aria-disabled="true" @endif
          class="flex justify-between text-sm items-center rounded-md bg-white text-gray-600
          dark:text-dark-300 {{$sizes[$size]}} pl-4 pr-2 clickable focus:!outline-primary-500
          focus:!border-primary-500  dark:focus:!border-primary-500  dark:focus:!outline-primary-500
@@ -220,7 +226,10 @@
                     onblur="changeCss('.bw-select-{{$input_name}} .clickable', '!border-2, !outline-2, !-outline-offset-1, !outline-primary-500, !border-primary-500, dark:!border-primary-500, dark:!outline-primary-500','remove')"
                     suffixIsIcon="true"/>
         </div>
-        <div class="divide-y divide-gray-100 dark:divide-dark-600/80 bw-select-items mt-0">
+        <div class="divide-y divide-gray-100 dark:divide-dark-600/80 bw-select-items mt-0"
+             id="bw-select-list-{{$input_name}}"
+             role="listbox"
+             @if($multiple) aria-multiselectable="true" @endif>
             @if($data !== 'manual')
                 @foreach($data as $item)
                     <x-bladewind::select.item
