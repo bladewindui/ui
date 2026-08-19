@@ -19,7 +19,7 @@ class TableColumnsTest extends TestCase
         ['when' => 'tomorrow', 'amount' => 20],
     ];
 
-    private function table(string $columns, array $rows = null, string $attrs = ''): string
+    private function table(string $columns, ?array $rows = null, string $attrs = ''): string
     {
         return $this->render(
             '<x-bladewind::table name="tbl" :columns="'.$columns.'" :rows="$rows" '.$attrs.' />',

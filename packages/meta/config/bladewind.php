@@ -64,6 +64,40 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Selectable card component
+    |--------------------------------------------------------------------------
+    */
+
+    'selectable_card' => [
+        'compact' => false,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Sortable component
+    |--------------------------------------------------------------------------
+    */
+
+    'sortable' => [
+        // simple, swap, multidrag, clone
+        'type' => 'simple',
+        // drag animation in milliseconds
+        'animation' => 150,
+        // show a dedicated drag handle rather than dragging the whole row
+        'has_handle' => false,
+        'handle_icon' => 'bars-3',
+        // shared group name, so items can be dragged between lists
+        'group' => null,
+        // css selector for items that must not be draggable
+        'filter' => null,
+        'sortable' => true,
+        'swap' => false,
+        'multidrag' => false,
+        'clone' => false,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Alert component
     |--------------------------------------------------------------------------
     */
@@ -95,6 +129,9 @@ return [
         'dot_color' => 'primary',
         'dot_position' => 'bottom',
         'dotted' => false,
+        // background behind initials when there is no image. null lets the
+        // component pick one from the name
+        'bg_color' => null,
     ],
 
     /*
@@ -134,6 +171,15 @@ return [
     |--------------------------------------------------------------------------
     | Card component
     |--------------------------------------------------------------------------
+    |
+    | House style goes here rather than on every tag. A large app audited for
+    | this library carried has_border="false" has_shadow="true" on 790 separate
+    | cards; two lines below would have covered all of them.
+    |
+    | The shipped pairing is border on + shadow on. That stays the default
+    | because changing it would restyle every existing project on upgrade, but
+    | border off + shadow on is the combination most apps seem to land on.
+    |
     */
     'card' => [
         'compact' => false,
@@ -242,6 +288,8 @@ return [
         'validate' => false,
         'show_error_inline' => false,
         'stacked' => true,
+        'label' => 'Select a date',
+        'placeholder' => 'Select a date',
     ],
 
     /*
@@ -358,6 +406,10 @@ return [
         'transparent_suffix' => true,
         'clearable' => false,
         'size' => 'medium',
+        // money="true" formatting
+        'money_decimal_separator' => '.',
+        'money_thousands_separator' => ',',
+        'money_precision' => 2,
     ],
 
     /*
@@ -534,6 +586,7 @@ return [
         'tone' => 'neutral',
         // for metrics where down is good — arrears, churn, cost per unit
         'invert_direction' => false,
+        'radius' => 'small',
     ],
 
     /*
@@ -574,6 +627,11 @@ return [
     |--------------------------------------------------------------------------
     | Table component
     |--------------------------------------------------------------------------
+    |
+    | divider defaults to 'regular'. Apps that care about density almost always
+    | set 'thin' instead, and it is one line here rather than an attribute on
+    | every table.
+    |
     */
     'table' => [
         'striped' => false,
@@ -629,6 +687,9 @@ return [
         'shade' => 'faint',
         'color' => 'primary',
         'outline' => false,
+        'can_close' => false,
+        'add_clearing' => true,
+        'tiny' => false,
     ],
 
     /*
