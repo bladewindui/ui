@@ -110,4 +110,48 @@
         @apply text-gray-300! dark:text-dark-400/60! not-italic!
     }
 
+
+    /*
+     | Input groups — an input with a button or select attached to it.
+     |
+     | Exists because consumers were reaching for !rounded-l-none and friends to
+     | build this by hand; 40 occurrences of that one utility in the audited app.
+     | The group owns the corner surgery so the markup does not have to.
+     */
+    .bw-input-group {
+        @apply flex items-stretch w-full mb-4
+    }
+
+    .bw-input-group.gapped {
+        @apply gap-2
+    }
+
+    /* the wrapped controls bring their own bottom margin; the group owns it */
+    .bw-input-group > * {
+        @apply mb-0
+    }
+
+    .bw-input-group.attached :is(.bw-input, .bw-textarea, .bw-button, .bw-select div.clickable) {
+        @apply rounded-none
+    }
+
+    .bw-input-group.attached > :first-child,
+    .bw-input-group.attached > :first-child :is(.bw-input, .bw-textarea, .bw-button, .bw-select div.clickable) {
+        @apply rounded-l-md
+    }
+
+    .bw-input-group.attached > :last-child,
+    .bw-input-group.attached > :last-child :is(.bw-input, .bw-textarea, .bw-button, .bw-select div.clickable) {
+        @apply rounded-r-md
+    }
+
+    /* collapse the doubled 2px borders where two controls meet */
+    .bw-input-group.attached > :not(:first-child) {
+        @apply -ml-0.5
+    }
+
+    /* a control that is not meant to stretch, e.g. an attached button */
+    .bw-input-group .shrink-control {
+        @apply grow-0 shrink-0
+    }
 }

@@ -137,17 +137,37 @@ class HelpersTest extends TestCase
      * #603: this used to raise "Undefined array key" and take the page down through
      * a ViewException, because the `?? ''` was evaluated after the array access.
      * An unrecognised radius now yields no rounding class at all.
-     *
-     * Item 2 / #590 widens the named scale; until then `full` is not a value the
-     * shared helper knows, even though `button`'s own local map accepts it.
      */
     #[Test]
     public function get_radius_string_returns_nothing_for_an_unknown_radius(): void
     {
-        $this->assertSame('', getRadiusString('full'));
         $this->assertSame('', getRadiusString('nonsense'));
         $this->assertSame('', getRadiusString(''));
-        $this->assertSame('', getRadiusString('full', 'b'));
+        $this->assertSame('', getRadiusString('nonsense', 'b'));
+    }
+
+    /**
+     * #590 widened the named scale and settled the disagreement with `button`,
+     * which had its own map accepting `full` while the shared helper fatalled on it.
+     */
+    #[Test]
+    public function the_radius_scale_covers_the_values_consumers_reached_for(): void
+    {
+        $this->assertSame('rounded-sm', getRadiusString('tiny'));
+        $this->assertSame('rounded-4xl', getRadiusString('omg'));
+        $this->assertSame('rounded-full', getRadiusString('full'));
+    }
+
+    /**
+     * A value that already looks like a Tailwind radius utility passes straight
+     * through, so radius="rounded-l-none" needs no new named entry — that was the
+     * shape behind 40 of the `!` overrides in the audited app.
+     */
+    #[Test]
+    public function a_raw_radius_utility_passes_through_untouched(): void
+    {
+        $this->assertSame('rounded-l-none', getRadiusString('rounded-l-none'));
+        $this->assertSame('rounded-t-3xl', getRadiusString('rounded-t-3xl'));
     }
 
     #[Test]
