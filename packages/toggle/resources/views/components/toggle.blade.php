@@ -59,7 +59,8 @@
     @if($labelPosition == 'left' && !empty($label))
         <span class="pr-4 rtl:pl-4">{!!$label!!}</span>
     @endif
-    <input type="checkbox" @if($checked) checked @endif @if($disabled) disabled @endif onclick="{!!$onclick!!}"
+    <input type="checkbox" role="switch" aria-checked="{{ $checked ? 'true' : 'false' }}"
+           @if($checked) checked @endif @if($disabled) disabled @endif onclick="{!!$onclick!!}"
            name="{{$name}}"
            class="peer sr-only appearance-none {{$name}}"/>
     <span class="relative flex items-center flex-shrink-0 p-1 bg-gray-900/10 dark:bg-dark-800 rounded-full cursor-pointer

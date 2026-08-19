@@ -8,7 +8,7 @@
 {{-- format-ignore-end --}}
 
 <div class="bw-tab bw-tab-{{ $name }} {{$style}} {{$color}}">
-    <ul class="flex flex-wrap -mb-px {{$name}}-headings" data-name="{{$name}}">
+    <ul class="flex flex-wrap -mb-px {{$name}}-headings" data-name="{{$name}}" role="tablist">
         {{ $headings }}
     </ul>
     @if($style === 'simple')

@@ -27,7 +27,19 @@
     <x-bladewind::input type="hidden" name="{{$name}}" id="{{$name}}" class="rating-value-{{$name}}"
                         selected_value="{{$rating}}"/>
 @endif
-<div class="inline-flex items-center">
+<div class="inline-flex items-center"
+     @if($clickable)
+         role="slider"
+         tabindex="0"
+         aria-valuemin="0"
+         aria-valuemax="5"
+         aria-valuenow="{{ $rating }}"
+         aria-valuetext="{{ trans_choice('bladewind::bladewind.rating_value', (int) $rating, ['value' => $rating]) }}"
+         aria-label="{{ __('bladewind::bladewind.rating_label') }}"
+     @else
+         role="img"
+         aria-label="{{ trans_choice('bladewind::bladewind.rating_value', (int) $rating, ['value' => $rating]) }}"
+     @endif>
     @for ($x = 1; $x < 6; $x++)
         <div data-rating="{{$x}}"
              @class([
