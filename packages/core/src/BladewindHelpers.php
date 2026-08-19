@@ -105,11 +105,20 @@ function getRadiusString($radius, $prefix = null): string
 {
     $roundness = [
         'none' => 'rounded-none',
+        'tiny' => 'rounded-sm',
         'small' => 'rounded-lg',
         'medium' => 'rounded-xl',
         'large' => 'rounded-2xl',
         'xl' => 'rounded-3xl',
+        'omg' => 'rounded-4xl',
+        'full' => 'rounded-full',
     ];
+
+    // anything that already looks like a tailwind radius utility passes through,
+    // so radius="rounded-l-none" needs no new named entry. see #590
+    if (is_string($radius) && str_starts_with($radius, 'rounded')) {
+        return $radius;
+    }
     // an unrecognised radius yields no rounding class rather than a fatal. the
     // `?? ''` this replaces could never run: $roundness[$radius] was evaluated
     // first, so a typo in a radius prop raised "Undefined array key" and took the

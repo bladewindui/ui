@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'icon' => [
+    'icon' => ['size' => '', 
         'type' => 'outline',
         'dir' => '',
     ],

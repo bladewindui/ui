@@ -123,6 +123,9 @@ return [
         'has_border' => true,
         'has_hover' => false,
         'radius' => 'small',
+        // padding scale. none tiny small regular medium big large, or any
+        // tailwind padding utility. wins over compact and no_padding
+        'padding' => '',
     ],
 
     /*
@@ -317,6 +320,9 @@ return [
     'icon' => [
         'type' => 'outline',
         'dir' => '',
+        // default icon size. tiny small regular medium big large, or any
+        // tailwind size utility. a size- h- or w- class still wins over this
+        'size' => '',
     ],
 
     /*
@@ -333,6 +339,18 @@ return [
         'transparent_suffix' => true,
         'clearable' => false,
         'size' => 'medium',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Input group component
+    |--------------------------------------------------------------------------
+    */
+
+    'input_group' => [
+        // run attached controls flush against each other, removing the corners
+        // and doubled borders where they meet
+        'attached' => true,
     ],
 
     /*
