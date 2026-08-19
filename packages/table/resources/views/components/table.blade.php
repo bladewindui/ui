@@ -69,11 +69,36 @@
     'totalLabel' => config('bladewind.table.total_label', __("bladewind::bladewind.pagination_label")),
     'limit' => null,
     'layout' => 'auto',
+
+    // column model. an alternative to hand-rolling <th> and <tr>, and the place
+    // to hang alignment, width, sorting and formatting. slots stay as the escape
+    // hatch. accepts:
+    //   ['when', 'amount']                       keys only
+    //   ['when' => 'When', 'amount' => 'Amount'] key => label
+    //   [['key' => 'amount', 'label' => 'Amount', 'align' => 'right',
+    //     'width' => '160px', 'sortable' => true, 'class' => '',
+    //     'format' => fn($value, $row) => ...]]
+    'columns' => [],
+
+    // rows to render against those columns. an alias for :data
+    'rows' => null,
+
+    // rendered in place of the table body when there are no rows
+    'empty' => null,
     'groupHeadingCss' => '',
     'nonce' => config('bladewind.script.nonce', null),
 ])
 @php
     // reset variables for Laravel 8 support
+
+    // the column model feeds the existing data machinery — search json,
+    // pagination, totals — and only changes how the table is rendered
+    $columns = (!is_array($columns)) ? (json_decode(str_replace('&quot;', '"', $columns), true) ?: []) : $columns;
+    $has_columns = !empty($columns);
+    if ($has_columns && !is_null($rows)) {
+        $data = $rows;
+    }
+
     $hasShadow = parseBladewindVariable($hasShadow);
     $hasHover = parseBladewindVariable($hasHover);
     $striped = parseBladewindVariable($striped);
@@ -108,6 +133,45 @@
 
     if($checkable) $selectable = true;
 
+    if ($has_columns) {
+        $normalised_columns = [];
+
+        foreach ($columns as $key => $column) {
+            if (is_string($column)) {
+                // ['when', 'amount'] or ['when' => 'When']
+                $column = is_string($key) ? ['key' => $key, 'label' => $column] : ['key' => $column];
+            } elseif (is_string($key) && !isset($column['key'])) {
+                $column['key'] = $key;
+            }
+
+            if (empty($column['key'])) {
+                continue;
+            }
+
+            $align = $column['align'] ?? 'left';
+            $normalised_columns[] = [
+                'key' => $column['key'],
+                'label' => $column['label'] ?? str_replace('_', ' ', $column['key']),
+                'align' => in_array($align, ['left', 'center', 'right']) ? $align : 'left',
+                'width' => $column['width'] ?? null,
+                'sortable' => (bool) ($column['sortable'] ?? false),
+                'format' => $column['format'] ?? null,
+                'class' => $column['class'] ?? '',
+            ];
+        }
+
+        $columns = $normalised_columns;
+
+        // sorting reuses the existing client-side machinery
+        $sortableColumns = array_values(array_map(
+            fn($c) => $c['key'],
+            array_filter($columns, fn($c) => $c['sortable'])
+        ));
+        if (!empty($sortableColumns)) $sortable = true;
+
+        $column_alignment = ['left' => 'text-left', 'center' => 'text-center', 'right' => 'text-right'];
+    }
+
     if (!is_null($data)) {
         $data = (!is_array($data)) ? json_decode(str_replace('&quot;', '"', $data), true) : $data;
 
@@ -125,7 +189,10 @@
         }
 
         if($sortable){
-            $sortableColumns = empty($sortableColumns) ? $tableHeadings : explode(',', str_replace(' ','', $sortableColumns));
+            // the column model hands this over as an array already
+            $sortableColumns = empty($sortableColumns)
+                ? $tableHeadings
+                : (is_array($sortableColumns) ? $sortableColumns : explode(',', str_replace(' ','', $sortableColumns)));
         }
 
         if(!empty($groupby) && in_array($groupby, $tableHeadings)) {
@@ -207,7 +274,9 @@
             'checkable' => $checkable,
             'transparent' => $transparent
             ])>
-            @if(is_null($data) || $layout == 'custom')
+            @if($has_columns)
+                @include('bladewind::components.table-columns')
+            @elseif(is_null($data) || $layout == 'custom')
                 @if(!empty($header))
                     <thead>
                     <tr>{{ $header }}</tr>
