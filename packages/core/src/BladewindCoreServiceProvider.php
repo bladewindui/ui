@@ -10,7 +10,7 @@ class BladewindCoreServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        $this->mergeConfigFrom(__DIR__.'/../config/bladewind.php', 'bladewind');
     }
 
     public function boot(): void

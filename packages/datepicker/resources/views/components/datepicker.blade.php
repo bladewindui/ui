@@ -40,6 +40,14 @@
     'maxDate' => '',
 
     'nonce' => config('bladewind.script.nonce', null),
+    // repopulate this field from old() after a validation redirect
+    'fillFromOld' => config('bladewind.forms.fill_from_old', false),
+
+    // give the field its error state and render $errors->first() beneath it
+    'showValidationError' => config('bladewind.forms.show_validation_error', false),
+
+    // which error bag to read; null uses Laravel's default
+    'errorBag' => config('bladewind.forms.error_bag', null),
 ])
 @php
     $name = parseBladewindName($name);
@@ -62,6 +70,9 @@
             selected_value="{{$selectedValue}}"
             suffix_icon_div_css="rtl:!right-[unset] rtl:!left-0"
             suffix_icon_css="text-slate-300"
+            :fill_from_old="$fillFromOld"
+            :show_validation_error="$showValidationError"
+            :error_bag="$errorBag"
             required="{{$required}}"/>
 </div>
 @once

@@ -91,6 +91,12 @@
     'deleteHeaders' => null,
 
     'nonce' => config('bladewind.script.nonce', null),
+    // give the field its error state and render $errors->first() beneath it
+    // note there is no fill_from_old here: a file input cannot be repopulated
+    'showValidationError' => config('bladewind.forms.show_validation_error', false),
+
+    // which error bag to read; null uses Laravel's default
+    'errorBag' => config('bladewind.forms.error_bag', null),
 ])
 @php
     $name = parseBladewindName($name);
@@ -165,6 +171,9 @@
 </div>
 
 <input type="file" name="{{$name}}" accept="{{$acceptedFileTypes}}" @if($required) required="required" @endif />
+@if(bladewindValidationError($name, parseBladewindVariable($showValidationError), $errorBag) !== '')
+    <div class="text-red-500 text-xs p-1 {{ $name }}-validation-error">{{ bladewindValidationError($name, true, $errorBag) }}</div>
+@endif
 @if($base64)<div class="{{$cleanName}}-b64-container hidden"></div>@endif
 
 <x-bladewind::script :nonce="$nonce">
