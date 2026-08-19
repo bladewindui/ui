@@ -45,6 +45,18 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      # the compiled-CSS assertions read the bundle, so build it rather than
+      # trusting whatever happens to be committed
+      - name: Build CSS bundle
+        run: npm run build
+
       - name: Run test suite
         run: vendor/bin/phpunit
 
@@ -63,6 +75,17 @@ jobs:
       - run: npm ci
 
       - run: npm run build
+
+      # the committed bundle is what consumers actually load. b110a62 changed the
+      # toggle and dropmenu templates without rebuilding it, so both fixes shipped
+      # inert — the templates emitted classes the published stylesheet did not define.
+      - name: Fail if the committed bundle is out of date
+        run: |
+          if ! git diff --quiet -- packages/core/public/css/bladewind-ui.min.css; then
+            echo "::error::bladewind-ui.min.css is stale. Run 'npm run build' and commit the result."
+            git diff --stat -- packages/core/public/css/bladewind-ui.min.css
+            exit 1
+          fi
 
       - name: Upload compiled CSS
         uses: actions/upload-artifact@v4
