@@ -34,7 +34,7 @@
         'flex-row-reverse justify-between' => ($iconRight && !empty($icon)),
         'hover:rounded-md hover:dark:text-dark-100 hover:bg-slate-200/75 hover:dark:bg-dark-800!' => (!$header && $hover),
         'cursor-default! border-b border-b-slate-200/75 dark:border-b-gray-100/10! mb-1' => $header,
-]) {{$attributes->merge(['data-item' => "true"])}}>
+]) {{$attributes->exceptPropAliases(get_defined_vars())->merge(['data-item' => "true"])}}>
     @if(!empty($icon) && !$header)
         <x-bladewind::icon
                 name="{!! $icon !!}"

@@ -87,7 +87,7 @@
     <x-bladewind::script :nonce="$nonce" src="{{ asset('vendor/bladewind/js/sortable.min.js') }}"></x-bladewind::script>
 @endonce
 
-<ul {{ $attributes->merge(['class' => "bw-sortable-list {$name}-list space-y-2".($hasHandle ? ' bw-has-handle' : '')." {$class}"]) }}
+<ul {{ $attributes->exceptPropAliases(get_defined_vars())->merge(['class' => "bw-sortable-list {$name}-list space-y-2".($hasHandle ? ' bw-has-handle' : '')." {$class}"]) }}
     data-sortable-name="{{ $name }}">
     {{ $slot }}
 </ul>

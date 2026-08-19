@@ -29,7 +29,7 @@
 @endphp
 {{-- format-ignore-end --}}
 
-<div {{ $attributes->merge(['class' => "bw-bell relative inline-block"]) }}>
+<div {{ $attributes->exceptPropAliases(get_defined_vars())->merge(['class' => "bw-bell relative inline-block"]) }}>
     <x-bladewind::icon name="bell" class="{{ $sizing[$size]['bell'] }} cursor-pointer {{$invert_css}}"/>
     @if($showDot)
         <div class="{{ $sizing[$size]['dot'] }} rounded-full bg-{{ $colour}}-500 absolute top-0 ltr:right-[2.5px] rtl:left-[2.5px] @if($animateDot) animate-ping @endif"></div>

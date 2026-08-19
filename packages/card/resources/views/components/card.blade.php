@@ -68,7 +68,7 @@
 @endphp
 {{-- format-ignore-end --}}
 
-<div {{ $attributes->merge([ 'class' => $classes]) }} @if($url) onclick="{!! $redirect !!}" @endif>
+<div {{ $attributes->exceptPropAliases(get_defined_vars())->merge([ 'class' => $classes]) }} @if($url) onclick="{!! $redirect !!}" @endif>
     @if($header)
         <div class="border-b border-gray-100/30 dark:border-dark-600/60">
             {{ $header }}

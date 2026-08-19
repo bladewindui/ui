@@ -41,7 +41,7 @@
         <textarea hidden name="{{ $name }}" id="{{ $name }}-hidden" class="size-0"></textarea>
     @else
         <textarea
-                {{ $attributes->merge(['class' => "bw-input peer $is_required $name $placeholder_color focus:border-primary-500"]) }}
+                {{ $attributes->exceptPropAliases(get_defined_vars())->merge(['class' => "bw-input peer $is_required $name $placeholder_color focus:border-primary-500"]) }}
                 id="{{ $name }}"
                 name="{{ $name }}"
                 rows="{{ $rows }}"

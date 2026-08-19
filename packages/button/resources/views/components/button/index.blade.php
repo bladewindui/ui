@@ -121,7 +121,7 @@
     $has_icon_css = (!empty($icon)) ? ' has-icon ' : '';
     $tag = ($tag !== 'a' && $tag !== 'button') ? 'button' : $tag;
     $base_button_css = ($circular) ? 'bw-button-circle' : 'bw-button '.(($uppercasing) ? 'uppercase ' : '');
-    $merged_attributes = $attributes->merge(['class' => "$base_button_css $size $type $name $primary_colour_css $disabled_css $radius_css $outline_css $has_icon_css"]);
+    $merged_attributes = $attributes->exceptPropAliases(get_defined_vars())->merge(['class' => "$base_button_css $size $type $name $primary_colour_css $disabled_css $radius_css $outline_css $has_icon_css"]);
     // the type has to go through the attribute bag. building it as a string and
     // echoing it through {{ }} escaped the quotes, so the markup read
     // type=&quot;button&quot; and a parser saw the value '"button"' — not a valid
