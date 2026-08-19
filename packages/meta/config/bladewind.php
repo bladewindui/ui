@@ -17,6 +17,34 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Laravel form-state integration
+    |--------------------------------------------------------------------------
+    |
+    | Shared by input, textarea, select, checkbox, radio, datepicker and
+    | filepicker. Both switches default to false so that upgrading changes
+    | nothing about what your existing markup renders — an app already printing
+    | its own validation messages would otherwise print every one of them twice.
+    |
+    | Turn them on here once and every form component starts speaking Laravel,
+    | or set the matching prop on a single field to override this.
+    |
+    | fill_from_old         repopulate a field from old() after a validation
+    |                       redirect. filepicker is exempt: a file input cannot
+    |                       be repopulated
+    | show_validation_error give the field its error state and render
+    |                       $errors->first() beneath it
+    | error_bag             which bag to read; null uses Laravel's default
+    |
+    */
+
+    'forms' => [
+        'fill_from_old' => false,
+        'show_validation_error' => false,
+        'error_bag' => null,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Alert component
     |--------------------------------------------------------------------------
     */

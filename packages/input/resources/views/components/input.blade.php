@@ -122,6 +122,15 @@
     // number of decimal places to allow when money=true. 0 disables decimals
     'moneyPrecision' => config('bladewind.input.money_precision', 2),
 
+    // repopulate this field from old() after a validation redirect
+    'fillFromOld' => config('bladewind.forms.fill_from_old', false),
+
+    // give the field its error state and render $errors->first() beneath it
+    'showValidationError' => config('bladewind.forms.show_validation_error', false),
+
+    // which error bag to read; null uses Laravel's default
+    'errorBag' => config('bladewind.forms.error_bag', null),
+
     'nonce' => config('bladewind.script.nonce', null),
 ])
 
@@ -171,6 +180,13 @@
         $suffixIconCss = 'hidden cursor-pointer dark:!bg-dark-900/60 dark:hover:!bg-dark-900 !p-0.5 !rounded-full bg-gray-400 !stroke-2 hover:bg-gray-600 text-white';
     }
 
+    $fillFromOld = parseBladewindVariable($fillFromOld);
+    $showValidationError = parseBladewindVariable($showValidationError);
+
+    $selectedValue = bladewindOldInput($name, $selectedValue, $fillFromOld);
+    $validation_error = bladewindValidationError($name, $showValidationError, $errorBag);
+    $has_error_css = ($validation_error !== '') ? 'has-error' : '';
+
     if($attributes->has('readonly') || $attributes->has('disabled')) {
         if($attributes->get('readonly') == 'false') $attributes = $attributes->except('readonly');
         if($attributes->get('disabled') == 'false') $attributes = $attributes->except('disabled');
@@ -180,7 +196,7 @@
 
 <div class="relative w-full dv-{{$name}} @if($add_clearing) mb-4 @endif">
     <input
-            {{ $attributes->exceptPropAliases(get_defined_vars())->class(["bw-input peer $is_required $name $placeholder_color $size focus:outline-primary-500 focus:border-primary-500"])->merge([
+            {{ $attributes->exceptPropAliases(get_defined_vars())->class(["bw-input peer $is_required $name $placeholder_color $size $has_error_css focus:outline-primary-500 focus:border-primary-500"])->merge([
                 'type' => $type,
                 'id' => $name,
                 'name' => $name,
@@ -210,6 +226,9 @@
     />
     @if(!empty($errorMessage))
         <div class="text-red-500 text-xs p-1 {{ $name }}-inline-error hidden">{{$errorMessage}}</div>
+    @endif
+    @if($validation_error !== '')
+        <div class="text-red-500 text-xs p-1 {{ $name }}-validation-error">{{ $validation_error }}</div>
     @endif
     @if(!empty($label))
         <label for="{{ $name }}" class="form-label {{$size}}" onclick="domEl('.{{$name}}').focus()">{!! $label !!}

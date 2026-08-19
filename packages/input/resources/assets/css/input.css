@@ -77,6 +77,11 @@
         @apply bg-gray-100/60 opacity-95 dark:opacity-40 dark:bg-dark-300/5 select-none cursor-not-allowed
     }
 
+    .bw-select div.clickable.enabled.has-error,
+    .bw-select div.clickable.enabled.has-error:hover {
+        @apply border-red-500
+    }
+
     .bw-select div.clickable.enabled {
         @apply cursor-pointer border-2 dark:bg-transparent border-gray-200 hover:border-gray-300 dark:border-dark-600/50 dark:hover:border-dark-500/40 focus:-outline-offset-1 focus:outline-2
     }

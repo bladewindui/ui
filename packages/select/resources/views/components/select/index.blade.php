@@ -110,6 +110,14 @@
 
     'emptyStateFrom' => null,
     'meta' => null,
+    // repopulate this field from old() after a validation redirect
+    'fillFromOld' => config('bladewind.forms.fill_from_old', false),
+
+    // give the field its error state and render $errors->first() beneath it
+    'showValidationError' => config('bladewind.forms.show_validation_error', false),
+
+    // which error bag to read; null uses Laravel's default
+    'errorBag' => config('bladewind.forms.error_bag', null),
     'nonce' => config('bladewind.script.nonce', null),
 
 ])
@@ -127,6 +135,14 @@
 
     $input_name = $name;
     $filter = parseBladewindName($filter);
+
+    $fillFromOld = parseBladewindVariable($fillFromOld);
+    $showValidationError = parseBladewindVariable($showValidationError);
+    // old() may hand back an array for a multiple select
+    $old_value = bladewindOldInput($name, $selectedValue, $fillFromOld);
+    $selectedValue = is_array($old_value) ? implode(',', $old_value) : $old_value;
+    $validation_error = bladewindValidationError($name, $showValidationError, $errorBag);
+
     $selectedValue = ($selectedValue != '') ? explode(',', str_replace(', ', ',', $selectedValue)) : [];
 
     if ($data !== 'manual') {
@@ -166,7 +182,8 @@
          class="flex justify-between text-sm items-center rounded-md bg-white text-gray-600
          dark:text-dark-300 {{$sizes[$size]}} pl-4 pr-2 clickable focus:!outline-primary-500
          focus:!border-primary-500  dark:focus:!border-primary-500  dark:focus:!outline-primary-500
-         @if($disabled) disabled @elseif($readonly) readonly @else enabled @endif">
+         @if($disabled) disabled @elseif($readonly) readonly @else enabled @endif
+         @if($validation_error !== '') has-error @endif">
         <x-bladewind::icon name="chevron-left" class="!-ml-3 hidden scroll-left"/>
         <div class="text-left placeholder grow-0 text-blue-900/40 dark:text-dark-400/60">
             @if(!empty($label))
@@ -232,6 +249,9 @@
             @endif
         </div>
     </div>
+    @if($validation_error !== '')
+        <div class="text-red-500 text-xs p-1 {{ $input_name }}-validation-error">{{ $validation_error }}</div>
+    @endif
     <input type="hidden" name="{{ ($dataSerializeAs !== '') ? $dataSerializeAs : $input_name }}"
            class="bw-{{$input_name}} @if($required) required @endif"
            @if($required) data-parent="bw-select-{{$input_name}}" @endif
