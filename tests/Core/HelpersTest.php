@@ -48,15 +48,12 @@ class HelpersTest extends TestCase
     }
 
     /**
-     * BUG, pinned deliberately — do not "fix" this test, fix the helper.
-     *
-     * The 'string' branch uses FILTER_SANITIZE_STRING, deprecated since PHP 8.1
-     * and slated for removal. Every render that passes parse_as='string' — table's
-     * searchField does on every table — emits a deprecation notice, which is noise
-     * in a consumer's logs today and a fatal on the PHP that drops the constant.
+     * Was #603's sibling: this branch used FILTER_SANITIZE_STRING, deprecated in
+     * PHP 8.1, and table hit it on every render through searchField. Now asserts
+     * the deprecation is gone and the behaviour that mattered is kept.
      */
     #[Test]
-    public function parse_bladewind_variable_string_mode_currently_uses_a_deprecated_filter(): void
+    public function parse_bladewind_variable_string_mode_raises_no_deprecation(): void
     {
         $deprecations = [];
         set_error_handler(
@@ -74,7 +71,16 @@ class HelpersTest extends TestCase
             restore_error_handler();
         }
 
-        $this->assertContains('Constant FILTER_SANITIZE_STRING is deprecated', $deprecations);
+        $this->assertSame([], $deprecations);
+    }
+
+    #[Test]
+    public function parse_bladewind_variable_string_mode_still_strips_tags(): void
+    {
+        $this->assertSame('name', parseBladewindVariable('<b>name</b>', 'string'));
+        $this->assertSame('', parseBladewindVariable(null, 'string'));
+        $this->assertSame('', parseBladewindVariable(false, 'string'));
+        $this->assertSame('1', parseBladewindVariable(true, 'string'));
     }
 
     #[Test]
@@ -128,20 +134,20 @@ class HelpersTest extends TestCase
     }
 
     /**
-     * BUG, pinned deliberately — do not "fix" this test, fix the helper.
+     * #603: this used to raise "Undefined array key" and take the page down through
+     * a ViewException, because the `?? ''` was evaluated after the array access.
+     * An unrecognised radius now yields no rounding class at all.
      *
-     * getRadiusString() indexes $roundness directly and only then applies `?? ''`,
-     * so the coalesce can never run: an unrecognised radius raises "Undefined array
-     * key" rather than falling back. Inside a Blade view that surfaces as a
-     * ViewException, so a typo in a radius prop takes the whole page down. The
-     * named scale in improvements.md item 2 needs to decide what unknown means.
+     * Item 2 / #590 widens the named scale; until then `full` is not a value the
+     * shared helper knows, even though `button`'s own local map accepts it.
      */
     #[Test]
-    public function get_radius_string_currently_errors_on_an_unknown_radius(): void
+    public function get_radius_string_returns_nothing_for_an_unknown_radius(): void
     {
-        $this->expectException(\ErrorException::class);
-
-        getRadiusString('full');
+        $this->assertSame('', getRadiusString('full'));
+        $this->assertSame('', getRadiusString('nonsense'));
+        $this->assertSame('', getRadiusString(''));
+        $this->assertSame('', getRadiusString('full', 'b'));
     }
 
     #[Test]
