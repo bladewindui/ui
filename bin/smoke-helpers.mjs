@@ -48,6 +48,7 @@ const document = {
 }
 
 const Observer = function () { this.observe = () => {}; this.disconnect = () => {} }
+window.innerHeight = 800
 const context = createContext({
   window, document, console, setTimeout, clearTimeout,
   MutationObserver: Observer, IntersectionObserver: Observer, ResizeObserver: Observer,
@@ -74,4 +75,19 @@ if (missing.length) {
   process.exit(1)
 }
 
+// select.js layers onto the same globals, so load it in the same context and
+// make sure it survives too. Its popup positioning (#591) lives here.
+try {
+  runInContext(readFileSync(resolve(here, '../packages/core/public/js/select.js'), 'utf8'), context)
+} catch (error) {
+  console.error(`smoke-helpers: select.js threw while loading — ${error.message}`)
+  process.exit(1)
+}
+
+if (typeof window.BladewindSelect !== 'function') {
+  console.error('smoke-helpers: BladewindSelect is not defined on window')
+  process.exit(1)
+}
+
 console.log(`smoke-helpers: helpers.js loads clean and exports ${required.length} checked helpers`)
+console.log('smoke-helpers: select.js loads clean and defines BladewindSelect')
