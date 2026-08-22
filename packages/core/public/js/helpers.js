@@ -37,8 +37,11 @@ const domEls = (element, scope = null) => {
         }
         return scope.querySelectorAll(element);
     }
-    const elements = document.querySelectorAll(element);
-    return elements.length ? elements : false;
+    // an empty NodeList, not false. returning false meant every
+    // `domEls(...).forEach(...)` in the library — 23 of them — was a TypeError
+    // waiting for a page where the selector happened to match nothing, and one of
+    // those runs at load time. See #595.
+    return document.querySelectorAll(element);
 };
 
 /**
@@ -987,3 +990,73 @@ const setDatepickerValue = (elName, date) => {
     }
     input._x_model.set(date);
 };
+
+/*
+ |----------------------------------------------------------------------------
+ | Global exports
+ |----------------------------------------------------------------------------
+ |
+ | Everything above is declared with `const` at the top level of a classic
+ | script, which creates a script-scoped binding rather than a property of
+ | window. Inline handlers in component markup resolve against window, and so
+ | does anything a consumer writes in their own <script> block — which is why
+ | every project using modals ended up copying the same shim into its layout:
+ |
+ |     window.showModal = showModal;
+ |     window.hideModal = hideModal;
+ |     …
+ |
+ | Assigning them here makes that shim unnecessary. See issue #595.
+ */
+Object.assign(window, {
+    domEl,
+    dom_el,
+    domEls,
+    dom_els,
+    isEmpty,
+    isNumeric,
+    hide,
+    unhide,
+    clearErrors,
+    changeCss,
+    validateForm,
+    isNumberKey,
+    callUserFunction,
+    serialize,
+    stringContains,
+    changeCssForDomArray,
+    animateCss,
+    animateCSS,
+    showModal,
+    trapFocusInModal,
+    hideModal,
+    showButtonSpinner,
+    hideButtonSpinner,
+    showModalActionButtons,
+    hideModalActionButtons,
+    show,
+    addToStorage,
+    getFromStorage,
+    removeFromStorage,
+    goToTab,
+    syncTabAccessibility,
+    enableTabKeyboardNavigation,
+    positionTabActiveLine,
+    initialiseTabActiveLines,
+    getPrefixSuffixOffsetWidth,
+    positionPrefix,
+    positionSuffix,
+    togglePassword,
+    partition,
+    filterTable,
+    filterTableDebounced,
+    stripComma,
+    selectTag,
+    highlightSelectedTags,
+    compareDates,
+    checkMinMax,
+    makeClearable,
+    convertToBase64,
+    allowedFileSize,
+    setDatepickerValue,
+});

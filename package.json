@@ -5,7 +5,8 @@
         "dev": "vite",
         "build": "vite build && node bin/harden-css.mjs",
         "watch": "vite build --watch",
-        "preview": "vite preview"
+        "preview": "vite preview",
+        "test:js": "node bin/smoke-helpers.mjs"
     },
     "devDependencies": {
         "@tailwindcss/forms": "^0.5.11",
