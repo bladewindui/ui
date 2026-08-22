@@ -57,6 +57,10 @@ jobs:
       - name: Build CSS bundle
         run: npm run build
 
+      # helpers.js has to survive loading on a page with no components on it
+      - name: Smoke-test the JS helpers
+        run: npm run test:js
+
       - name: Run test suite
         run: vendor/bin/phpunit
 

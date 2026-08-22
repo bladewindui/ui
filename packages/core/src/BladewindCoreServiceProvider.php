@@ -2,6 +2,7 @@
 
 namespace Mkocansey\Bladewind\Core;
 
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Illuminate\View\ComponentAttributeBag;
@@ -16,6 +17,7 @@ class BladewindCoreServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->registerAttributeBagMacros();
+        $this->registerBladeDirectives();
 
         $this->loadTranslationsFrom(__DIR__.'/../lang', 'bladewind');
 
@@ -83,6 +85,24 @@ class BladewindCoreServiceProvider extends ServiceProvider
             }
 
             return $aliases === [] ? $this : $this->except($aliases);
+        });
+    }
+
+    /**
+     * @bladewindScripts — emit the script tags a page needs.
+     *
+     * Replaces the hand-picked <script src="…"> list every consuming layout was
+     * keeping in step by hand, plus the window shim that followed it. See #595.
+     *
+     *     @bladewindScripts
+     *     @bladewindScripts('select', 'dropmenu')
+     */
+    private function registerBladeDirectives(): void
+    {
+        Blade::directive('bladewindScripts', function (string $expression): string {
+            $arguments = trim($expression) === '' ? '[]' : '['.$expression.']';
+
+            return "<?php echo \Mkocansey\Bladewind\Core\BladewindScripts::tags({$arguments}); ?>";
         });
     }
 }
