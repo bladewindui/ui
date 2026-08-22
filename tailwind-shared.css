@@ -1,0 +1,59 @@
+/* BladewindUI — everything the bundle contains apart from the Tailwind entry.
+ *
+ * Imported by both build entries:
+ *   tailwind.css              full bundle, includes Preflight
+ *   tailwind-no-preflight.css same bundle without the global reset
+ *
+ * Keeping it in one file means the two outputs cannot drift.
+ */
+
+@variant dark (&:where(.dark, .dark *));
+
+@plugin "@tailwindcss/forms";
+
+/* ── Per-component CSS ─────────────────────────────────────────────────────── */
+@import "./packages/core/public/css/animate.min.css";
+@import "./packages/button/resources/assets/css/button.css";
+@import "./packages/card/resources/assets/css/card.css";
+@import "./packages/input/resources/assets/css/input.css";
+@import "./packages/datepicker/resources/assets/css/datepicker.css";
+@import "./packages/slider/resources/assets/css/slider.css";
+@import "./packages/table/resources/assets/css/table.css";
+@import "./packages/tab/resources/assets/css/tabs.css";
+@import "./packages/dropmenu/resources/assets/css/popup.min.css";
+@import "./packages/theme-switcher/resources/assets/css/side-nav.css";
+@import "./packages/progress/resources/assets/css/progress.css";
+@import "./packages/tooltip/resources/assets/css/tooltip.css";
+@import "./packages/popover/resources/assets/css/popover.css";
+@import "./packages/core/resources/assets/css/core.css";
+
+/* ── Theme ─────────────────────────────────────────────────────────────────── */
+@theme {
+    --color-primary-50: oklch(97% 0.01 250);
+    --color-primary-100: oklch(94% 0.03 250);
+    --color-primary-200: oklch(88% 0.06 250);
+    --color-primary-300: oklch(79% 0.10 250);
+    --color-primary-400: oklch(68% 0.14 250);
+    --color-primary-500: oklch(56% 0.18 250);
+    --color-primary-600: oklch(47% 0.20 250);
+    --color-primary-700: oklch(40% 0.19 250);
+    --color-primary-800: oklch(33% 0.15 250);
+    --color-primary-900: oklch(27% 0.10 250);
+    --color-primary-950: oklch(20% 0.07 250);
+
+    --color-dark-100: #f0f1f2;
+    --color-dark-200: #d2d4d7;
+    --color-dark-300: #a7aaad;
+    --color-dark-400: #6c7075;
+    --color-dark-500: #4a4e53;
+    --color-dark-600: #33373c;
+    --color-dark-700: #262a2f;
+    --color-dark-800: #1C1F24;
+    --color-dark-900: #101114;
+    --color-dark-950: #0a0b0d;
+}
+
+/* ── Content scanning ──────────────────────────────────────────────────────── */
+@source "./packages/**/resources/views/**/*.blade.php";
+@source "./packages/**/public/**/*.js";
+@source not "./packages/core/public/css/**";

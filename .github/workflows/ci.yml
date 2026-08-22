@@ -81,9 +81,9 @@ jobs:
       # inert — the templates emitted classes the published stylesheet did not define.
       - name: Fail if the committed bundle is out of date
         run: |
-          if ! git diff --quiet -- packages/core/public/css/bladewind-ui.min.css; then
-            echo "::error::bladewind-ui.min.css is stale. Run 'npm run build' and commit the result."
-            git diff --stat -- packages/core/public/css/bladewind-ui.min.css
+          if ! git diff --quiet -- packages/core/public/css/; then
+            echo "::error::A compiled stylesheet is stale. Run 'npm run build' and commit the result."
+            git diff --stat -- packages/core/public/css/
             exit 1
           fi
 
@@ -91,5 +91,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bladewind-ui-css
-          path: packages/core/public/css/bladewind-ui.min.css
+          path: |
+            packages/core/public/css/bladewind-ui.min.css
+            packages/core/public/css/bladewind-ui-no-preflight.min.css
           retention-days: 7

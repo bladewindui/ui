@@ -284,6 +284,74 @@ class CompiledCssTest extends TestCase
      * SortableJS inline styles, published standalone) and the vendored popup
      * stylesheet all keep theirs.
      */
+    /**
+     * #589 — the hardening pass. Every var() a .bw-* rule reads now carries a
+     * literal fallback taken from the bundle's own theme, so a host app that
+     * trims the palette or the spacing scale (`@theme { --color-*: initial }` is
+     * the documented v4 way) can no longer leave a component with no value.
+     *
+     * Verified in a browser: an un-hardened bundle under such a theme loses its
+     * border colour and its padding-left entirely; a hardened one holds.
+     */
+    #[Test]
+    public function component_rules_read_tokens_with_a_literal_fallback(): void
+    {
+        $unfallbacked = $this->css->unfallbackedTokensInComponentRules();
+
+        // the two gradient position tokens are deliberately valueless — Tailwind
+        // sets them per-utility, and there is no sensible literal to stand in
+        $this->assertSame(
+            ['--tw-gradient-position', '--tw-gradient-stops'],
+            array_keys($unfallbacked),
+            'Unexpected unfallbacked token references. Run `npm run build`, which applies '
+            .'bin/harden-css.mjs, and commit the result.'
+        );
+    }
+
+    /**
+     * The Preflight-free variant exists for apps that compile their own Tailwind
+     * and should not have the document reset twice by two stylesheets.
+     */
+    #[Test]
+    public function a_preflight_free_variant_ships_alongside_the_full_bundle(): void
+    {
+        $variant = dirname(CompiledStylesheet::PATH).'/bladewind-ui-no-preflight.min.css';
+
+        $this->assertFileExists($variant);
+
+        $css = new CompiledStylesheet(file_get_contents($variant));
+
+        // only Preflight goes. the forms plugin's base styles stay, because the
+        // components are built on top of them and would look wrong without.
+        $this->assertStringNotContainsString('*,:after,:before,::backdrop{', $css->raw());
+        $this->assertStringNotContainsString('border:0 solid', $css->layer('base'));
+        $this->assertStringContainsString('input:where([type=checkbox])', $css->layer('base'));
+        $this->assertLessThan(
+            strlen($this->css->layer('base')),
+            strlen($css->layer('base')),
+            'The variant should have a smaller base layer than the full bundle'
+        );
+    }
+
+    #[Test]
+    public function the_two_bundles_carry_identical_component_rules(): void
+    {
+        $variant = new CompiledStylesheet(
+            file_get_contents(dirname(CompiledStylesheet::PATH).'/bladewind-ui-no-preflight.min.css')
+        );
+
+        $normalise = fn (array $rules): array => array_map(
+            fn (array $r): string => $r['selector'].'{'.$r['declarations'].'}',
+            $rules
+        );
+
+        $this->assertSame(
+            $normalise($this->css->componentRules()),
+            $normalise($variant->componentRules()),
+            'The two bundles have drifted. They are built from one shared entry so that cannot happen.'
+        );
+    }
+
     #[Test]
     public function no_component_rule_uses_important(): void
     {

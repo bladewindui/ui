@@ -31,11 +31,18 @@ export default defineConfig({
         rollupOptions: {
             input: {
                 'css/bladewind-ui.min': resolve(__dirname, 'tailwind.css'),
+                // same bundle without Preflight, for apps that compile their own
+                // Tailwind and do not want the document reset twice. See #589.
+                'css/bladewind-ui-no-preflight.min': resolve(__dirname, 'tailwind-no-preflight.css'),
             },
             output: {
                 assetFileNames: (assetInfo) => {
                     if (assetInfo.name?.endsWith('.css')) {
-                        return 'css/bladewind-ui.min[extname]'
+                        const base = assetInfo.name.includes('no-preflight')
+                            ? 'bladewind-ui-no-preflight.min'
+                            : 'bladewind-ui.min'
+
+                        return `css/${base}[extname]`
                     }
                     return 'assets/[name]-[hash][extname]'
                 },
