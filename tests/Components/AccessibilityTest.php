@@ -293,4 +293,64 @@ class AccessibilityTest extends TestCase
         $this->assertAttribute($html, $slider, 'aria-valuemax', '5');
         $this->assertAttribute($html, $slider, 'tabindex', '0');
     }
+
+    // ---- disclosure and grouped controls --------------------------------
+
+    private function accordion(string $itemAttrs = ''): string
+    {
+        return $this->render(
+            "<x-bladewind::accordion name=\"grp\">\n"
+            ."<x-bladewind::accordion.item title=\"First\" {$itemAttrs}>body</x-bladewind::accordion.item>\n"
+            ."</x-bladewind::accordion>"
+        );
+    }
+
+    #[Test]
+    public function an_accordion_header_is_a_disclosure_button_for_its_panel(): void
+    {
+        $html = $this->accordion('open="true"');
+
+        // the item generates its own name, so read the wiring rather than assume it
+        $header = $this->firstNode($html, '//*[@role="button"]');
+        $panelId = $header->getAttribute('aria-controls');
+
+        $this->assertAttribute($html, '//*[@role="button"]', 'tabindex', '0');
+        $this->assertAttribute($html, '//*[@role="button"]', 'aria-expanded', 'true');
+        $this->assertNotSame('', $panelId);
+        $this->assertAttribute($html, '//*[@id="'.$panelId.'"]', 'role', 'region');
+        $this->assertAttribute($html, '//*[@id="'.$panelId.'"]', 'aria-labelledby', $header->getAttribute('id'));
+    }
+
+    #[Test]
+    public function a_closed_accordion_says_it_is_collapsed(): void
+    {
+        $this->assertAttribute($this->accordion(), '//*[@role="button"]', 'aria-expanded', 'false');
+    }
+
+    #[Test]
+    public function a_slider_range_input_has_an_accessible_name(): void
+    {
+        $default = $this->render('<x-bladewind::slider name="s" />');
+        $named = $this->render('<x-bladewind::slider name="s" aria_label="Budget" />');
+
+        $this->assertAttribute($default, '//input[@type="range"]', 'aria-label', 'Value');
+        $this->assertAttribute($named, '//input[@type="range"]', 'aria-label', 'Budget');
+    }
+
+    #[Test]
+    public function checkcards_form_a_group_of_operable_options(): void
+    {
+        $html = $this->render(
+            "<x-bladewind::checkcards name=\"plan\" selected_value=\"pro\">\n"
+            ."<x-bladewind::checkcards.card value=\"pro\" title=\"Pro\">Pro plan</x-bladewind::checkcards.card>\n"
+            ."<x-bladewind::checkcards.card value=\"lite\" title=\"Lite\">Lite plan</x-bladewind::checkcards.card>\n"
+            ."</x-bladewind::checkcards>"
+        );
+
+        $this->assertElementCount($html, '//*[@role="group"]', 1);
+        $this->assertElementCount($html, '//*[@role="checkbox"]', 2);
+        $this->assertAttribute($html, '//*[@data-value="pro"]', 'aria-checked', 'true');
+        $this->assertAttribute($html, '//*[@data-value="lite"]', 'aria-checked', 'false');
+        $this->assertAttribute($html, '//*[@data-value="pro"]', 'tabindex', '0');
+    }
 }

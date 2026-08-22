@@ -47,6 +47,9 @@
         const title = domEl(`.${accordionName} .accordion-title`);
 
         targetAccordion.setAttribute('data-open', isOpen ? '1' : '0');
+        // the header is the disclosure button, so it owns aria-expanded
+        const header = targetAccordion.querySelector('[aria-controls]');
+        if (header) header.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
         if (content) content.style.maxHeight = isOpen ? `${content.scrollHeight}px` : null;
         changeCss(arrow, 'rotate-180', isOpen ? 'add' : 'remove', true);
         changeCss(title, 'text-gray-700 dark:text-slate-100', isOpen ? 'add' : 'remove', true);

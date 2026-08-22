@@ -46,6 +46,11 @@
         'py-3 px-4' => ($compact),
         'p-5' => (!$compact)
 ]) {{ $attributes->exceptPropAliases(get_defined_vars())->merge([ 'class' => ""]) }} onclick="selectCheckcard('{{$name}}', '{{$value}}', '{{$border_colour}}')"
+     role="checkbox"
+     tabindex="0"
+     aria-checked="{{ in_array((string) $value, array_map('strval', (array) explode(',', (string) $selectedValue)), true) ? 'true' : 'false' }}"
+     @if($title !== '') aria-label="{{ strip_tags($title) }}" @endif
+     onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}"
      data-value="{{$value}}">
     <div class="flex">
         <span>
