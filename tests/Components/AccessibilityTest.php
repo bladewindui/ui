@@ -337,6 +337,29 @@ class AccessibilityTest extends TestCase
         $this->assertAttribute($named, '//input[@type="range"]', 'aria-label', 'Budget');
     }
 
+    /**
+     * Slider semantics without arrow keys would be a lie: focusable, announced as
+     * a slider, and inert. The handler is wired per rating instance.
+     */
+    #[Test]
+    public function a_clickable_rating_is_wired_for_keyboard_operation(): void
+    {
+        $html = $this->render('<x-bladewind::rating name="r" rating="3" clickable="true" />');
+
+        $this->assertHasClasses($html, '//*[@role="slider"]', ['bw-rating-slider-r']);
+        $this->assertStringContainsString('enableRatingKeyboard', $html);
+        $this->assertStringContainsString("enableRatingKeyboard('r')", $html);
+    }
+
+    #[Test]
+    public function a_read_only_rating_gets_no_keyboard_wiring(): void
+    {
+        $html = $this->render('<x-bladewind::rating name="r" rating="3" clickable="false" />');
+
+        $this->assertStringNotContainsString('enableRatingKeyboard', $html);
+        $this->assertAttribute($html, '//*[@role="img"]', 'tabindex', null);
+    }
+
     #[Test]
     public function checkcards_form_a_group_of_operable_options(): void
     {
