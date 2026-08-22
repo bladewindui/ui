@@ -185,7 +185,7 @@
          @if(!empty($label)) aria-label="{{ strip_tags($label) }}" @elseif(!empty($placeholder)) aria-label="{{ strip_tags($placeholder) }}" @endif
          @if($required) aria-required="true" @endif
          @if($disabled) aria-disabled="true" @endif
-         class="flex justify-between text-sm items-center rounded-md bg-white text-gray-600
+         class="flex justify-between text-sm items-center rounded-md bg-white dark:bg-transparent text-gray-600
          dark:text-dark-300 {{$sizes[$size]}} pl-4 pr-2 clickable focus:!outline-primary-500
          focus:!border-primary-500  dark:focus:!border-primary-500  dark:focus:!outline-primary-500
          @if($disabled) disabled @elseif($readonly) readonly @else enabled @endif
@@ -213,7 +213,7 @@
             <x-bladewind::icon name="chevron-up-down" class="opacity-40 opener !ml-2"/>
         </div>
     </div>
-    <div class="w-full absolute z-30 rounded-br-lg rounded-bl-lg bg-white shadow-sm shadow-gray-400 dark:shadow-none border-2
+    <div class="w-full absolute z-30 rounded-br-lg rounded-bl-lg bg-white dark:bg-dark-700 shadow-sm shadow-gray-400 dark:shadow-none border-2
         border-primary-500 dark:text-gray-300 dark:bg-dark-700 border-t-0 -mt-1.5
         hidden bw-select-items-container overflow-scroll max-h-64 animate__animated animate__fadeIn animate__faster">
         <div class="sticky top-0 min-w-full bg-gray-100 dark:bg-transparent py-1 pr-0 -pl-1 search-bar @if(!$searchable) hidden @endif">

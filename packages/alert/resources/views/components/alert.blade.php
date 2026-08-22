@@ -44,14 +44,18 @@
       }
     };
     $alternate_colour = $alternate_colour();
+    // the faint shade is a light chip with dark text. it had no dark counterpart,
+    // so on a dark page it stayed pale — the one component that ignored the colour
+    // scheme. these dark: utilities only apply where nothing was specified before,
+    // so light mode is untouched. see #598
     $presets = (in_array($type, ['error','warning', 'info', 'success'])) ? [
-        'faint' => " bg-$alternate_colour-100/70 text-$alternate_colour-600",
+        'faint' => " bg-$alternate_colour-100/70 dark:bg-$alternate_colour-500/15 text-$alternate_colour-600 dark:text-$alternate_colour-300",
         'dark' => "bg-$alternate_colour-500 text-white",
-        'icon' => [ 'faint' => "text-$alternate_colour-600", 'dark' => "!text-$alternate_colour-50" ]
+        'icon' => [ 'faint' => "text-$alternate_colour-600 dark:text-$alternate_colour-400", 'dark' => "!text-$alternate_colour-50" ]
     ] : [   // not error, warning, info, success
-        'faint' => "bg-$type-100/70 text-$type-600",
+        'faint' => "bg-$type-100/70 dark:bg-$type-500/15 text-$type-600 dark:text-$type-300",
         'dark' => "bg-$type-500 text-$type-50",
-        'icon' => [ 'faint' => "text-$type-600", 'dark' => "!text-$type-50" ]
+        'icon' => [ 'faint' => "text-$type-600 dark:text-$type-400", 'dark' => "!text-$type-50" ]
     ];
     $colours = [
         'faint' => ($type=='transparent') ?

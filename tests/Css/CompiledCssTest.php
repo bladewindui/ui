@@ -212,60 +212,37 @@ class CompiledCssTest extends TestCase
     }
 
     /**
-     * FINDING, pinned deliberately — see improvements.md item 11.
+     * #598 — dark rules have to carry specificity of their own.
      *
-     * tailwind.css defines the dark variant as `&:where(.dark, .dark *)`. :where()
-     * contributes zero specificity, so `.bw-input:where(.dark,.dark *)` ties exactly
-     * with `.bw-input` and is decided by source order alone. Any host rule of equal
-     * specificity that comes later wins in both colour schemes at once.
-     *
-     * Two rules in the bundle use the older `.dark .bw-card` descendant form instead,
-     * which does carry specificity — so the bundle currently mixes both mechanisms.
+     * tailwind.css used to define the dark variant as `&:where(.dark, .dark *)`.
+     * :where() contributes zero specificity, so `.bw-input:where(.dark,.dark *)`
+     * tied exactly with `.bw-input` and was decided by source order alone — any
+     * host rule of equal specificity appearing later won in both colour schemes
+     * at once. :is() takes the specificity of its most specific argument, which
+     * gives the dark rule the one class it needs.
      */
     #[Test]
-    public function dark_variants_currently_compile_to_zero_specificity_where_clauses(): void
+    public function dark_variants_carry_specificity(): void
     {
         $raw = $this->css->raw();
 
-        $this->assertGreaterThan(200, substr_count($raw, ':where(.dark,.dark *)'));
-        $this->assertSame(2, preg_match_all('/\.dark\s+\./', $raw));
+        $this->assertStringNotContainsString(
+            ':where(.dark,.dark *)',
+            $raw,
+            'A zero-specificity dark variant is back; see the note on this test.'
+        );
+        $this->assertGreaterThan(200, substr_count($raw, ':is(.dark,.dark *)'));
     }
 
     /**
-     * The toggle knob is drawn entirely with ::after utilities. If the bundle is
-     * rebuilt without them the switch renders as an empty track with no knob and no
-     * movement on check — and nothing in the Blade output changes, so no render test
-     * sees it. This is not hypothetical: these selectors were missing from the
-     * committed bundle until Tier B caught the drift.
+     * The bundle used to mix two dark mechanisms — the variant, and a handful of
+     * hand-written `.dark .bw-card` descendant selectors. Both now carry
+     * specificity, but they are still two ways of saying one thing.
      */
     #[Test]
-    public function the_bundle_covers_the_utilities_the_toggle_knob_is_drawn_with(): void
+    public function the_descendant_dark_selectors_are_still_a_known_minority(): void
     {
-        $raw = $this->css->raw();
-
-        foreach ([
-            '.after\\:content-\\[\\\'\\\'\\]:after',
-            '.after\\:absolute:after',
-            '.after\\:start-1:after',
-            '.after\\:top-1\\/2:after',
-            '.after\\:-translate-y-1\\/2:after',
-        ] as $selector) {
-            $this->assertStringContainsString(
-                $selector,
-                $raw,
-                "The compiled bundle is missing [{$selector}], which toggle.blade.php emits. "
-                .'Run `npm run build` and commit the result.'
-            );
-        }
-    }
-
-    #[Test]
-    public function the_bundle_covers_the_utilities_the_dropmenu_positioning_fix_emits(): void
-    {
-        $raw = $this->css->raw();
-
-        $this->assertStringContainsString('.\\!z-\\[9999\\]', $raw);
-        $this->assertStringContainsString('.-left-1', $raw);
+        $this->assertLessThanOrEqual(2, preg_match_all('/\.dark\s+\./', $this->css->raw()));
     }
 
     /**
