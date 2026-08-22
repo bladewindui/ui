@@ -71,6 +71,7 @@ return [
     "filepicker_invalid_file_type" => "Wrong file type uploaded",
     "filepicker_expected_file_types" => "Only {allButLastType} and {lastType} files allowed",
 
+    "slider_label" => "Value",
     "rating_label" => "Rating",
     "rating_value" => "{0}Not rated|{1}:value out of 5|[2,*]:value out of 5",
     "pagination_per_page" => "Per page",
