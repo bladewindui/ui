@@ -1,0 +1,20 @@
+/* BladewindUI — the bundle without Tailwind's Preflight.
+ *
+ * The full bundle ships Preflight: ~10KB of global reset including
+ * `*,::before,::after { border: 0 solid; margin: 0; padding: 0 }`. That is
+ * correct for a page whose only stylesheet is BladewindUI, and wrong for an app
+ * that already has its own Tailwind build — it means the document gets reset
+ * twice, by two files, in an order nobody controls.
+ *
+ * Load this variant instead when your app compiles its own Tailwind. Everything
+ * else — theme, utilities, component styles — is identical.
+ *
+ * Compiles to public/css/bladewind-ui-no-preflight.min.css. See issue #589.
+ */
+
+@layer theme, base, components, utilities;
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@import "./tailwind-shared.css";
