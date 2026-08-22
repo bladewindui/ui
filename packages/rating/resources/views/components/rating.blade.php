@@ -27,7 +27,7 @@
     <x-bladewind::input type="hidden" name="{{$name}}" id="{{$name}}" class="rating-value-{{$name}}"
                         selected_value="{{$rating}}"/>
 @endif
-<div class="inline-flex items-center"
+<div @class(['inline-flex items-center', 'bw-rating-slider-'.$name => $clickable])
      @if($clickable)
          role="slider"
          tabindex="0"
@@ -121,8 +121,43 @@
         }
         const input = domEl(`.rating-value-${name}`);
         if (input) input.value = rate;
+
+        // the slider reports its own value, so it has to move with the stars
+        const slider = domEl(`.bw-rating-slider-${name}`);
+        if (slider) {
+        slider.setAttribute('aria-valuenow', rate);
+        slider.setAttribute('aria-valuetext', rate === 0 ? 'Not rated' : `${rate} out of 5`);
+        }
+
         previewRating(name, rate);
         };
+
+        /**
+         * A control with slider semantics has to be operable from the keyboard, or
+         * the role is a lie: focusable, announced as a slider, and inert. Arrow keys
+         * step by one, Home and End jump to the bounds.
+         */
+        window.enableRatingKeyboard = function (name) {
+        const slider = domEl(`.bw-rating-slider-${name}`);
+        if (!slider || slider.dataset.bwKeyboard === '1') return;
+        slider.dataset.bwKeyboard = '1';
+
+        slider.addEventListener('keydown', (e) => {
+        const current = parseInt(domEl(`.rating-value-${name}`)?.value || '0', 10) || 0;
+        let next = current;
+
+        if (e.key === 'ArrowRight' || e.key === 'ArrowUp') next = Math.min(5, current + 1);
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') next = Math.max(0, current - 1);
+        else if (e.key === 'Home') next = 0;
+        else if (e.key === 'End') next = 5;
+        else return;
+
+        e.preventDefault();
+        setRating(name, next);
+        });
+        };
         }
+
+        enableRatingKeyboard('{{$name}}');
     </x-bladewind::script>
 @endif
