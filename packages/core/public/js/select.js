@@ -76,9 +76,69 @@
                 if (!container) return;
 
                 new MutationObserver(() => {
+                    let open = !container.classList.contains('hidden');
                     let trigger = domEl(this.clickArea);
-                    if (trigger) trigger.setAttribute('aria-expanded', String(!container.classList.contains('hidden')));
+                    if (trigger) trigger.setAttribute('aria-expanded', String(open));
+
+                    open ? this.positionItems() : this.clearItemsPosition();
                 }).observe(container, {attributes: true, attributeFilter: ['class']});
+
+                if (!this._repositionBound) {
+                    this._repositionBound = true;
+                    let onViewportChange = () => {
+                        if (!container.classList.contains('hidden')) this.positionItems();
+                    };
+                    window.addEventListener('resize', onViewportChange);
+                    // capture phase, so scrolling any ancestor is caught too
+                    window.addEventListener('scroll', onViewportChange, true);
+                }
+            }
+
+            /**
+             * Position the list with position:fixed against the trigger's bounding
+             * rect, rather than absolutely inside the component's own subtree.
+             *
+             * An absolutely positioned list is clipped by any ancestor that
+             * establishes a scroll container — and the overwhelmingly common one is
+             * the overflow-x-auto wrapper every wide table needs, where overflow-x:
+             * auto silently computes overflow-y to auto and clips vertically too.
+             * Fixed positioning takes the list out of that flow entirely. Same
+             * approach dropmenu already uses. See #591.
+             */
+            positionItems = () => {
+                let root = domEl(this.rootElement);
+                let container = domEl(this.itemsContainer);
+                if (!root || !container) return;
+
+                let rect = root.getBoundingClientRect();
+
+                container.classList.remove('absolute');
+                container.classList.add('fixed');
+                container.style.width = `${rect.width}px`;
+                container.style.left = `${rect.left}px`;
+                container.style.zIndex = '9999';
+
+                // flip above the trigger when the space below cannot hold the list
+                let height = container.offsetHeight || 0;
+                let below = window.innerHeight - rect.bottom;
+
+                if (height > below && rect.top > below) {
+                    container.style.top = `${Math.max(0, rect.top - height)}px`;
+                } else {
+                    // -mt-1.5 in the markup tucks the list under the trigger's border
+                    container.style.top = `${rect.bottom - 6}px`;
+                }
+            }
+
+            clearItemsPosition = () => {
+                let container = domEl(this.itemsContainer);
+                if (!container) return;
+
+                container.classList.remove('fixed');
+                container.classList.add('absolute');
+                ['width', 'left', 'top', 'zIndex'].forEach((property) => {
+                    container.style[property] = '';
+                });
             }
 
             enableKeyboardNavigation = () => {
