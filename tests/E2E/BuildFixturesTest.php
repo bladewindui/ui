@@ -110,4 +110,46 @@ class BuildFixturesTest extends TestCase
 
         $this->assertFileExists(self::OUT.'/popup-clipping.html');
     }
+
+    /**
+     * Tooltips get their own fixture because the trigger is hovered rather than
+     * clicked, and because the table's action icons carry data-tooltip directly
+     * — the same attribute, reached without the tooltip component.
+     */
+    #[Test]
+    public function it_writes_the_tooltip_clipping_fixture(): void
+    {
+        $tooltip = $this->render(
+            '<x-bladewind::tooltip text="Archive this order" position="bottom">'
+            .'<x-bladewind::button size="tiny">Archive</x-bladewind::button>'
+            .'</x-bladewind::tooltip>'
+        );
+
+        $icons = $this->render(
+            '<x-bladewind::table name="orders" :columns="[\'ref\']" :rows="$rows" :action_icons="$icons" />',
+            [
+                'rows' => [['ref' => 'ORD-1', 'id' => 1]],
+                'icons' => [['icon' => 'pencil', 'tip' => 'Edit this order, change its line items, adjust the delivery window, and leave a note for the warehouse team before it is dispatched, or hand it back to the account manager if the customer has asked for changes that cannot be made here', 'click' => 'editOrder']],
+            ]
+        );
+
+        $body = <<<HTML
+        <h1>Tooltips inside a scrolling ancestor</h1>
+
+        <div class="scroll-wrapper" id="tooltip-wrapper">
+          <div class="wide">{$tooltip}</div>
+        </div>
+
+        <div class="scroll-wrapper" id="icons-wrapper" style="margin-top:24px">
+          <div class="wide" style="padding-top:0">{$icons}</div>
+        </div>
+        HTML;
+
+        file_put_contents(
+            self::OUT.'/tooltip-clipping.html',
+            $this->relative($this->page('Tooltip clipping', $body))
+        );
+
+        $this->assertFileExists(self::OUT.'/tooltip-clipping.html');
+    }
 }

@@ -10,6 +10,7 @@
     'size' => config('bladewind.tooltip.size', 'small'),
     // additional css classes to add to the wrapper
     'class' => '',
+    'nonce' => config('bladewind.script.nonce', null),
 ])
 @php
     $position = (! in_array($position, ['top', 'bottom', 'left', 'right'])) ? 'top' : $position;
@@ -33,3 +34,9 @@
         @if($color === 'dark') data-inverted @endif
     @endif
 >{{ $slot }}</span>
+
+@once
+    {{-- one shared bubble handles every [data-tooltip] on the page, including the
+         table's action icons, which carry the attribute directly --}}
+    <x-bladewind::script :nonce="$nonce" src="{{ asset('vendor/bladewind/js/tooltip.js') }}"></x-bladewind::script>
+@endonce

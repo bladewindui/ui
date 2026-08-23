@@ -71,6 +71,65 @@ class PopupPositioningTest extends TestCase
         ];
     }
 
+    /**
+     * The tooltip is the odd one out: it was drawn with a ::after on the trigger,
+     * which cannot leave its own element at all. It is now a real element appended
+     * to the body, and the stylesheet switches the pseudo-element off so a page
+     * never shows two bubbles for one tooltip.
+     */
+    #[Test]
+    public function the_tooltip_draws_a_real_element_rather_than_a_pseudo_element(): void
+    {
+        $source = $this->script('tooltip.js');
+
+        $this->assertStringContainsString("createElement('div')", $source);
+        $this->assertStringContainsString('document.body.appendChild', $source);
+        $this->assertStringContainsString("classList.add('bw-tooltip-js')", $source);
+        $this->assertStringContainsString('getBoundingClientRect()', $source);
+        $this->assertMatchesRegularExpression("/addEventListener\('scroll',[^)]*,\s*true\)/", $source);
+    }
+
+    #[Test]
+    public function the_stylesheet_switches_the_old_tooltip_off_when_the_script_runs(): void
+    {
+        $css = file_get_contents(__DIR__.'/../../packages/core/public/css/bladewind-ui.min.css');
+
+        $this->assertStringContainsString('.bw-tooltip-js [data-tooltip]:before', $css);
+        $this->assertStringContainsString('.bw-tooltip-bubble', $css);
+    }
+
+    /**
+     * The table's action icons carry data-tooltip directly, so they need the
+     * script on pages that never render a tooltip component.
+     */
+    #[Test]
+    public function the_table_action_icons_ship_the_tooltip_script(): void
+    {
+        $html = $this->render(
+            '<x-bladewind::table name="t" :columns="[\'ref\']" :rows="$rows" :action_icons="$icons" />',
+            [
+                'rows' => [['ref' => 'ORD-1', 'id' => 1]],
+                'icons' => [['icon' => 'pencil', 'tip' => 'Edit', 'click' => 'edit']],
+            ]
+        );
+
+        $this->assertStringContainsString('data-tooltip="Edit"', $html);
+        $this->assertStringContainsString('js/tooltip.js', $html);
+    }
+
+    #[Test]
+    public function the_tooltip_component_keeps_its_attribute_contract(): void
+    {
+        $html = $this->render(
+            '<x-bladewind::tooltip text="Archive" position="bottom" size="regular" color="dark">x</x-bladewind::tooltip>'
+        );
+
+        $this->assertAttribute($html, $this->withClass('bw-tooltip'), 'data-tooltip', 'Archive');
+        $this->assertAttribute($html, $this->withClass('bw-tooltip'), 'data-position', 'bottom center');
+        $this->assertAttribute($html, $this->withClass('bw-tooltip'), 'data-size', 'regular');
+        $this->assertAttribute($html, $this->withClass('bw-tooltip'), 'data-inverted', '');
+    }
+
     #[Test]
     public function popover_is_told_which_side_it_was_asked_to_open_on(): void
     {
