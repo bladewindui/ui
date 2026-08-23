@@ -123,7 +123,7 @@
                         color="gray"
                         size="tiny"
                         icon="arrow-left" class="!pr-0 prev-btn {{$prev_button_status_css}}"
-                        onclick="goToPage('{{$prev_page}}', '{{$table}}', '{{$defaultPage}}')"/>
+                        data-bw-page="{{$prev_page}}" data-bw-page-table="{{$table}}" data-bw-page-current="{{$defaultPage}}"/>
                 <span class="page-number font-semibold p-1 @if(!$showPageNumber)hidden @endif"><span
                             class="page">{{$defaultPage}}</span>@if($showTotalPages)
                         /{{$total_pages}}
@@ -134,7 +134,7 @@
                         color="gray"
                         size="tiny"
                         icon="arrow-right" class="!pr-0 next-btn {{$next_button_status_css}}"
-                        onclick="goToPage('{{$next_page}}', '{{$table}}')"/>
+                        data-bw-page="{{$next_page}}" data-bw-page-table="{{$table}}"/>
             @elseif($style == 'dropdown')
                 <div class="!z-50">
                     <span class="table-name hidden" data-value="{{$table}}"></span>
@@ -156,7 +156,7 @@
                             icon="arrow-left"
                             size="tiny"
                             class="!mr-0.5 !pl-5 !pr-1 prev-btn {{$default_button_css}}"
-                            onclick="routeToPage('{{$prev_page}}', '', '', {table: '{{$table}}'}); shufflePageNumbers('{{$prev_page}}', '{{$table}}')"/>
+                            data-bw-route-page="{{$prev_page}}" data-bw-page-table="{{$table}}"/>
                     <span class="mt-3 prev-dots"></span>
                     @for($p=1; $p <= $total_pages; $p++)
                         @php
@@ -169,7 +169,7 @@
                                 size="tiny"
                                 data-page="{{$p}}"
                                 class="btn {{ (strlen($p) == 1) ? '!px-3' : '!px-2' }} hidden !text-xs !mx-0.5 btn-{{$p}} {{$button_css}}"
-                                onclick="routeToPage('{{$p}}', '', '', {table: '{{$table}}'}); shufflePageNumbers('{{$p}}', '{{$table}}')">{{$p}}</x-bladewind::button>
+                                data-bw-route-page="{{$p}}" data-bw-page-table="{{$table}}">{{$p}}</x-bladewind::button>
                         <span class="mt-3 dots-{{$p}}"></span>
                     @endfor
                     <span class="mt-3 next-dots"></span>
@@ -180,7 +180,7 @@
                             icon="arrow-right"
                             size="tiny"
                             class="!ml-0.5 !pl-5 !pr-1 next-btn {{$default_button_css}}"
-                            onclick="routeToPage('{{$next_page}}', '', '', {table: '{{$table}}'}); shufflePageNumbers('{{$next_page}}', '{{$table}}')"/>
+                            data-bw-route-page="{{$next_page}}" data-bw-page-table="{{$table}}"/>
                 </div>
                 <x-bladewind::script :nonce="$nonce">shufflePageNumbers('{{$defaultPage}}', '{{$table}}')
                 </x-bladewind::script>
@@ -190,6 +190,20 @@
 @endif
 @if(! $is_paginator)
 @once
+    <x-bladewind::script :nonce="$nonce">
+        /* delegated rather than inline, so a strict CSP does not disable paging.
+           the buttons are re-rendered as pages change, which delegation survives
+           and a per-element listener would not. see #608 */
+        bwOn('click', '[data-bw-page]', (el) => {
+        goToPage(el.getAttribute('data-bw-page'), el.getAttribute('data-bw-page-table'), el.getAttribute('data-bw-page-current') || undefined);
+        });
+        bwOn('click', '[data-bw-route-page]', (el) => {
+        const page = el.getAttribute('data-bw-route-page');
+        const table = el.getAttribute('data-bw-page-table');
+        routeToPage(page, '', '', {table: table});
+        shufflePageNumbers(page, table);
+        });
+    </x-bladewind::script>
     <span class="dots hidden"><x-bladewind::icon name="ellipsis-horizontal"/></span>
     <x-bladewind::script :nonce="$nonce">
         var selectPage = (page, previousPage, table) => {

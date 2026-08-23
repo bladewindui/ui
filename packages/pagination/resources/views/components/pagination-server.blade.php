@@ -30,7 +30,7 @@
             </label>
             <select id="{{ $perPageName }}"
                     class="bw-raw-select !py-1 !w-auto text-xs"
-                    onchange="window.location.href = this.options[this.selectedIndex].dataset.url">
+                    data-bw-per-page>
                 @foreach($per_page_options as $option)
                     <option value="{{ $option }}"
                             @selected((int) $option === (int) $per_page)
@@ -80,3 +80,14 @@
         @endif
     </div>
 </div>
+
+@once
+    <x-bladewind::script :nonce="$nonce">
+        {{-- delegated rather than an inline onchange, so a strict CSP does not
+             disable the per-page selector. see #608 --}}
+        bwOn('change', '[data-bw-per-page]', (select) => {
+        const url = select.options[select.selectedIndex]?.dataset.url;
+        if (url) window.location.href = url;
+        });
+    </x-bladewind::script>
+@endonce

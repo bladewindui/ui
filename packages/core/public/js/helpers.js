@@ -991,6 +991,75 @@ const setDatepickerValue = (elName, date) => {
     input._x_model.set(date);
 };
 
+/**
+ * Bind a delegated listener on the document.
+ *
+ * Components used to attach their behaviour with inline on* attributes, which a
+ * strict Content-Security-Policy blocks outright — a nonce authorises <script>
+ * elements, not on* attributes, so there was no way to keep them working. See #608.
+ *
+ * Delegation also survives markup arriving after load, which the table's
+ * client-side pagination does on every page change and a per-element listener
+ * would miss.
+ *
+ * @param {string} event
+ * @param {string} selector matched against the event target and its ancestors
+ * @param {function(HTMLElement, Event): void} handler receives the matched element
+ * @param {object} options passed to addEventListener; focus and blur need capture
+ */
+const bwOn = (event, selector, handler, options = {}) => {
+    document.addEventListener(event, (e) => {
+        const el = e.target?.closest?.(selector);
+        if (el) handler(el, e);
+    }, options);
+};
+
+/**
+ * Enter and Space activate anything given a button role, which a real <button>
+ * does for free and a <div role="button"> does not.
+ */
+const bwActivateOnKey = (selector) => {
+    bwOn('keydown', selector, (el, e) => {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        e.preventDefault();
+        el.click();
+    });
+};
+
+/*
+ | Delegated bindings for components whose behaviour lives in this file.
+ | Replaces inline on* attributes, which a strict CSP blocks. See #608.
+ */
+bwOn('click', '[data-bw-tag-value]', (tag) => {
+    selectTag(tag.getAttribute('data-bw-tag-value'), tag.getAttribute('data-bw-tag-name'));
+});
+
+// a closable tag with no custom onclick simply removes itself
+bwOn('click', '[data-bw-tag-remove]', (link) => link.parentElement?.remove());
+
+// the modal's own close buttons. a consumer-supplied ok/cancel action is their
+// javascript and stays inline, so it is not handled here
+bwOn('click', '[data-bw-modal-close]', (el) => hideModal(el.getAttribute('data-bw-modal-close')));
+
+// a tab heading either switches tab or navigates, depending on its url prop
+bwOn('click', '[data-bw-tab]', (tab) => {
+    goToTab(
+        tab.getAttribute('data-bw-tab'),
+        tab.getAttribute('data-bw-tab-colour'),
+        tab.parentElement?.getAttribute('data-name'),
+        tab
+    );
+});
+
+bwOn('click', '[data-bw-tab-url]', (tab) => {
+    location.href = tab.getAttribute('data-bw-tab-url');
+});
+
+// clicking an input or textarea label focuses its field
+bwOn('click', '[data-bw-focuses]', (label) => {
+    domEl(`.${label.getAttribute('data-bw-focuses')}`)?.focus();
+});
+
 /*
  |----------------------------------------------------------------------------
  | Global exports
@@ -1009,6 +1078,8 @@ const setDatepickerValue = (elName, date) => {
  | Assigning them here makes that shim unnecessary. See issue #595.
  */
 Object.assign(window, {
+    bwOn,
+    bwActivateOnKey,
     domEl,
     dom_el,
     domEls,

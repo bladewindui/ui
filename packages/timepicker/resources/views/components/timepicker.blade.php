@@ -35,7 +35,7 @@
                 :required="$required"
                 suffix_is_icon="true"
                 :add_clearing="false"
-                onclick="openTimepicker('{{$name}}')"
+                data-bw-timepicker="{{$name}}"
                 :selected_value="$selectedValue"
                 :placeholder="$placeholder"
                 :label="$label"/>
@@ -70,7 +70,7 @@
                         placeholder="{{$hourLabel}}"
                         enforce_limits="true"
                         onpaste="event.preventDefault();"
-                        onkeyup="moveToMinutes('{{$name}}');"/>
+                        data-bw-time-hours="{{$name}}"/>
             </div>
             <div class="px-3 text-center pt-2.5">
                 <div class="block size-3 bg-gray-500 my-4 rounded-full"></div>
@@ -92,12 +92,12 @@
                 <div class="pl-3 space-y-1">
                     <div tabindex="3"
                          class="rounded-t-lg font-semibold cursor-pointer text-2xl px-4 py-2 {{ (!empty($selected_format) && $selected_format == 'AM') ? 'bg-gray-500 text-white' : 'bg-gray-100 hover:bg-gray-300' }} bw-{{$name}}-time-format-am"
-                         onclick="toggleFormat('AM', '{{$name}}');">
+                         data-bw-time-format="AM" data-bw-time-name="{{$name}}">
                         {{ __('bladewind::bladewind.timepicker_am') }}
                     </div>
                     <div tabindex="4"
                          class="rounded-b-lg font-semibold cursor-pointer text-2xl px-4 py-2 {{ (!empty($selected_format) && $selected_format == 'PM') ? 'bg-gray-500 text-white' : 'bg-gray-100 hover:bg-gray-300' }} bw-{{$name}}-time-format-pm"
-                         onclick="toggleFormat('PM', '{{$name}}');">
+                         data-bw-time-format="PM" data-bw-time-name="{{$name}}">
                         {{ __('bladewind::bladewind.timepicker_pm') }}
                     </div>
                     <input type="hidden" class="bw-{{$name}}_format bg-gray-500"/>
@@ -153,7 +153,7 @@
                     if (time.length >= 5) {
                         field.value = time;
                         if (suffix) {
-                            suffix.innerHTML = clearIcon.replace('<svg', `<svg onclick="clearTime('${name}')"`);
+                            suffix.innerHTML = clearIcon.replace('<svg', `<svg data-bw-time-clear="${name}"`);
                         }
                     }
                 }
@@ -165,6 +165,16 @@
                 field.value = '';
                 suffix.innerHTML = clockIcon;
             }
+
+            /* delegated rather than inline, so a strict CSP does not disable the
+               timepicker. the clear icon is injected by script at runtime, which
+               delegation handles and a per-element listener would miss. see #608 */
+            bwOn('click', '[data-bw-timepicker]', (el) => openTimepicker(el.getAttribute('data-bw-timepicker')));
+            bwOn('click', '[data-bw-time-format]', (el) => {
+                toggleFormat(el.getAttribute('data-bw-time-format'), el.getAttribute('data-bw-time-name'));
+            });
+            bwOn('click', '[data-bw-time-clear]', (el) => clearTime(el.getAttribute('data-bw-time-clear')));
+            bwOn('keyup', '[data-bw-time-hours]', (el) => moveToMinutes(el.getAttribute('data-bw-time-hours')));
         </script>
     @endonce
 @else

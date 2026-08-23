@@ -237,7 +237,9 @@
 {{-- format-ignore-end --}}
 
 <x-bladewind::script :nonce="$nonce">
-    let tableData_{{str_replace('-','_', $name)}} = {!! json_encode($data) !!};
+    {{-- a window property, not a top-level `let`: a lexical global is invisible to
+         window[...] lookups, which is how the delegated search handler finds it --}}
+    window.tableData_{{str_replace('-','_', $name)}} = {!! json_encode($data) !!};
 </x-bladewind::script>
 <div @class([
     'border-collapse max-w-full',
@@ -253,12 +255,15 @@
                         add_clearing="false"
                         clearable="true"
                         class="!border-0 !outline-transparent focus:!border-none focus:!outline-transparent !py-2.5"
-                        onInput="filterTableDebounced(this.value, 'table.{{$name}}', '{{$searchField}}', {{$searchDebounce}}, {{$searchMinLength}}, tableData_{{str_replace('-','_', $name)}})();"
+                        data-bw-table-search="{{$name}}"
+                        data-bw-search-field="{{$searchField}}"
+                        data-bw-search-debounce="{{$searchDebounce}}"
+                        data-bw-search-min="{{$searchMinLength}}"
                         prefix="magnifying-glass"
                         prefix_is_icon="true"/>
             </div>
         @endif
-        <table @if($paginated) data-current-page="{{$defaultPage}}" @endif @class([
+        <table data-name="{{$name}}" @if($paginated) data-current-page="{{$defaultPage}}" @endif @class([
             'bw-table w-full ' . $name,
             'drop-shadow shadow shadow-gray-200/70 dark:shadow-md dark:shadow-dark-950/20' => $hasShadow,
             'divided' => $divided,
@@ -301,7 +306,7 @@
                             data-sort-dir="no-sort"
                             data-can-sort="true"
                             data-column-index="{{ $checkable ? count($indices) : count($indices)-1}}"
-                            onclick="sortTableByColumn(this, '{{$name}}')" @endif>
+                            @endif>
                             <span class="peer cursor-pointer">{{ str_replace('_', ' ', $columnAliases[$th] ?? $th ) }}</span>
                             @if($sortable && in_array($th, $sortableColumns))
                                 <x-bladewind::icon

@@ -96,9 +96,16 @@
 //    $name = str_replace(' ', '-', $name);
     $cancelCss = ($cancelButtonLabel == '') ? 'hidden' : '';
     $okCss = ($okButtonLabel == '') ? 'hidden' : '';
+    // the default close is the library's own, so it is delegated off a data
+    // attribute rather than an inline onclick — a strict CSP blocks those, and a
+    // modal you cannot dismiss is the worst version of that. a consumer-supplied
+    // action is their own javascript and stays inline. see #608
     $okAction = $cancelAction = "hideModal('{$name}')";
-    if($okButtonAction !== 'close') $okAction = $okButtonAction . (($closeAfterAction) ? ';'.$okAction : '');
-    if($cancelButtonAction !== 'close') $cancelAction = $cancelButtonAction . (($closeAfterAction) ? ';'.$cancelAction : '');
+    $okIsDefault = ($okButtonAction === 'close');
+    $cancelIsDefault = ($cancelButtonAction === 'close');
+    if(! $okIsDefault) $okAction = $okButtonAction . (($closeAfterAction) ? ';'.$okAction : '');
+    if(! $cancelIsDefault) $cancelAction = $cancelButtonAction . (($closeAfterAction) ? ';'.$cancelAction : '');
+
     $button_size = ($stretchActionButtons) ? 'medium' : (($size == 'tiny') ? 'tiny' : 'small');
 
     // get colours that match the various types
@@ -130,7 +137,10 @@
     <div class="{{$sizes[$size]}} @if($size=='omg') sm:px-12 @else max-w-screen @endif px-5 m-auto bw-{{$name}} animate__faster">
         <div class="bg-white relative dark:bg-dark-700/90 dark:border dark:border-dark-500/10 {{getRadiusString($radius)}} drop-shadow-2xl">
             @if( $showActionButtons && $showCloseIcon)
-                <a href="javascript:void(0)" onclick="{!! $cancelAction !!}">
+                <a href="javascript:void(0)"
+                   @if($cancelIsDefault) data-bw-modal-close="{{ $name }}"
+                   @else onclick="{!! $cancelAction !!}" @endif
+                >
                     <x-bladewind::icon
                             name="x-mark"
                             class="p-1.5 stroke-2 modal-close-icon right-3.5 top-3 absolute rounded-full
@@ -172,14 +182,19 @@
                             type="secondary"
                             size="{{$button_size}}"
                             outline="true"
-                            onclick="{!! $cancelAction !!}"
+                            {{-- a null attribute is dropped, which keeps the choice
+                                 out of the tag's attribute list where a blade @if
+                                 cannot go --}}
+                            :data-bw-modal-close="$cancelIsDefault ? $name : null"
+                            :onclick="$cancelIsDefault ? null : $cancelAction"
                             @class([
                                 'cancel ' . $cancelCss,
                                 'block w-full mt-2' => $stretchActionButtons])>{{$cancelButtonLabel}}</x-bladewind::button>
 
                     <x-bladewind::button
                             size="{{$button_size}}"
-                            onclick="{!! $okAction !!}"
+                            :data-bw-modal-close="$okIsDefault ? $name : null"
+                            :onclick="$okIsDefault ? null : $okAction"
                             @class([
                                 'okay ' . $okCss,
                                 'block w-full' => $stretchActionButtons])>{{$okButtonLabel}}</x-bladewind::button>

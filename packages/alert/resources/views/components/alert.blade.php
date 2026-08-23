@@ -91,10 +91,21 @@
     @endif
     <div class="grow pl-2 pr-5">{{ $slot }}</div>
     @if($showCloseIcon)
-        <div class="text-right" onclick="this.parentElement.style.display='none'">
+        <div class="text-right" data-bw-alert-dismiss>
             <x-bladewind::icon
                     name="x-mark"
                     class="size-[18px] -mt-[2px] p-[3px] stroke-2 cursor-pointer {{$close_icon_css}} bg-white/20  hover:bg-white/60 rounded-full hover:text-slate-600"/>
         </div>
     @endif
 </div>
+
+@once
+    <x-bladewind::script>
+        {{-- delegated rather than an inline onclick, so a strict CSP does not
+             disable dismissing an alert. see #608 --}}
+        bwOn('click', '[data-bw-alert-dismiss]', (el) => {
+        const alert = el.closest('.bw-alert');
+        if (alert) alert.style.display = 'none';
+        });
+    </x-bladewind::script>
+@endonce

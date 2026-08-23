@@ -74,7 +74,7 @@
     @endif
     @if($label !== '')
         <label for="{{ $name }}" class="form-label dark:peer-focus:pt-1"
-               onclick="domEl('.{{$name}}').focus()">{{ $label }}
+               data-bw-focuses="{{$name}}">{{ $label }}
             @if($required == 'true')
                 <x-bladewind::icon name="star" class="!text-red-400 !w-2 !h-2 mt-[-2px]" type="solid"/>
             @endif

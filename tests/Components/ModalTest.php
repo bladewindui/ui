@@ -109,15 +109,35 @@ class ModalTest extends TestCase
     {
         $html = $this->render('<x-bladewind::modal name="confirm">b</x-bladewind::modal>');
 
-        $this->assertStringContainsString("hideModal('confirm')", $html);
+        $this->assertAttribute($html, $this->withClass('okay', 'button'), 'data-bw-modal-close', 'confirm');
     }
 
+    /**
+     * #608 routed the default close through a data attribute, so a consumer action
+     * now goes through the attribute bag and is HTML-escaped. Asserted on the
+     * parsed attribute rather than the raw markup, since &#039; parses back to '.
+     */
     #[Test]
     public function a_custom_ok_action_runs_before_the_close(): void
     {
         $html = $this->render('<x-bladewind::modal name="c" ok_button_action="saveUser()">b</x-bladewind::modal>');
 
-        $this->assertStringContainsString("saveUser();hideModal('c')", $html);
+        $this->assertAttribute($html, $this->withClass('okay', 'button'), 'onclick', "saveUser();hideModal('c')");
+    }
+
+    /**
+     * The library's own close is delegated off a data attribute, because a strict
+     * CSP blocks inline handlers and a modal you cannot dismiss is the worst
+     * version of that.
+     */
+    #[Test]
+    public function the_default_close_uses_a_delegated_handler(): void
+    {
+        $html = $this->render('<x-bladewind::modal name="c">b</x-bladewind::modal>');
+
+        $this->assertAttribute($html, $this->withClass('okay', 'button'), 'data-bw-modal-close', 'c');
+        $this->assertAttribute($html, $this->withClass('okay', 'button'), 'onclick', null);
+        $this->assertAttribute($html, $this->withClass('cancel', 'button'), 'data-bw-modal-close', 'c');
     }
 
     #[Test]
@@ -127,8 +147,7 @@ class ModalTest extends TestCase
             '<x-bladewind::modal name="c" ok_button_action="saveUser()" close_after_action="false">b</x-bladewind::modal>'
         );
 
-        $this->assertStringNotContainsString("saveUser();hideModal('c')", $html);
-        $this->assertStringContainsString('saveUser()', $html);
+        $this->assertAttribute($html, $this->withClass('okay', 'button'), 'onclick', 'saveUser()');
     }
 
     #[Test]

@@ -24,7 +24,6 @@
                 data-sort-dir="no-sort"
                 data-can-sort="true"
                 data-column-index="{{ $checkable ? $index + 1 : $index }}"
-                onclick="sortTableByColumn(this, '{{ $name }}')"
             @endif>
             <span @class(['peer', 'cursor-pointer' => $column['sortable']])>{{ $column['label'] }}</span>
             @if($column['sortable'])
@@ -45,8 +44,10 @@
         $row = (array) $row;
         $row_id = $row['id'] ?? uniqid();
     @endphp
-    <tr @if($paginated) {!! paginationRow($loop->iteration, $pageSize, $defaultPage) !!} @endif
-        data-id="{{ $row_id }}">
+    {{-- paginationRow() is emitted whether or not the table is paginated, the same
+         as the legacy data path. sortTableByColumn filters rows by data-page, so
+         without it a non-paginated table sorts nothing at all. --}}
+    <tr {!! paginationRow($loop->iteration, $pageSize, $defaultPage) !!} data-id="{{ $row_id }}">
         @if($showRowNumbers)
             <td>{{ $loop->iteration }}</td>
         @endif

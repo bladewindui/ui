@@ -38,13 +38,13 @@
                     dir="{{$iconDir}}"
                     class="text-primary-400 hover:text-primary-500 dark:text-dark-500! dark:hover:text-dark-400! stroke-2 theme-system hidden {{$class}}"/>
         </x-slot:trigger>
-        <x-bladewind::dropmenu.item onclick="chooseTheme('light')" icon="{{$lightIcon}}" icon_css="stroke-2">
+        <x-bladewind::dropmenu.item data-bw-theme="light" icon="{{$lightIcon}}" icon_css="stroke-2">
             {{$lightText}}
         </x-bladewind::dropmenu.item>
-        <x-bladewind::dropmenu.item onclick="chooseTheme('dark')" icon="{{$darkIcon}}" icon_css="stroke-2">
+        <x-bladewind::dropmenu.item data-bw-theme="dark" icon="{{$darkIcon}}" icon_css="stroke-2">
             {{$darkText}}
         </x-bladewind::dropmenu.item>
-        <x-bladewind::dropmenu.item onclick="chooseTheme('system')" icon="{{$systemIcon}}" icon_css="stroke-2">
+        <x-bladewind::dropmenu.item data-bw-theme="system" icon="{{$systemIcon}}" icon_css="stroke-2">
             {{$systemText}}
         </x-bladewind::dropmenu.item>
     </x-bladewind::dropmenu>
@@ -73,6 +73,10 @@
         changeCss('.theme-system','inline-block','remove');
         unhide(`.theme-${theme}`);
         };
+
+        /* delegated rather than three inline onclicks, so a strict CSP does not
+           disable theme switching. see #608 */
+        bwOn('click', '[data-bw-theme]', (el) => chooseTheme(el.getAttribute('data-bw-theme')));
 
         chooseTheme(getFromStorage('theme'));
 

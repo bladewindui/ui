@@ -25,8 +25,8 @@
                  'size-[36px]' => $size == 'medium',
                  'size-[52px]' => $size == 'big',
                  "rounded-md bw-cp-trigger"
-                 ]) onclick="domEl('.bw-cp-{{$name}}').click()">
-            <input type="color" class="invisible bw-cp-{{$name}}" oninput="setColour('{{$name}}', this.value)"/>
+                 ]) data-bw-cp-open="{{$name}}">
+            <input type="color" class="invisible bw-cp-{{$name}}" data-bw-cp-input="{{$name}}"/>
         </div>
     @else
         @php $colors = explode(',', $colors); @endphp
@@ -47,7 +47,7 @@
                     @foreach($colors as $colour)
                         <div class="size-7 rounded-md border-2 border-transparent hover:border-slate-400 dark:border-transparent dark:hover:border-dark-500/50"
                              style="background-color: {{trim($colour)}};"
-                             onclick="setColour('{{$name}}','{{trim($colour)}}')"></div>
+                             data-bw-cp-swatch="{{$name}}" data-bw-cp-colour="{{trim($colour)}}"></div>
                     @endforeach
                 </div>
             </x-bladewind::dropmenu.item>
@@ -64,5 +64,13 @@
         domEl(`.bw-cp-label-${name}`).textContent = colour;
         domEl(`.bw-cp-trigger.${name}`).style.background = colour;
         }
+
+        /* delegated rather than inline, so a strict CSP does not disable the
+           picker. see #608 */
+        bwOn('click', '[data-bw-cp-open]', (el) => domEl(`.bw-cp-${el.getAttribute('data-bw-cp-open')}`)?.click());
+        bwOn('input', '[data-bw-cp-input]', (el) => setColour(el.getAttribute('data-bw-cp-input'), el.value));
+        bwOn('click', '[data-bw-cp-swatch]', (el) => {
+        setColour(el.getAttribute('data-bw-cp-swatch'), el.getAttribute('data-bw-cp-colour'));
+        });
     </x-bladewind::script>
 @endonce

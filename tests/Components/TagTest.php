@@ -110,7 +110,9 @@ class TagTest extends TestCase
         $html = $this->render('<x-bladewind::tag label="New" can_close="true" />');
 
         $this->assertElementCount($html, '//label/a', 1);
-        $this->assertAttributeContains($html, '//label/a', 'onclick', 'this.parentElement.remove()');
+        // #608: the default dismiss is a delegated listener, not an inline onclick
+        $this->assertAttribute($html, '//label/a', 'data-bw-tag-remove', '');
+        $this->assertAttribute($html, '//label/a', 'onclick', null);
         $this->assertElementCount($html, '//label/a/svg', 1);
     }
 
@@ -127,7 +129,10 @@ class TagTest extends TestCase
     {
         $html = $this->render('<x-bladewind::tag label="Ghana" name="country" value="gh 233" can_close="true" />');
 
-        $this->assertAttribute($html, self::TAG, 'onclick', "selectTag('gh-233','country')");
+        // #608: selection is delegated off these attributes rather than inline
+        $this->assertAttribute($html, self::TAG, 'data-bw-tag-value', 'gh-233');
+        $this->assertAttribute($html, self::TAG, 'data-bw-tag-name', 'country');
+        $this->assertAttribute($html, self::TAG, 'onclick', null);
         $this->assertHasClasses($html, self::TAG, ['selectable', 'cursor-pointer', 'bw-country-gh-233']);
         $this->assertNoElement($html, '//label/a');
     }
