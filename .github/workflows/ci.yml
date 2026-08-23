@@ -99,3 +99,45 @@ jobs:
             packages/core/public/css/bladewind-ui.min.css
             packages/core/public/css/bladewind-ui-no-preflight.min.css
           retention-days: 7
+
+  e2e:
+    name: Browser checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      # the specs read the compiled bundle, so build it rather than trusting
+      # whatever happens to be committed
+      - name: Build CSS bundle
+        run: npm run build
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      # popup clipping is geometry: no render test or stylesheet assertion can
+      # see whether a rect is cut by an ancestor's. Tier C of #588.
+      - name: Run browser checks
+        run: npm run test:e2e
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-traces
+          path: test-results/
+          retention-days: 7
