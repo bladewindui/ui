@@ -47,6 +47,7 @@
                 if (options.disabled !== '1' && options.readonly !== '1') {
                     domEl(this.clickArea).addEventListener('click', (e) => {
                         unhide(this.itemsContainer);
+                        this.positionItems();
                     });
                     this.hide();
                     this.search();
@@ -75,12 +76,14 @@
                 let container = domEl(this.itemsContainer);
                 if (!container) return;
 
+                // only aria here. positioning is driven from show/hide directly:
+                // positionItems() changes the very class attribute this watches,
+                // so doing it here feeds the observer its own mutations.
                 new MutationObserver(() => {
-                    let open = !container.classList.contains('hidden');
                     let trigger = domEl(this.clickArea);
-                    if (trigger) trigger.setAttribute('aria-expanded', String(open));
-
-                    open ? this.positionItems() : this.clearItemsPosition();
+                    if (trigger) {
+                        trigger.setAttribute('aria-expanded', String(!container.classList.contains('hidden')));
+                    }
                 }).observe(container, {attributes: true, attributeFilter: ['class']});
 
                 if (!this._repositionBound) {
@@ -147,13 +150,16 @@
                         if (!this.selectedItem) {
                             e.preventDefault();
                             unhide(this.itemsContainer);
+                            this.positionItems();
                             domEl(this.searchInput).focus();
                         } else {
                             hide(this.itemsContainer);
+                            this.clearItemsPosition();
                         }
                     }
                     if (e.key === "Tab" || e.key === "Escape") {
                         hide(this.itemsContainer);
+                        this.clearItemsPosition();
                     }
 
                     if (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Home" || e.key === "End") {
@@ -256,7 +262,10 @@
                 document.addEventListener('mouseup', (e) => {
                     let searchArea = domEl(this.searchInput);
                     let container = domEl((this.isMultiple) ? this.itemsContainer : this.clickArea);
-                    if (searchArea && container && !searchArea.contains(e.target) && !container.contains(e.target)) hide(this.itemsContainer);
+                    if (searchArea && container && !searchArea.contains(e.target) && !container.contains(e.target)) {
+                        hide(this.itemsContainer);
+                        this.clearItemsPosition();
+                    }
                 });
             }
 
@@ -509,6 +518,7 @@
                 // hide(`${this.clickArea} .reset`);
                 domEl(this.clickArea).addEventListener('click', () => {
                     hide(this.itemsContainer);
+                    this.clearItemsPosition();
                 });
                 this.enabled = false;
             }
@@ -518,6 +528,7 @@
                 changeCss(this.clickArea, 'enabled');
                 domEl(this.clickArea).addEventListener('click', (e) => {
                     unhide(this.itemsContainer);
+                    this.positionItems();
                 });
                 this.enabled = true;
             }

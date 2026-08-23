@@ -9,6 +9,11 @@
     <testsuites>
         <testsuite name="Bladewind">
             <directory>tests</directory>
+            <!-- generates the Playwright fixtures; run by npm run test:e2e -->
+            <exclude>tests/E2E</exclude>
+        </testsuite>
+        <testsuite name="fixtures">
+            <directory>tests/E2E</directory>
         </testsuite>
     </testsuites>
     <source>

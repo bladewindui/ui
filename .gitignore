@@ -5,3 +5,7 @@ node_modules
 .idea
 *.lock
 /.phpunit.cache
+
+/test-results
+/playwright-report
+/tests/E2E/public/*.html
