@@ -632,3 +632,22 @@
         }
     }
 })();
+
+/*
+ | The search box used to carry inline onfocus/onblur that ringed the trigger.
+ | Delegated here instead, so a strict CSP does not disable it. focus and blur do
+ | not bubble, hence capture. See #608.
+ */
+(() => {
+    const ring = '!border-2, !outline-2, !-outline-offset-1, !outline-primary-500, ' +
+        '!border-primary-500, dark:!border-primary-500, dark:!outline-primary-500';
+
+    const toggle = (input, action) => {
+        const name = input.getAttribute('data-bw-select-search');
+        changeCss(`.bw-select-${name} .clickable`, ring, action);
+    };
+
+    bwOn('focus', '[data-bw-select-search]', (input) => toggle(input, 'add'), {capture: true});
+    bwOn('blur', '[data-bw-select-search]', (input) => toggle(input, 'remove'), {capture: true});
+})();
+

@@ -27,15 +27,13 @@
         "border-gray-200/70 dark:border-dark-600" => (!$grouped && empty($color))
 ])
      data-open="{{$open ? '1' : '0' }}"
-     data-name="{{$name}}"
-     onclick="toggleVisibility('{{$name}}')">
+     data-name="{{$name}}">
     <div class="flex group justify-between items-center cursor-pointer"
          role="button"
          tabindex="0"
          id="bw-accordion-header-{{$name}}"
          aria-controls="bw-accordion-panel-{{$name}}"
-         aria-expanded="{{ $open ? 'true' : 'false' }}"
-         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
+         aria-expanded="{{ $open ? 'true' : 'false' }}">
         <div @class([
         "flex-1 text-lg accordion-title font-semibold leading-normal",
         'dark:text-dark-400 hover:text-gray-700 dark:hover:text-dark-200' => ((!$grouped && empty($color)) || $grouped),
@@ -55,7 +53,7 @@
          id="bw-accordion-panel-{{$name}}"
          role="region"
          aria-labelledby="bw-accordion-header-{{$name}}"
-         @if(!$contentCanClose) onclick="event.stopPropagation()"@endif>
+         @if(!$contentCanClose) data-bw-keep-open @endif>
         <div @class([
         "pt-2",
         'dark:!text-dark-600' => (!$grouped && !empty($color))

@@ -169,3 +169,32 @@ function resetToOriginalOrder(table, tbody, currentPage) {
     const currentPageRows = originalRows.filter(row => (row.getAttribute('data-page') === currentPage));
     currentPageRows.forEach(row => tbody.appendChild(row));
 }
+
+/*
+ | Sorting is bound by delegation rather than an inline onclick, so a strict CSP
+ | does not disable it and headings rendered after load still work. See #608.
+ */
+bwOn('click', 'th[data-can-sort="true"]', (th) => {
+    const table = th.closest('table');
+    if (table) sortTableByColumn(th, table.dataset.name);
+});
+
+/*
+ | The filter bar's input used to carry an inline onInput that reached for the
+ | page's tableData_<name> global. Delegated here instead, so a strict CSP does
+ | not disable searching. See #608.
+ */
+bwOn('input', '[data-bw-table-search]', (input) => {
+    const name = input.getAttribute('data-bw-table-search');
+    const data = window[`tableData_${name.replace(/-/g, '_')}`];
+
+    filterTableDebounced(
+        input.value,
+        `table.${name}`,
+        input.getAttribute('data-bw-search-field'),
+        parseInt(input.getAttribute('data-bw-search-debounce'), 10) || 0,
+        parseInt(input.getAttribute('data-bw-search-min'), 10) || 0,
+        data
+    )();
+});
+

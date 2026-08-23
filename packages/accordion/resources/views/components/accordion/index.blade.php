@@ -64,5 +64,15 @@
         const isOpen = accordion.getAttribute('data-open') === '1';
         toggleState(accordion, !isOpen);
         };
+
+        /* bound by delegation rather than an inline onclick, so a strict CSP does
+           not disable the accordion. see #608 */
+        bwOn('click', '.bw-accordion', (item, e) => {
+        // content_can_close="false" marks the body, so clicking inside it does not
+        // collapse the item. this used to be an inline event.stopPropagation()
+        if (e.target.closest('[data-bw-keep-open]')) return;
+        toggleVisibility(item.getAttribute('data-name'));
+        });
+        bwActivateOnKey('.bw-accordion [role="button"][aria-controls]');
     </x-bladewind::script>
 @endonce

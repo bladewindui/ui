@@ -152,4 +152,59 @@ class BuildFixturesTest extends TestCase
 
         $this->assertFileExists(self::OUT.'/tooltip-clipping.html');
     }
+
+    /**
+     * #608 moved every library-owned handler from an inline on* attribute onto a
+     * delegated listener. Nothing in PHP can tell whether clicking still does
+     * anything, so the behaviours get a fixture of their own.
+     */
+    #[Test]
+    public function it_writes_the_delegated_handler_fixture(): void
+    {
+        $accordion = $this->render(
+            "<x-bladewind::accordion name=\"grp\">\n"
+            ."<x-bladewind::accordion.item title=\"First\">first body</x-bladewind::accordion.item>\n"
+            ."</x-bladewind::accordion>"
+        );
+
+        $tabs = $this->render(
+            "<x-bladewind::tab name=\"t\">\n"
+            ."<x-slot:headings>\n"
+            ."<x-bladewind::tab.heading name=\"one\" label=\"One\" active=\"true\" />\n"
+            ."<x-bladewind::tab.heading name=\"two\" label=\"Two\" />\n"
+            ."</x-slot:headings>\n"
+            ."<x-bladewind::tab.content name=\"one\" active=\"true\">panel one</x-bladewind::tab.content>\n"
+            ."<x-bladewind::tab.content name=\"two\">panel two</x-bladewind::tab.content>\n"
+            ."</x-bladewind::tab>"
+        );
+
+        $table = $this->render(
+            '<x-bladewind::table name="orders" :columns="$cols" :rows="$rows" />',
+            [
+                'cols' => [['key' => 'ref', 'label' => 'Ref', 'sortable' => true]],
+                'rows' => [['ref' => 'c'], ['ref' => 'a'], ['ref' => 'b']],
+            ]
+        );
+
+        $rating = $this->render('<x-bladewind::rating name="r" rating="1" clickable="true" />');
+        $tag = $this->render('<x-bladewind::tag label="Closable" can_close="true" />');
+        $alert = $this->render('<x-bladewind::alert type="info" show_close_icon="true">Dismiss me</x-bladewind::alert>');
+
+        $body = <<<HTML
+        <h1>Delegated handlers</h1>
+        <section id="accordion">{$accordion}</section>
+        <section id="tabs">{$tabs}</section>
+        <section id="table">{$table}</section>
+        <section id="rating">{$rating}</section>
+        <section id="tag">{$tag}</section>
+        <section id="alert">{$alert}</section>
+        HTML;
+
+        file_put_contents(
+            self::OUT.'/delegated-handlers.html',
+            $this->relative($this->page('Delegated handlers', $body))
+        );
+
+        $this->assertFileExists(self::OUT.'/delegated-handlers.html');
+    }
 }

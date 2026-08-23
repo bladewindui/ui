@@ -4,7 +4,7 @@
     'rating' => 0,
     'size' => config('bladewind.rating.size', 'small'),
     'color' => 'orange',
-    'onclick' => 'javascript:void(0)',
+    'onclick' => '',
     'type' => config('bladewind.rating.type', 'star'),
     'clickable' => config('bladewind.rating.clickable', true),
     'nonce' => config('bladewind.script.nonce', null),
@@ -50,9 +50,8 @@
                 'cursor-default' => !$clickable,
              ])
              @if($clickable)
-                 onmouseover="previewRating('{{$name}}', {{$x}})"
-                 onmouseout="restoreRating('{{$name}}')"
-                 onclick="setRating('{{$name}}', {{$x}});{!!$onclick!!}"
+                 data-bw-rating="{{$name}}"
+                 @if($onclick !== '') onclick="{!!$onclick!!}" @endif
              @endif>
             <svg xmlns="http://www.w3.org/2000/svg"
                  @class([
@@ -159,5 +158,18 @@
         }
 
         enableRatingKeyboard('{{$name}}');
+
+        /* hover preview and click-to-set are delegated rather than inline, so a
+           strict CSP does not disable them. a consumer's own onclick stays on the
+           element and still runs — after ours, as it did before. see #608 */
+        @once
+        bwOn('mouseover', '[data-bw-rating]', (star) => {
+        previewRating(star.getAttribute('data-bw-rating'), parseInt(star.getAttribute('data-rating'), 10));
+        });
+        bwOn('mouseout', '[data-bw-rating]', (star) => restoreRating(star.getAttribute('data-bw-rating')));
+        bwOn('click', '[data-bw-rating]', (star) => {
+        setRating(star.getAttribute('data-bw-rating'), parseInt(star.getAttribute('data-rating'), 10));
+        }, {capture: true});
+        @endonce
     </x-bladewind::script>
 @endif

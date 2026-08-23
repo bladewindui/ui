@@ -222,8 +222,7 @@
                     add_clearing="false"
                     :placeholder="$searchPlaceholder"
                     suffix="magnifying-glass"
-                    onfocus="changeCss('.bw-select-{{$input_name}} .clickable', '!border-2, !outline-2, !-outline-offset-1, !outline-primary-500, !border-primary-500, dark:!border-primary-500, dark:!outline-primary-500')"
-                    onblur="changeCss('.bw-select-{{$input_name}} .clickable', '!border-2, !outline-2, !-outline-offset-1, !outline-primary-500, !border-primary-500, dark:!border-primary-500, dark:!outline-primary-500','remove')"
+                    data-bw-select-search="{{$input_name}}"
                     suffixIsIcon="true"/>
         </div>
         <div class="divide-y divide-gray-100 dark:divide-dark-600/80 bw-select-items mt-0"

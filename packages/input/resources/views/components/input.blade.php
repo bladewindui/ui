@@ -231,7 +231,7 @@
         <div class="text-red-500 text-xs p-1 {{ $name }}-validation-error">{{ $validation_error }}</div>
     @endif
     @if(!empty($label))
-        <label for="{{ $name }}" class="form-label {{$size}}" onclick="domEl('.{{$name}}').focus()">{!! $label !!}
+        <label for="{{ $name }}" class="form-label {{$size}}" data-bw-focuses="{{$name}}">{!! $label !!}
             @if($required)
                 <x-bladewind::icon name="star" class="!text-red-400 !w-2 !h-2 mt-[-2px]" type="solid"/>
             @endif
