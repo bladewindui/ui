@@ -32,6 +32,7 @@ class BladewindScripts
         'mask' => ['mask.js'],
         'animations' => ['animations.js'],
         'sortable' => ['sortable.min.js'],
+        'tooltip' => ['tooltip.js'],
     ];
 
     /**

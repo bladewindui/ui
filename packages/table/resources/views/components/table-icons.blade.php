@@ -25,3 +25,9 @@
         </div>
     </td>
 @endif
+
+@once
+    {{-- these icons carry data-tooltip directly, so they need the tooltip script
+         even on a page with no <x-bladewind::tooltip> on it --}}
+    <x-bladewind::script src="{{ asset('vendor/bladewind/js/tooltip.js') }}"></x-bladewind::script>
+@endonce
