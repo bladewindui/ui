@@ -1,5 +1,5 @@
 {
-    "name": "mkocansey/bladewind",
+    "name": "bladewindui/bladewindui",
     "description": "BladewindUI — elegant Laravel Blade UI components powered by TailwindCSS",
     "keywords": [
         "laravel",
@@ -139,6 +139,7 @@
         }
     },
     "replace": {
+        "mkocansey/bladewind": "self.version",
         "mkocansey/bladewind-accordion": "4.3.0",
         "mkocansey/bladewind-alert": "4.3.0",
         "mkocansey/bladewind-avatar": "4.3.0",
