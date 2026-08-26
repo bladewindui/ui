@@ -9,11 +9,73 @@
     'defaultPage' => 1,
     'table' => null,
     'label' => __("bladewind::bladewind.pagination_label"),
+
+    // a Laravel paginator. when present the component renders server-side links
+    // instead of the DOM show/hide mode, which cannot work against a paginator.
+    'paginator' => null,
+
+    // page sizes to offer in a per-page selector. empty hides the selector.
+    'perPageOptions' => config('bladewind.pagination.per_page_options', []),
+
+    // query string parameter the per-page selector writes to
+    'perPageName' => config('bladewind.pagination.per_page_name', 'per_page'),
+
+    // how many page numbers to show either side of the current one
+    'onEachSide' => config('bladewind.pagination.on_each_side', 1),
+
     'nonce' => config('bladewind.script.nonce', null),
 ])
 
 @php
     $showTotal = parseBladewindVariable($showTotal);
+    $onEachSide = parseBladewindVariable($onEachSide, 'int') ?: 0;
+
+    // ---- server mode -----------------------------------------------------
+    // a paginator switches the whole component over. everything below this block
+    // is the original client-side mode and is untouched.
+    $is_length_aware = $paginator instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator;
+    $is_paginator = $is_length_aware || $paginator instanceof \Illuminate\Contracts\Pagination\Paginator;
+
+    if ($is_paginator) {
+        $current_page = $paginator->currentPage();
+        $per_page = $paginator->perPage();
+        $from = $paginator->firstItem() ?? 0;
+        $to = $paginator->lastItem() ?? 0;
+        $total = $is_length_aware ? $paginator->total() : null;
+        $last_page = $is_length_aware ? max(1, (int) $paginator->lastPage()) : null;
+
+        // first and last are always reachable, with an ellipsis standing in for
+        // whatever the window leaves out. prev/next alone gives the reader no
+        // sense of position, which is why the audited app replaced this outright.
+        $pages = [];
+        if ($is_length_aware) {
+            $window_start = max(1, $current_page - $onEachSide);
+            $window_end = min($last_page, $current_page + $onEachSide);
+
+            foreach (range($window_start, $window_end) as $p) {
+                $pages[] = $p;
+            }
+            if ($window_start > 1) {
+                array_unshift($pages, ...($window_start > 2 ? [1, '...'] : [1]));
+            }
+            if ($window_end < $last_page) {
+                array_push($pages, ...($window_end < $last_page - 1 ? ['...', $last_page] : [$last_page]));
+            }
+        }
+
+        $server_label = str_replace(
+            [':a', ':b', ':c'],
+            [
+                '<span class="font-semibold from">'.$from.'</span>',
+                '<span class="font-semibold to">'.$to.'</span>',
+                '<strong>'.($total ?? '').'</strong>',
+            ],
+            $label
+        );
+
+        $per_page_options = is_array($perPageOptions) ? $perPageOptions : array_filter(explode(',', (string) $perPageOptions));
+    }
+
     $showPageNumber = parseBladewindVariable($showPageNumber);
     $showTotalPages = parseBladewindVariable($showTotalPages);
     $defaultPage = parseBladewindVariable($defaultPage, 'int');
@@ -35,7 +97,9 @@
 @endphp
 {{-- format-ignore-end --}}
 
-@if(!empty($totalRecords) && !empty($table))
+@if($is_paginator)
+    @include('bladewind::components.pagination-server')
+@elseif(!empty($totalRecords) && !empty($table))
     <x-bladewind::script :nonce="$nonce">
         var previousPage_{{$table}} = {{$defaultPage}};
         var totalPages_{{$table}} = {{$total_pages}};
@@ -59,7 +123,7 @@
                         color="gray"
                         size="tiny"
                         icon="arrow-left" class="!pr-0 prev-btn {{$prev_button_status_css}}"
-                        onclick="goToPage('{{$prev_page}}', '{{$table}}', '{{$defaultPage}}')"/>
+                        data-bw-page="{{$prev_page}}" data-bw-page-table="{{$table}}" data-bw-page-current="{{$defaultPage}}"/>
                 <span class="page-number font-semibold p-1 @if(!$showPageNumber)hidden @endif"><span
                             class="page">{{$defaultPage}}</span>@if($showTotalPages)
                         /{{$total_pages}}
@@ -70,7 +134,7 @@
                         color="gray"
                         size="tiny"
                         icon="arrow-right" class="!pr-0 next-btn {{$next_button_status_css}}"
-                        onclick="goToPage('{{$next_page}}', '{{$table}}')"/>
+                        data-bw-page="{{$next_page}}" data-bw-page-table="{{$table}}"/>
             @elseif($style == 'dropdown')
                 <div class="!z-50">
                     <span class="table-name hidden" data-value="{{$table}}"></span>
@@ -92,7 +156,7 @@
                             icon="arrow-left"
                             size="tiny"
                             class="!mr-0.5 !pl-5 !pr-1 prev-btn {{$default_button_css}}"
-                            onclick="routeToPage('{{$prev_page}}', '', '', {table: '{{$table}}'}); shufflePageNumbers('{{$prev_page}}', '{{$table}}')"/>
+                            data-bw-route-page="{{$prev_page}}" data-bw-page-table="{{$table}}"/>
                     <span class="mt-3 prev-dots"></span>
                     @for($p=1; $p <= $total_pages; $p++)
                         @php
@@ -105,7 +169,7 @@
                                 size="tiny"
                                 data-page="{{$p}}"
                                 class="btn {{ (strlen($p) == 1) ? '!px-3' : '!px-2' }} hidden !text-xs !mx-0.5 btn-{{$p}} {{$button_css}}"
-                                onclick="routeToPage('{{$p}}', '', '', {table: '{{$table}}'}); shufflePageNumbers('{{$p}}', '{{$table}}')">{{$p}}</x-bladewind::button>
+                                data-bw-route-page="{{$p}}" data-bw-page-table="{{$table}}">{{$p}}</x-bladewind::button>
                         <span class="mt-3 dots-{{$p}}"></span>
                     @endfor
                     <span class="mt-3 next-dots"></span>
@@ -116,7 +180,7 @@
                             icon="arrow-right"
                             size="tiny"
                             class="!ml-0.5 !pl-5 !pr-1 next-btn {{$default_button_css}}"
-                            onclick="routeToPage('{{$next_page}}', '', '', {table: '{{$table}}'}); shufflePageNumbers('{{$next_page}}', '{{$table}}')"/>
+                            data-bw-route-page="{{$next_page}}" data-bw-page-table="{{$table}}"/>
                 </div>
                 <x-bladewind::script :nonce="$nonce">shufflePageNumbers('{{$defaultPage}}', '{{$table}}')
                 </x-bladewind::script>
@@ -124,7 +188,22 @@
         </div>
     </div>
 @endif
+@if(! $is_paginator)
 @once
+    <x-bladewind::script :nonce="$nonce">
+        /* delegated rather than inline, so a strict CSP does not disable paging.
+           the buttons are re-rendered as pages change, which delegation survives
+           and a per-element listener would not. see #608 */
+        bwOn('click', '[data-bw-page]', (el) => {
+        goToPage(el.getAttribute('data-bw-page'), el.getAttribute('data-bw-page-table'), el.getAttribute('data-bw-page-current') || undefined);
+        });
+        bwOn('click', '[data-bw-route-page]', (el) => {
+        const page = el.getAttribute('data-bw-route-page');
+        const table = el.getAttribute('data-bw-page-table');
+        routeToPage(page, '', '', {table: table});
+        shufflePageNumbers(page, table);
+        });
+    </x-bladewind::script>
     <span class="dots hidden"><x-bladewind::icon name="ellipsis-horizontal"/></span>
     <x-bladewind::script :nonce="$nonce">
         var selectPage = (page, previousPage, table) => {
@@ -272,3 +351,4 @@
         }
     </x-bladewind::script>
 @endonce
+@endif

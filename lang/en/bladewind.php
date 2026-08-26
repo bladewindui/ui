@@ -71,6 +71,12 @@ return [
     "filepicker_invalid_file_type" => "Wrong file type uploaded",
     "filepicker_expected_file_types" => "Only {allButLastType} and {lastType} files allowed",
 
+    "slider_label" => "Value",
+    "rating_label" => "Rating",
+    "rating_value" => "{0}Not rated|{1}:value out of 5|[2,*]:value out of 5",
+    "pagination_per_page" => "Per page",
+    "pagination_previous" => "Previous page",
+    "pagination_next" => "Next page",
     "pagination_label" => "Showing :a to :b of :c records", // showing 1 to 20 of 100 records
     "select_placeholder" => "Select One",
     "select_search_placeholder" => "Type here...",

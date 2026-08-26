@@ -1,28 +1,31 @@
 # Releasing BladewindUI
 
-All work happens in **this monorepo**, hosted at **`mkocansey/bladewind`**
-(your local clone may sit in a directory called `bladewindui` — that's just a local
-folder name; the GitHub remote and the Packagist source are both `mkocansey/bladewind`).
+All work happens in **this monorepo**, hosted at **`bladewindui/bladewindui`**.
 The individual package repos (`mkocansey/bladewind-table` etc.) are **read-only mirrors** — never push to them directly.
 
-> ⚠️ **Never target a split repo named `bladewind`.** That name belongs to *this*
-> monorepo's own remote. A matrix entry that splits `packages/meta` into a repo called
-> `bladewind` makes the split action force-push filtered subtree history into its own
-> parent, overwriting `main` (this happened on 2026-06-08 — `main` was wiped down to
-> 3 files and had to be restored from a contributor's local clone). See the note above
-> the (deliberately absent) `packages/meta` entry in `split-packages.yml`.
+> ⚠️ **Never target a split repo that resolves to this monorepo's own remote.**
+> A matrix entry whose `repository_organization` + `split_repository` add up to the
+> monorepo itself makes the split action force-push filtered subtree history into its
+> own parent, overwriting `main`. That happened on 2026-06-08, when an entry targeted
+> `bladewind` while the monorepo lived at `mkocansey/bladewind` — `main` was wiped down
+> to 3 files and restored from a contributor's local clone.
+>
+> **The forbidden name moved with the repo.** It is now `bladewindui` + `bladewindui`.
+> The splits still push to the `mkocansey` org, so nothing can collide today; if they
+> are ever moved, that pairing recreates the incident. See the note above the
+> (deliberately absent) `packages/meta` entry in `split-packages.yml`.
 
 ---
 
 ## Root `composer.json` — why it is a `library` with `replace`
 
-The monorepo root is named `mkocansey/bladewind` and declares `type: library` so that
-downstream projects can depend on it directly via a Composer **path repository** during
-local development:
+The monorepo root is named `bladewindui/bladewindui` and declares `type: library` so
+that downstream projects can depend on it directly via a Composer **path repository**
+during local development:
 
 ```json
 "repositories": {
-    "mkocansey/bladewind": {
+    "bladewindui/bladewindui": {
         "type": "path",
         "url": "/path/to/bladewindui"
     }
@@ -36,18 +39,83 @@ are made for the individual split repos during local dev.
 The `extra.laravel.providers` list registers all component service providers so Laravel
 auto-discovers them from a single path-repo install.
 
-**On Packagist**, `mkocansey/bladewind` is sourced **directly from this monorepo**
-(`github.com/mkocansey/bladewind`) — and has been since 2022 (versions v3.0.10 through
-the current release all resolve to this repo's root, per Packagist's own `source.url`
-metadata). The root `composer.json` *is* the published full-install package: its
-`replace` block declares every granular sub-package at `self.version`, so installing
-`mkocansey/bladewind` transparently satisfies `mkocansey/bladewind-button`,
-`mkocansey/bladewind-table`, etc. without Composer ever touching the split repos.
+**On Packagist**, `bladewindui/bladewindui` is sourced **directly from this monorepo**.
+The root `composer.json` *is* the published full-install package: its `replace` block
+declares every granular sub-package, so installing it transparently satisfies
+`mkocansey/bladewind-button`, `mkocansey/bladewind-table`, etc. without Composer ever
+touching the split repos.
+
+That `replace` block also declares the package's **former name**,
+`mkocansey/bladewind`, at `self.version`. Anything that still depends on the old name —
+a consuming app, or a third-party package — is satisfied by installing this one.
 
 `packages/meta` is **intentionally not split** into its own repo — doing so would
 require a split target literally named `bladewind`, which collides with this monorepo's
 own remote (see the warning above, and the explanatory note in `split-packages.yml`
 where that matrix entry would otherwise go).
+
+---
+
+## Moving the package to `bladewindui/bladewindui`
+
+The root `composer.json`, `split-packages.yml` and this file are already prepared for
+the move. **This branch must not reach `main` until the new repo and Packagist package
+exist** — the moment `main` says `bladewindui/bladewindui`, Packagist's webhook for
+`mkocansey/bladewind` sees a name mismatch and refuses the update.
+
+### What deliberately does not change
+
+Only the Composer package name and the GitHub location move. These stay exactly as they
+are, and that is what keeps consuming apps working untouched:
+
+| identifier | value | set by |
+|---|---|---|
+| PHP namespace | `Mkocansey\Bladewind\…` | `autoload.psr-4` |
+| Blade namespace | `bladewind` → `x-bladewind::card` | `loadViewsFrom(..., 'bladewind')` |
+| config key | `bladewind` | `mergeConfigFrom(..., 'bladewind')` |
+| published assets | `public/vendor/bladewind` | `BladewindCoreServiceProvider` |
+| lang path | `lang/vendor/bladewind` | `BladewindCoreServiceProvider` |
+
+Renaming the Blade namespace would rewrite every component tag in every consuming app —
+one audited application alone has ~4,600 of them — for no benefit. Don't.
+
+### Steps
+
+1. **Create `bladewindui/bladewindui`** on GitHub. Do *not* transfer
+   `mkocansey/bladewind`: the old repo has to keep existing to serve the compatibility
+   shim in step 4, and creating a repo at a transferred name disables GitHub's redirect
+   anyway. The trade is that stars, watchers and issues stay on the old repo.
+2. **Push this monorepo's full history** to the new remote, then merge this branch.
+3. **Register `bladewindui/bladewindui` on Packagist** with the GitHub webhook, and
+   release `4.4.0` from it using the flow below. Keep the version line continuous —
+   starting again at 1.0.0 would break `monorepo-builder`'s single-version invariant.
+4. **Publish the shim.** On `mkocansey/bladewind`, reduce `composer.json` to the
+   metapackage in `docs/migration/old-package-composer.json` and tag `4.4.0`. An
+   existing app then picks up the real package on its next `composer update` with no
+   changes to its own code — same namespace, same tags, same config, same assets.
+5. **Mark `mkocansey/bladewind` abandoned** on Packagist, replacement
+   `bladewindui/bladewindui`. The notice is advisory; the shim keeps it working.
+
+### Tell consumers about the vendor path
+
+The one thing that genuinely breaks is a hardcoded `vendor/mkocansey/bladewind` path.
+Tailwind v4 apps commonly have:
+
+```css
+@source '../../vendor/mkocansey/bladewind/packages';
+```
+
+After the move that is `vendor/bladewindui/bladewindui/packages`. **The build does not
+error** — it silently stops generating the utilities scanned from BladeWind templates,
+and styles go missing. This belongs at the top of the release notes.
+
+### The split mirrors are staying put
+
+The 48 `mkocansey/bladewind-*` repos are not moving in this change. They are read-only
+mirrors, they keep working, and moving them means 48 new repos plus 48 Packagist
+registrations plus 48 shims. `repository_organization` in `split-packages.yml` therefore
+stays `mkocansey` — and if you ever do move them, re-read the warning at the top of this
+file first.
 
 ---
 
@@ -241,6 +309,25 @@ Aggregate packages are `type: metapackage` — they contain no code, only a `req
 8. Register it on Packagist with a GitHub webhook
 
 9. Release a new minor version
+
+### Rendering the attribute bag
+
+If your component spreads `$attributes` onto its root element, call
+`exceptPropAliases(get_defined_vars())` first:
+
+```blade
+<div {{ $attributes->exceptPropAliases(get_defined_vars())->merge(['class' => $classes]) }}>
+```
+
+Blade camel-cases an attribute name into the component's data, so `has_shadow="false"`
+correctly sets `$hasShadow` — but `@props` only strips the camelCase and kebab-case
+spellings from the bag, so the snake_case key survives and renders onto the root as a
+literal `has_shadow="false"` attribute. Since the docs use snake_case throughout, that
+affects nearly every consumer. The macro is registered by `BladewindCoreServiceProvider`,
+which every component package depends on.
+
+`tests/Components/PropAliasLeakTest.php` covers every component that renders the bag.
+Add yours to its provider — that is what stops the next component reintroducing this.
 
 ### Where assets live
 

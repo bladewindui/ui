@@ -1,4 +1,74 @@
-/* Size overrides — the base [data-tooltip] font-size (.9rem) maps to "small".
-   Only tiny and regular need explicit rules. */
-[data-tooltip][data-size="tiny"]:after   { font-size: .7rem !important; padding: .2em .35em !important; }
-[data-tooltip][data-size="regular"]:after { font-size: 1rem !important; padding: .5em .65em !important; }
+/*
+ | Tooltip
+ |
+ | The bubble used to be drawn with [data-tooltip]::after on the trigger itself,
+ | from the vendored popup stylesheet. A pseudo-element cannot leave its own
+ | element, so any ancestor establishing a scroll container clipped it — most
+ | often the overflow-x-auto wrapper a wide table needs, which is exactly where
+ | the table's action-icon tooltips live. See #591.
+ |
+ | tooltip.js now draws a single bubble appended to <body> and positions it fixed
+ | against the trigger. It adds .bw-tooltip-js to <html>, which switches the old
+ | pseudo-element off. Without JS the CSS bubble still works, clipping and all,
+ | so nothing gets worse when the script is absent.
+ */
+
+.bw-tooltip-js [data-tooltip]:before,
+.bw-tooltip-js [data-tooltip]:after {
+    display: none;
+    content: none;
+}
+
+.bw-tooltip-bubble {
+    position: fixed;
+    z-index: 9999;
+    max-width: 20rem;
+    width: max-content;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .12s ease;
+    border-radius: .28571429rem;
+    line-height: 1.4285em;
+    font-weight: 400;
+    font-style: normal;
+    text-align: left;
+    text-transform: none;
+    white-space: normal;
+    background: #fff;
+    color: rgba(0, 0, 0, .87);
+    border: 1px solid #d4d4d5;
+    box-shadow: 0 2px 4px 0 rgba(34, 36, 38, .12), 0 2px 10px 0 rgba(34, 36, 38, .15);
+}
+
+.bw-tooltip-bubble[data-open="1"] {
+    opacity: 1;
+}
+
+/* the arrow, rotated out of a corner of the bubble */
+.bw-tooltip-bubble:after {
+    content: '';
+    position: absolute;
+    width: .5rem;
+    height: .5rem;
+    background: inherit;
+    border: inherit;
+    transform: rotate(45deg);
+}
+
+.bw-tooltip-bubble[data-side="top"]:after    { bottom: -.29rem; left: 50%; margin-left: -.25rem; border-top: 0; border-left: 0; }
+.bw-tooltip-bubble[data-side="bottom"]:after { top: -.29rem; left: 50%; margin-left: -.25rem; border-bottom: 0; border-right: 0; }
+.bw-tooltip-bubble[data-side="left"]:after   { right: -.29rem; top: 50%; margin-top: -.25rem; border-bottom: 0; border-left: 0; }
+.bw-tooltip-bubble[data-side="right"]:after  { left: -.29rem; top: 50%; margin-top: -.25rem; border-top: 0; border-right: 0; }
+
+/* inverted, which is what data-inverted asked for on the old bubble */
+.bw-tooltip-bubble[data-inverted="1"] {
+    background: #1b1c1d;
+    color: #fff;
+    border-color: #1b1c1d;
+    box-shadow: none;
+}
+
+/* sizes. small is the default and matches the old base font-size */
+.bw-tooltip-bubble[data-size="tiny"]    { font-size: .7rem; padding: .2em .35em; }
+.bw-tooltip-bubble[data-size="small"]   { font-size: .9rem; padding: .433em .533em; }
+.bw-tooltip-bubble[data-size="regular"] { font-size: 1rem; padding: .5em .65em; }

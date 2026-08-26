@@ -1,6 +1,10 @@
 {{-- format-ignore-start --}}
 @props([
     'name' => defaultBladewindName('bw-slider-'),
+
+    // accessible name for the range input(s). a slider with no name reaches a
+    // screen reader as an anonymous control. see #597
+    'ariaLabel' => __('bladewind::bladewind.slider_label'),
     'min' => 0,
     'max' => 100,
     'step' => 1,
@@ -30,14 +34,14 @@
 {{-- format-ignore-end --}}
 
 <div class="bw-slider-container w-full relative {{$class}}">
-    <input type="range"
+    <input type="range" aria-label="{{ $ariaLabel }}"
            min="{{$min}}"
            max="{{$max}}"
            value="{{$selected}}"
            step="{{$step}}"
            class="bw-slider min-slider-{{$name}} {{$colour}}"/>
     @if($range)
-        <input type="range"
+        <input type="range" aria-label="{{ $ariaLabel }}"
                min="{{$min}}"
                max="{{$max}}"
                value="{{$maxSelected}}"

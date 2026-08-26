@@ -47,6 +47,7 @@
                 if (options.disabled !== '1' && options.readonly !== '1') {
                     domEl(this.clickArea).addEventListener('click', (e) => {
                         unhide(this.itemsContainer);
+                        this.positionItems();
                     });
                     this.hide();
                     this.search();
@@ -54,10 +55,93 @@
                     this.selectItem();
                     this.enableKeyboardNavigation();
                     this.setEmptyStateMessage();
+                    this.prepareAccessibility();
                 } else {
                     this.selectItem();
                     this.enabled = false;
                 }
+            }
+
+            /**
+             * aria-activedescendant has to point at an id, so every option needs
+             * one. They are assigned here rather than in the blade template
+             * because a value is only unique within its own select.
+             */
+            prepareAccessibility = () => {
+                domEls(this.selectItems).forEach((el, index) => {
+                    if (!el.id) el.id = `bw-option-${this.name}-${index}`;
+                });
+
+                // the expanded state is only true while the list is actually open
+                let container = domEl(this.itemsContainer);
+                if (!container) return;
+
+                // only aria here. positioning is driven from show/hide directly:
+                // positionItems() changes the very class attribute this watches,
+                // so doing it here feeds the observer its own mutations.
+                new MutationObserver(() => {
+                    let trigger = domEl(this.clickArea);
+                    if (trigger) {
+                        trigger.setAttribute('aria-expanded', String(!container.classList.contains('hidden')));
+                    }
+                }).observe(container, {attributes: true, attributeFilter: ['class']});
+
+                if (!this._repositionBound) {
+                    this._repositionBound = true;
+                    let onViewportChange = () => {
+                        if (!container.classList.contains('hidden')) this.positionItems();
+                    };
+                    window.addEventListener('resize', onViewportChange);
+                    // capture phase, so scrolling any ancestor is caught too
+                    window.addEventListener('scroll', onViewportChange, true);
+                }
+            }
+
+            /**
+             * Position the list with position:fixed against the trigger's bounding
+             * rect, rather than absolutely inside the component's own subtree.
+             *
+             * An absolutely positioned list is clipped by any ancestor that
+             * establishes a scroll container — and the overwhelmingly common one is
+             * the overflow-x-auto wrapper every wide table needs, where overflow-x:
+             * auto silently computes overflow-y to auto and clips vertically too.
+             * Fixed positioning takes the list out of that flow entirely. Same
+             * approach dropmenu already uses. See #591.
+             */
+            positionItems = () => {
+                let root = domEl(this.rootElement);
+                let container = domEl(this.itemsContainer);
+                if (!root || !container) return;
+
+                let rect = root.getBoundingClientRect();
+
+                container.classList.remove('absolute');
+                container.classList.add('fixed');
+                container.style.width = `${rect.width}px`;
+                container.style.left = `${rect.left}px`;
+                container.style.zIndex = '9999';
+
+                // flip above the trigger when the space below cannot hold the list
+                let height = container.offsetHeight || 0;
+                let below = window.innerHeight - rect.bottom;
+
+                if (height > below && rect.top > below) {
+                    container.style.top = `${Math.max(0, rect.top - height)}px`;
+                } else {
+                    // -mt-1.5 in the markup tucks the list under the trigger's border
+                    container.style.top = `${rect.bottom - 6}px`;
+                }
+            }
+
+            clearItemsPosition = () => {
+                let container = domEl(this.itemsContainer);
+                if (!container) return;
+
+                container.classList.remove('fixed');
+                container.classList.add('absolute');
+                ['width', 'left', 'top', 'zIndex'].forEach((property) => {
+                    container.style[property] = '';
+                });
             }
 
             enableKeyboardNavigation = () => {
@@ -66,16 +150,19 @@
                         if (!this.selectedItem) {
                             e.preventDefault();
                             unhide(this.itemsContainer);
+                            this.positionItems();
                             domEl(this.searchInput).focus();
                         } else {
                             hide(this.itemsContainer);
+                            this.clearItemsPosition();
                         }
                     }
                     if (e.key === "Tab" || e.key === "Escape") {
                         hide(this.itemsContainer);
+                        this.clearItemsPosition();
                     }
 
-                    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+                    if (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Home" || e.key === "End") {
                         e.preventDefault();
                         let els = [...domEls(this.selectItems)].filter((el) => {
                             if (el.classList.contains('hidden')) {
@@ -86,7 +173,11 @@
                         });
 
                         let next;
-                        if (!this.selectedItem) {
+                        if (e.key === 'Home') {
+                            next = els[0];
+                        } else if (e.key === 'End') {
+                            next = els[els.length - 1];
+                        } else if (!this.selectedItem) {
                             next = e.key === 'ArrowDown' ? els[0] : els[els.length - 1];
                         } else {
                             let idx = els.indexOf(this.selectedItem);
@@ -151,6 +242,15 @@
             highlightItem = (item) => {
                 changeCssForDomArray(`${this.rootElement} .bw-select-item`, 'bg-slate-100/90', 'remove');
                 changeCss(item, 'bg-slate-100/90', 'add', true);
+
+                let trigger = domEl(this.clickArea);
+                if (trigger && item && item.id) trigger.setAttribute('aria-activedescendant', item.id);
+
+                // single select: only one option can carry aria-selected
+                if (!this.isMultiple) {
+                    domEls(this.selectItems).forEach((el) => el.setAttribute('aria-selected', 'false'));
+                }
+                if (item) item.setAttribute('aria-selected', 'true');
             }
 
 
@@ -162,7 +262,10 @@
                 document.addEventListener('mouseup', (e) => {
                     let searchArea = domEl(this.searchInput);
                     let container = domEl((this.isMultiple) ? this.itemsContainer : this.clickArea);
-                    if (searchArea && container && !searchArea.contains(e.target) && !container.contains(e.target)) hide(this.itemsContainer);
+                    if (searchArea && container && !searchArea.contains(e.target) && !container.contains(e.target)) {
+                        hide(this.itemsContainer);
+                        this.clearItemsPosition();
+                    }
                 });
             }
 
@@ -415,6 +518,7 @@
                 // hide(`${this.clickArea} .reset`);
                 domEl(this.clickArea).addEventListener('click', () => {
                     hide(this.itemsContainer);
+                    this.clearItemsPosition();
                 });
                 this.enabled = false;
             }
@@ -424,6 +528,7 @@
                 changeCss(this.clickArea, 'enabled');
                 domEl(this.clickArea).addEventListener('click', (e) => {
                     unhide(this.itemsContainer);
+                    this.positionItems();
                 });
                 this.enabled = true;
             }
@@ -527,3 +632,22 @@
         }
     }
 })();
+
+/*
+ | The search box used to carry inline onfocus/onblur that ringed the trigger.
+ | Delegated here instead, so a strict CSP does not disable it. focus and blur do
+ | not bubble, hence capture. See #608.
+ */
+(() => {
+    const ring = '!border-2, !outline-2, !-outline-offset-1, !outline-primary-500, ' +
+        '!border-primary-500, dark:!border-primary-500, dark:!outline-primary-500';
+
+    const toggle = (input, action) => {
+        const name = input.getAttribute('data-bw-select-search');
+        changeCss(`.bw-select-${name} .clickable`, ring, action);
+    };
+
+    bwOn('focus', '[data-bw-select-search]', (input) => toggle(input, 'add'), {capture: true});
+    bwOn('blur', '[data-bw-select-search]', (input) => toggle(input, 'remove'), {capture: true});
+})();
+

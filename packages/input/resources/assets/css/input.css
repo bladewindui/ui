@@ -11,8 +11,8 @@
 
     .bw-textarea,
     .bw-raw-select,
-    .bw-input { /* outline-none! ! */
-        @apply w-full text-gray-600 dark:text-dark-300 ring-0! dark:bg-transparent rounded-md text-sm
+    .bw-input { /* outline-none ! */
+        @apply w-full text-gray-600 dark:text-dark-300 ring-0 dark:bg-transparent rounded-md text-sm
         focus:-outline-offset-1 focus:outline-2 dark:placeholder:text-dark-400/60 transition-all tracking-wider
         px-3 py-[8.5px] placeholder:text-primary-900/40 border-2
     }
@@ -20,7 +20,7 @@
     .bw-textarea:not(.has-error),
     .bw-raw-select:not(.has-error),
     .bw-input:not(.has-error) {
-        @apply border-gray-200! hover:border-gray-300! dark:border-dark-600/50! dark:hover:border-dark-500/40!
+        @apply border-gray-200 hover:border-gray-300 dark:border-dark-600/50 dark:hover:border-dark-500/40
     }
 
     .bw-textarea.has-error,
@@ -31,8 +31,8 @@
     }
 
     .bw-input[disabled], .bw-input[readonly], fieldset[disabled] .bw-input {
-        @apply bg-gray-100/60! dark:bg-white/10! dark:opacity-40! text-gray-400/70! dark:text-dark-400!
-        cursor-not-allowed dark:border-dark-500/70!
+        @apply bg-gray-100/60 dark:bg-white/10 dark:opacity-40 text-gray-400/70 dark:text-dark-400
+        cursor-not-allowed dark:border-dark-500/70
     }
 
     .bw-input.small {
@@ -53,36 +53,41 @@
 
     .form-label {
         @apply
-        absolute cursor-text left-3 rtl:right-3! rtl:left-[unset] inline-block! -top-2 text-sm px-1 transition-all
+        absolute cursor-text left-3 rtl:right-3 rtl:left-[unset] inline-block -top-2 text-sm px-1 transition-all
         peer-placeholder-shown:top-[10.2px] peer-focus:-top-2 bg-white text-primary-900/40 dark:text-dark-300/50
         z-20 dark:bg-dark-700/95 dark:px-2 dark:rounded-md dark:py-0.5 tracking-wider
     }
 
     .form-label.small {
         @apply
-        peer-placeholder-shown:top-[7px]! peer-focus:-top-2!
+        peer-placeholder-shown:top-[7px] peer-focus:-top-2
     }
 
     .form-label.medium {
         @apply
-        peer-placeholder-shown:top-[11.5px]! peer-focus:-top-[9px]!
+        peer-placeholder-shown:top-[11.5px] peer-focus:-top-[9px]
     }
 
     .form-label.big {
         @apply
-        peer-placeholder-shown:top-[23px]! peer-focus:-top-2!
+        peer-placeholder-shown:top-[23px] peer-focus:-top-2
     }
 
     .bw-select div.clickable.disabled, .bw-select div.clickable.readonly, fieldset[disabled] .bw-select {
-        @apply bg-gray-100/60! opacity-95 dark:opacity-40 dark:bg-dark-300/5! select-none cursor-not-allowed
+        @apply bg-gray-100/60 opacity-95 dark:opacity-40 dark:bg-dark-300/5 select-none cursor-not-allowed
+    }
+
+    .bw-select div.clickable.enabled.has-error,
+    .bw-select div.clickable.enabled.has-error:hover {
+        @apply border-red-500
     }
 
     .bw-select div.clickable.enabled {
-        @apply cursor-pointer border-2 dark:bg-transparent border-gray-200! hover:border-gray-300! dark:border-dark-600/50! dark:hover:border-dark-500/40! focus:-outline-offset-1 focus:outline-2
+        @apply cursor-pointer border-2 dark:bg-transparent border-gray-200 hover:border-gray-300 dark:border-dark-600/50 dark:hover:border-dark-500/40 focus:-outline-offset-1 focus:outline-2
     }
 
     .prefix svg, .suffix svg {
-        @apply ltr:mr-1! rtl:ml-1! w-6 h-6 dark:text-dark-500
+        @apply ltr:mr-1 rtl:ml-1 w-6 h-6 dark:text-dark-500
     }
 
     .ql-toolbar.ql-snow {
@@ -105,4 +110,48 @@
         @apply text-gray-300! dark:text-dark-400/60! not-italic!
     }
 
+
+    /*
+     | Input groups — an input with a button or select attached to it.
+     |
+     | Exists because consumers were reaching for !rounded-l-none and friends to
+     | build this by hand; 40 occurrences of that one utility in the audited app.
+     | The group owns the corner surgery so the markup does not have to.
+     */
+    .bw-input-group {
+        @apply flex items-stretch w-full mb-4
+    }
+
+    .bw-input-group.gapped {
+        @apply gap-2
+    }
+
+    /* the wrapped controls bring their own bottom margin; the group owns it */
+    .bw-input-group > * {
+        @apply mb-0
+    }
+
+    .bw-input-group.attached :is(.bw-input, .bw-textarea, .bw-button, .bw-select div.clickable) {
+        @apply rounded-none
+    }
+
+    .bw-input-group.attached > :first-child,
+    .bw-input-group.attached > :first-child :is(.bw-input, .bw-textarea, .bw-button, .bw-select div.clickable) {
+        @apply rounded-l-md
+    }
+
+    .bw-input-group.attached > :last-child,
+    .bw-input-group.attached > :last-child :is(.bw-input, .bw-textarea, .bw-button, .bw-select div.clickable) {
+        @apply rounded-r-md
+    }
+
+    /* collapse the doubled 2px borders where two controls meet */
+    .bw-input-group.attached > :not(:first-child) {
+        @apply -ml-0.5
+    }
+
+    /* a control that is not meant to stretch, e.g. an attached button */
+    .bw-input-group .shrink-control {
+        @apply grow-0 shrink-0
+    }
 }

@@ -44,14 +44,18 @@
       }
     };
     $alternate_colour = $alternate_colour();
+    // the faint shade is a light chip with dark text. it had no dark counterpart,
+    // so on a dark page it stayed pale — the one component that ignored the colour
+    // scheme. these dark: utilities only apply where nothing was specified before,
+    // so light mode is untouched. see #598
     $presets = (in_array($type, ['error','warning', 'info', 'success'])) ? [
-        'faint' => " bg-$alternate_colour-100/70 text-$alternate_colour-600",
+        'faint' => " bg-$alternate_colour-100/70 dark:bg-$alternate_colour-500/15 text-$alternate_colour-600 dark:text-$alternate_colour-300",
         'dark' => "bg-$alternate_colour-500 text-white",
-        'icon' => [ 'faint' => "text-$alternate_colour-600", 'dark' => "!text-$alternate_colour-50" ]
+        'icon' => [ 'faint' => "text-$alternate_colour-600 dark:text-$alternate_colour-400", 'dark' => "!text-$alternate_colour-50" ]
     ] : [   // not error, warning, info, success
-        'faint' => "bg-$type-100/70 text-$type-600",
+        'faint' => "bg-$type-100/70 dark:bg-$type-500/15 text-$type-600 dark:text-$type-300",
         'dark' => "bg-$type-500 text-$type-50",
-        'icon' => [ 'faint' => "text-$type-600", 'dark' => "!text-$type-50" ]
+        'icon' => [ 'faint' => "text-$type-600 dark:text-$type-400", 'dark' => "!text-$type-50" ]
     ];
     $colours = [
         'faint' => ($type=='transparent') ?
@@ -68,7 +72,10 @@
 @endphp
 {{-- format-ignore-end --}}
 
-<div class="w-full bw-alert animate__animated animate__fadeIn rounded-md flex p-3  {{$colours[$shade] }} {{ $class }}">
+<div class="w-full bw-alert animate__animated animate__fadeIn rounded-md flex p-3  {{$colours[$shade] }} {{ $class }}"
+     {{-- errors and warnings interrupt; info and success are announced politely --}}
+     role="{{ in_array($type, ['error', 'warning']) ? 'alert' : 'status' }}"
+     aria-live="{{ in_array($type, ['error', 'warning']) ? 'assertive' : 'polite' }}">
     @if($showIcon)
         <div class="pt-[1px]">
             @if($icon !== '')
@@ -84,10 +91,21 @@
     @endif
     <div class="grow pl-2 pr-5">{{ $slot }}</div>
     @if($showCloseIcon)
-        <div class="text-right" onclick="this.parentElement.style.display='none'">
+        <div class="text-right" data-bw-alert-dismiss>
             <x-bladewind::icon
                     name="x-mark"
                     class="size-[18px] -mt-[2px] p-[3px] stroke-2 cursor-pointer {{$close_icon_css}} bg-white/20  hover:bg-white/60 rounded-full hover:text-slate-600"/>
         </div>
     @endif
 </div>
+
+@once
+    <x-bladewind::script>
+        {{-- delegated rather than an inline onclick, so a strict CSP does not
+             disable dismissing an alert. see #608 --}}
+        bwOn('click', '[data-bw-alert-dismiss]', (el) => {
+        const alert = el.closest('.bw-alert');
+        if (alert) alert.style.display = 'none';
+        });
+    </x-bladewind::script>
+@endonce

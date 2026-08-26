@@ -17,7 +17,7 @@
     }
 
     .bw-tab.simple .atab span.is-disabled {
-        @apply text-gray-300 hover:text-gray-300! dark:opacity-20 cursor-not-allowed
+        @apply text-gray-300 hover:text-gray-300 dark:opacity-20 cursor-not-allowed
     }
 
     .bw-tab.simple .atab span.is-active {
@@ -116,11 +116,11 @@
     }
 
     .bw-tab.system .atab span {
-        @apply inline-block p-3.5 text-sm font-medium text-center border-x! border-t! rounded-t-lg
+        @apply inline-block p-3.5 text-sm font-medium text-center border-x border-t rounded-t-lg
     }
 
     .bw-tab.system .atab span.is-active {
-        @apply border-b-2! border-b-white! dark:border-b-dark-700! mb-[-2px]
+        @apply border-b-2 border-b-white dark:border-b-dark-700 mb-[-2px]
     }
 
     .bw-tab.system.primary {

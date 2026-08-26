@@ -4,7 +4,7 @@
     'rating' => 0,
     'size' => config('bladewind.rating.size', 'small'),
     'color' => 'orange',
-    'onclick' => 'javascript:void(0)',
+    'onclick' => '',
     'type' => config('bladewind.rating.type', 'star'),
     'clickable' => config('bladewind.rating.clickable', true),
     'nonce' => config('bladewind.script.nonce', null),
@@ -27,7 +27,19 @@
     <x-bladewind::input type="hidden" name="{{$name}}" id="{{$name}}" class="rating-value-{{$name}}"
                         selected_value="{{$rating}}"/>
 @endif
-<div class="inline-flex items-center">
+<div @class(['inline-flex items-center', 'bw-rating-slider-'.$name => $clickable])
+     @if($clickable)
+         role="slider"
+         tabindex="0"
+         aria-valuemin="0"
+         aria-valuemax="5"
+         aria-valuenow="{{ $rating }}"
+         aria-valuetext="{{ trans_choice('bladewind::bladewind.rating_value', (int) $rating, ['value' => $rating]) }}"
+         aria-label="{{ __('bladewind::bladewind.rating_label') }}"
+     @else
+         role="img"
+         aria-label="{{ trans_choice('bladewind::bladewind.rating_value', (int) $rating, ['value' => $rating]) }}"
+     @endif>
     @for ($x = 1; $x < 6; $x++)
         <div data-rating="{{$x}}"
              @class([
@@ -38,9 +50,8 @@
                 'cursor-default' => !$clickable,
              ])
              @if($clickable)
-                 onmouseover="previewRating('{{$name}}', {{$x}})"
-                 onmouseout="restoreRating('{{$name}}')"
-                 onclick="setRating('{{$name}}', {{$x}});{!!$onclick!!}"
+                 data-bw-rating="{{$name}}"
+                 @if($onclick !== '') onclick="{!!$onclick!!}" @endif
              @endif>
             <svg xmlns="http://www.w3.org/2000/svg"
                  @class([
@@ -109,8 +120,56 @@
         }
         const input = domEl(`.rating-value-${name}`);
         if (input) input.value = rate;
+
+        // the slider reports its own value, so it has to move with the stars
+        const slider = domEl(`.bw-rating-slider-${name}`);
+        if (slider) {
+        slider.setAttribute('aria-valuenow', rate);
+        slider.setAttribute('aria-valuetext', rate === 0 ? 'Not rated' : `${rate} out of 5`);
+        }
+
         previewRating(name, rate);
         };
+
+        /**
+         * A control with slider semantics has to be operable from the keyboard, or
+         * the role is a lie: focusable, announced as a slider, and inert. Arrow keys
+         * step by one, Home and End jump to the bounds.
+         */
+        window.enableRatingKeyboard = function (name) {
+        const slider = domEl(`.bw-rating-slider-${name}`);
+        if (!slider || slider.dataset.bwKeyboard === '1') return;
+        slider.dataset.bwKeyboard = '1';
+
+        slider.addEventListener('keydown', (e) => {
+        const current = parseInt(domEl(`.rating-value-${name}`)?.value || '0', 10) || 0;
+        let next = current;
+
+        if (e.key === 'ArrowRight' || e.key === 'ArrowUp') next = Math.min(5, current + 1);
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') next = Math.max(0, current - 1);
+        else if (e.key === 'Home') next = 0;
+        else if (e.key === 'End') next = 5;
+        else return;
+
+        e.preventDefault();
+        setRating(name, next);
+        });
+        };
         }
+
+        enableRatingKeyboard('{{$name}}');
+
+        /* hover preview and click-to-set are delegated rather than inline, so a
+           strict CSP does not disable them. a consumer's own onclick stays on the
+           element and still runs — after ours, as it did before. see #608 */
+        @once
+        bwOn('mouseover', '[data-bw-rating]', (star) => {
+        previewRating(star.getAttribute('data-bw-rating'), parseInt(star.getAttribute('data-rating'), 10));
+        });
+        bwOn('mouseout', '[data-bw-rating]', (star) => restoreRating(star.getAttribute('data-bw-rating')));
+        bwOn('click', '[data-bw-rating]', (star) => {
+        setRating(star.getAttribute('data-bw-rating'), parseInt(star.getAttribute('data-rating'), 10));
+        }, {capture: true});
+        @endonce
     </x-bladewind::script>
 @endif

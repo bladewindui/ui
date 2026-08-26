@@ -30,7 +30,9 @@
 @endphp
 {{-- format-ignore-end --}}
 
-<div class="bw-checkcards-{{$name}} {{$class}}">
+<div class="bw-checkcards-{{$name}} {{$class}}"
+     role="group"
+     @if($required) aria-required="true" @endif>
     <x-bladewind::input
             :name="$name"
             :error_message="$errorMessage"

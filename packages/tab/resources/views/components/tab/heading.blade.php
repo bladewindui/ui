@@ -29,7 +29,21 @@
 {{-- format-ignore-end --}}
 
 <li class="mr-2 cursor-pointer atab atab-{{ $name }} relative "
-    onclick="@if(!$disabled) @if($url == 'default') goToTab('{{$name}}', '{{$color}}', this.parentElement.getAttribute('data-name'), this) @else location.href='{{ $url }}' @endif @endif">
+    role="tab"
+    id="bw-tab-{{ $name }}"
+    aria-controls="bw-tabpanel-{{ $name }}"
+    aria-selected="{{ $active ? 'true' : 'false' }}"
+    @if($disabled) aria-disabled="true" @endif
+    {{-- roving tabindex: only the active tab is in the tab order, arrow keys move
+         between the rest. tab.js keeps this in step as the selection changes. --}}
+    tabindex="{{ $active && ! $disabled ? '0' : '-1' }}"
+    @if(! $disabled)
+        @if($url == 'default')
+            data-bw-tab="{{$name}}" data-bw-tab-colour="{{$color}}"
+        @else
+            data-bw-tab-url="{{ $url }}"
+        @endif
+    @endif>
     <span class="@if($disabled)
                     is-disabled
                 @else

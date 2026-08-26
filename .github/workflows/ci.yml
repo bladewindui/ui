@@ -30,6 +30,40 @@ jobs:
       - name: Validate service provider declarations
         run: php bin/validate-providers.php
 
+  tests:
+    name: Component render tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      # the compiled-CSS assertions read the bundle, so build it rather than
+      # trusting whatever happens to be committed
+      - name: Build CSS bundle
+        run: npm run build
+
+      # helpers.js has to survive loading on a page with no components on it
+      - name: Smoke-test the JS helpers
+        run: npm run test:js
+
+      - name: Run test suite
+        run: vendor/bin/phpunit
+
   build_css:
     name: Build CSS bundle
     runs-on: ubuntu-latest
@@ -46,9 +80,64 @@ jobs:
 
       - run: npm run build
 
+      # the committed bundle is what consumers actually load. b110a62 changed the
+      # toggle and dropmenu templates without rebuilding it, so both fixes shipped
+      # inert — the templates emitted classes the published stylesheet did not define.
+      - name: Fail if the committed bundle is out of date
+        run: |
+          if ! git diff --quiet -- packages/core/public/css/; then
+            echo "::error::A compiled stylesheet is stale. Run 'npm run build' and commit the result."
+            git diff --stat -- packages/core/public/css/
+            exit 1
+          fi
+
       - name: Upload compiled CSS
         uses: actions/upload-artifact@v4
         with:
           name: bladewind-ui-css
-          path: packages/core/public/css/bladewind-ui.min.css
+          path: |
+            packages/core/public/css/bladewind-ui.min.css
+            packages/core/public/css/bladewind-ui-no-preflight.min.css
+          retention-days: 7
+
+  e2e:
+    name: Browser checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      # the specs read the compiled bundle, so build it rather than trusting
+      # whatever happens to be committed
+      - name: Build CSS bundle
+        run: npm run build
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      # popup clipping is geometry: no render test or stylesheet assertion can
+      # see whether a rect is cut by an ancestor's. Tier C of #588.
+      - name: Run browser checks
+        run: npm run test:e2e
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-traces
+          path: test-results/
           retention-days: 7

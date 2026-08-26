@@ -4,3 +4,8 @@ node_modules
 .DS_Store
 .idea
 *.lock
+/.phpunit.cache
+
+/test-results
+/playwright-report
+/tests/E2E/public/*.html

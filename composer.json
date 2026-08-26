@@ -1,5 +1,5 @@
 {
-    "name": "mkocansey/bladewind",
+    "name": "bladewindui/bladewindui",
     "description": "BladewindUI — elegant Laravel Blade UI components powered by TailwindCSS",
     "keywords": [
         "laravel",
@@ -21,7 +21,9 @@
         "illuminate/support": "^10.0|^11.0|^12.0|^13.0"
     },
     "require-dev": {
-        "symplify/monorepo-builder": "^11.0"
+        "symplify/monorepo-builder": "^11.0",
+        "orchestra/testbench": "^10.0",
+        "phpunit/phpunit": "^11.0"
     },
     "autoload": {
         "psr-4": {
@@ -76,6 +78,14 @@
             "packages/core/src/BladewindHelpers.php"
         ]
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Mkocansey\\Bladewind\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit"
+    },
     "extra": {
         "laravel": {
             "providers": [
@@ -129,6 +139,7 @@
         }
     },
     "replace": {
+        "mkocansey/bladewind": "self.version",
         "mkocansey/bladewind-accordion": "4.3.0",
         "mkocansey/bladewind-alert": "4.3.0",
         "mkocansey/bladewind-avatar": "4.3.0",

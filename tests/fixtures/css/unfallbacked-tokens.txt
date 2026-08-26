@@ -1,0 +1,6 @@
+# Custom properties that .bw-* rules reference through var() with no fallback.
+# Generated from packages/core/public/css/bladewind-ui.min.css.
+# See improvements.md item 1 / issue #589 — this list should only ever shrink.
+# Regenerate with: php bin/dump-unfallbacked-tokens.php
+--tw-gradient-position
+--tw-gradient-stops

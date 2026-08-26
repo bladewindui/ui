@@ -21,6 +21,14 @@
 
     'toolbar' => config('bladewind.textarea.toolbar', false),
     'except' => '',
+    // repopulate this field from old() after a validation redirect
+    'fillFromOld' => config('bladewind.forms.fill_from_old', false),
+
+    // give the field its error state and render $errors->first() beneath it
+    'showValidationError' => config('bladewind.forms.show_validation_error', false),
+
+    // which error bag to read; null uses Laravel's default
+    'errorBag' => config('bladewind.forms.error_bag', null),
     'nonce' => config('bladewind.script.nonce', null),
 ])
 @php
@@ -32,6 +40,12 @@
     $required_symbol = ($label == '' && $required) ? ' *' : '';
     $is_required = ($required) ? 'required' : '';
     $placeholder_color = ($label !== '') ? 'placeholder-transparent dark:placeholder-transparent' : '';
+
+    $fillFromOld = parseBladewindVariable($fillFromOld);
+    $showValidationError = parseBladewindVariable($showValidationError);
+    $selectedValue = bladewindOldInput($name, $selectedValue, $fillFromOld);
+    $validation_error = bladewindValidationError($name, $showValidationError, $errorBag);
+    $has_error_css = ($validation_error !== '') ? 'has-error' : '';
 @endphp
 {{-- format-ignore-end --}}
 
@@ -41,7 +55,7 @@
         <textarea hidden name="{{ $name }}" id="{{ $name }}-hidden" class="size-0"></textarea>
     @else
         <textarea
-                {{ $attributes->merge(['class' => "bw-input peer $is_required $name $placeholder_color focus:border-primary-500"]) }}
+                {{ $attributes->exceptPropAliases(get_defined_vars())->merge(['class' => "bw-input peer $is_required $name $placeholder_color $has_error_css focus:border-primary-500"]) }}
                 id="{{ $name }}"
                 name="{{ $name }}"
                 rows="{{ $rows }}"
@@ -55,9 +69,12 @@
     @if($errorMessage !== '')
         <div class="text-red-500 text-xs pt-2 px-1 {{ $name }}-inline-error hidden">{{$errorMessage}}</div>
     @endif
+    @if($validation_error !== '')
+        <div class="text-red-500 text-xs pt-2 px-1 {{ $name }}-validation-error">{{ $validation_error }}</div>
+    @endif
     @if($label !== '')
         <label for="{{ $name }}" class="form-label dark:peer-focus:pt-1"
-               onclick="domEl('.{{$name}}').focus()">{{ $label }}
+               data-bw-focuses="{{$name}}">{{ $label }}
             @if($required == 'true')
                 <x-bladewind::icon name="star" class="!text-red-400 !w-2 !h-2 mt-[-2px]" type="solid"/>
             @endif

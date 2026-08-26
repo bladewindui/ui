@@ -103,6 +103,12 @@ const css_classes_to_pre_compile =
                 lg:w-2/5 lg:w-2/3 lg:w-11/12`,
         positions: "-bottom-1 -top-1",
         radius: "rounded-full rounded-lg rounded-xl rounded-2xl rounded-3xl rounded-b-lg rounded-b-xl rounded-b-2xl rounded-b-3xl",
+        // dark counterparts for the faint alert shade, which had none and so stayed
+        // pale on a dark page. built by interpolation in alert.blade.php, which is
+        // why they have to be listed here for Tailwind to see them. See #598
+        alertDark: `dark:bg-primary-500/15 dark:bg-blue-500/15 dark:bg-red-500/15 dark:bg-yellow-500/15 dark:bg-green-500/15 dark:bg-orange-500/15 dark:bg-purple-500/15 dark:bg-cyan-500/15 dark:bg-pink-500/15 dark:bg-gray-500/15 dark:bg-slate-500/15 dark:bg-violet-500/15 dark:bg-indigo-500/15 dark:bg-fuchsia-500/15 dark:bg-amber-500/15
+                dark:text-primary-300 dark:text-blue-300 dark:text-red-300 dark:text-yellow-300 dark:text-green-300 dark:text-orange-300 dark:text-purple-300 dark:text-cyan-300 dark:text-pink-300 dark:text-gray-300 dark:text-slate-300 dark:text-violet-300 dark:text-indigo-300 dark:text-fuchsia-300 dark:text-amber-300
+                dark:text-primary-400 dark:text-blue-400 dark:text-red-400 dark:text-yellow-400 dark:text-green-400 dark:text-orange-400 dark:text-purple-400 dark:text-cyan-400 dark:text-pink-400 dark:text-gray-400 dark:text-slate-400 dark:text-violet-400 dark:text-indigo-400 dark:text-fuchsia-400 dark:text-amber-400`,
         opacity: `opacity-0 opacity-5 opacity-10 opacity-20 opacity-25 opacity-30 opacity-40 opacity-50 
                 opacity-60 opacity-70 opacity-75 opacity-80 opacity-90 opacity-95 opacity-100`,
     }

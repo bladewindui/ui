@@ -45,7 +45,11 @@
         $name,
         'py-3 px-4' => ($compact),
         'p-5' => (!$compact)
-]) {{ $attributes->merge([ 'class' => ""]) }} onclick="selectCheckcard('{{$name}}', '{{$value}}', '{{$border_colour}}')"
+]) {{ $attributes->exceptPropAliases(get_defined_vars())->merge([ 'class' => ""]) }} data-bw-checkcard="{{$name}}" data-bw-checkcard-colour="{{$border_colour}}"
+     role="checkbox"
+     tabindex="0"
+     aria-checked="{{ in_array((string) $value, array_map('strval', (array) explode(',', (string) $selectedValue)), true) ? 'true' : 'false' }}"
+     @if($title !== '') aria-label="{{ strip_tags($title) }}" @endif
      data-value="{{$value}}">
     <div class="flex">
         <span>
@@ -112,6 +116,18 @@
         changeCss(el, border_active, 'add', true);
         }
         }
+
+        /* bound by delegation rather than an inline onclick, so a strict CSP does
+           not disable selection, and Enter/Space work on a card that is not a
+           native control. see #608 */
+        bwOn('click', '[data-bw-checkcard]', (card) => {
+        selectCheckcard(
+        card.getAttribute('data-bw-checkcard'),
+        card.getAttribute('data-value'),
+        card.getAttribute('data-bw-checkcard-colour')
+        );
+        });
+        bwActivateOnKey('[data-bw-checkcard]');
     </x-bladewind::script>
 @endonce
 

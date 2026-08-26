@@ -13,4 +13,5 @@ return [
         'money_thousands_separator' => ',',
         'money_precision' => 2,
     ],
+    'input_group' => ['attached' => true],
 ];

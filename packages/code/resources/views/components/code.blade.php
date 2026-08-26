@@ -48,8 +48,10 @@
                         type="{{ ($mask) ? 'password' : 'text' }}"
                         with_dots="false"
                         add_clearing="false"
-                        onkeydown="hidePinError('{{ $name }}')"
-                        onkeyup="moveCursorNext('{{ $name }}', {{ $x }}, {{ $totalDigits }}, '{{ $onverify }}', event)"
+                        data-bw-pin="{{ $name }}"
+                        data-bw-pin-index="{{ $x }}"
+                        data-bw-pin-total="{{ $totalDigits }}"
+                        data-bw-pin-verify="{{ $onverify }}"
                         onpaste="pastePinCode('{{ $name }}', {{ $x }}, {{ $totalDigits }}, '{{ $onverify }}', event)"
                         class="shadow-sm text-center font-light text-black dark:text-dark-400 focus:!border-primary-600 {{$input_css}} {{ $name }}-pin-code {{ $name }}-pcode{{ $x }}"
                         maxlength="1"
@@ -134,6 +136,20 @@
     var hidePinError = (name) => {
     hide(`.bw-${name}-pin-error`);
     }
+
+    /* delegated rather than an inline onkeydown, so a strict CSP does not stop
+       the error clearing as the user types. see #608 */
+    bwOn('keydown', '[data-bw-pin]', (el) => hidePinError(el.getAttribute('data-bw-pin')));
+
+    bwOn('keyup', '[data-bw-pin-index]', (el, e) => {
+    moveCursorNext(
+    el.getAttribute('data-bw-pin'),
+    parseInt(el.getAttribute('data-bw-pin-index'), 10),
+    parseInt(el.getAttribute('data-bw-pin-total'), 10),
+    el.getAttribute('data-bw-pin-verify'),
+    e
+    );
+    });
 
     var showSpinner = (name) => {
     hide(`.bw-${name}-pin-valid`);

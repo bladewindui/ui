@@ -22,6 +22,7 @@
 {{-- format-ignore-end --}}
 
 <x-bladewind::button
+        {{ $attributes }}
         :color="$color"
         :size="$size"
         :name="$name"

@@ -69,11 +69,36 @@
     'totalLabel' => config('bladewind.table.total_label', __("bladewind::bladewind.pagination_label")),
     'limit' => null,
     'layout' => 'auto',
+
+    // column model. an alternative to hand-rolling <th> and <tr>, and the place
+    // to hang alignment, width, sorting and formatting. slots stay as the escape
+    // hatch. accepts:
+    //   ['when', 'amount']                       keys only
+    //   ['when' => 'When', 'amount' => 'Amount'] key => label
+    //   [['key' => 'amount', 'label' => 'Amount', 'align' => 'right',
+    //     'width' => '160px', 'sortable' => true, 'class' => '',
+    //     'format' => fn($value, $row) => ...]]
+    'columns' => [],
+
+    // rows to render against those columns. an alias for :data
+    'rows' => null,
+
+    // rendered in place of the table body when there are no rows
+    'empty' => null,
     'groupHeadingCss' => '',
     'nonce' => config('bladewind.script.nonce', null),
 ])
 @php
     // reset variables for Laravel 8 support
+
+    // the column model feeds the existing data machinery — search json,
+    // pagination, totals — and only changes how the table is rendered
+    $columns = (!is_array($columns)) ? (json_decode(str_replace('&quot;', '"', $columns), true) ?: []) : $columns;
+    $has_columns = !empty($columns);
+    if ($has_columns && !is_null($rows)) {
+        $data = $rows;
+    }
+
     $hasShadow = parseBladewindVariable($hasShadow);
     $hasHover = parseBladewindVariable($hasHover);
     $striped = parseBladewindVariable($striped);
@@ -108,6 +133,45 @@
 
     if($checkable) $selectable = true;
 
+    if ($has_columns) {
+        $normalised_columns = [];
+
+        foreach ($columns as $key => $column) {
+            if (is_string($column)) {
+                // ['when', 'amount'] or ['when' => 'When']
+                $column = is_string($key) ? ['key' => $key, 'label' => $column] : ['key' => $column];
+            } elseif (is_string($key) && !isset($column['key'])) {
+                $column['key'] = $key;
+            }
+
+            if (empty($column['key'])) {
+                continue;
+            }
+
+            $align = $column['align'] ?? 'left';
+            $normalised_columns[] = [
+                'key' => $column['key'],
+                'label' => $column['label'] ?? str_replace('_', ' ', $column['key']),
+                'align' => in_array($align, ['left', 'center', 'right']) ? $align : 'left',
+                'width' => $column['width'] ?? null,
+                'sortable' => (bool) ($column['sortable'] ?? false),
+                'format' => $column['format'] ?? null,
+                'class' => $column['class'] ?? '',
+            ];
+        }
+
+        $columns = $normalised_columns;
+
+        // sorting reuses the existing client-side machinery
+        $sortableColumns = array_values(array_map(
+            fn($c) => $c['key'],
+            array_filter($columns, fn($c) => $c['sortable'])
+        ));
+        if (!empty($sortableColumns)) $sortable = true;
+
+        $column_alignment = ['left' => 'text-left', 'center' => 'text-center', 'right' => 'text-right'];
+    }
+
     if (!is_null($data)) {
         $data = (!is_array($data)) ? json_decode(str_replace('&quot;', '"', $data), true) : $data;
 
@@ -125,7 +189,10 @@
         }
 
         if($sortable){
-            $sortableColumns = empty($sortableColumns) ? $tableHeadings : explode(',', str_replace(' ','', $sortableColumns));
+            // the column model hands this over as an array already
+            $sortableColumns = empty($sortableColumns)
+                ? $tableHeadings
+                : (is_array($sortableColumns) ? $sortableColumns : explode(',', str_replace(' ','', $sortableColumns)));
         }
 
         if(!empty($groupby) && in_array($groupby, $tableHeadings)) {
@@ -170,7 +237,9 @@
 {{-- format-ignore-end --}}
 
 <x-bladewind::script :nonce="$nonce">
-    let tableData_{{str_replace('-','_', $name)}} = {!! json_encode($data) !!};
+    {{-- a window property, not a top-level `let`: a lexical global is invisible to
+         window[...] lookups, which is how the delegated search handler finds it --}}
+    window.tableData_{{str_replace('-','_', $name)}} = {!! json_encode($data) !!};
 </x-bladewind::script>
 <div @class([
     'border-collapse max-w-full',
@@ -186,12 +255,15 @@
                         add_clearing="false"
                         clearable="true"
                         class="!border-0 !outline-transparent focus:!border-none focus:!outline-transparent !py-2.5"
-                        onInput="filterTableDebounced(this.value, 'table.{{$name}}', '{{$searchField}}', {{$searchDebounce}}, {{$searchMinLength}}, tableData_{{str_replace('-','_', $name)}})();"
+                        data-bw-table-search="{{$name}}"
+                        data-bw-search-field="{{$searchField}}"
+                        data-bw-search-debounce="{{$searchDebounce}}"
+                        data-bw-search-min="{{$searchMinLength}}"
                         prefix="magnifying-glass"
                         prefix_is_icon="true"/>
             </div>
         @endif
-        <table @if($paginated) data-current-page="{{$defaultPage}}" @endif @class([
+        <table data-name="{{$name}}" @if($paginated) data-current-page="{{$defaultPage}}" @endif @class([
             'bw-table w-full ' . $name,
             'drop-shadow shadow shadow-gray-200/70 dark:shadow-md dark:shadow-dark-950/20' => $hasShadow,
             'divided' => $divided,
@@ -207,7 +279,9 @@
             'checkable' => $checkable,
             'transparent' => $transparent
             ])>
-            @if(is_null($data) || $layout == 'custom')
+            @if($has_columns)
+                @include('bladewind::components.table-columns')
+            @elseif(is_null($data) || $layout == 'custom')
                 @if(!empty($header))
                     <thead>
                     <tr>{{ $header }}</tr>
@@ -232,7 +306,7 @@
                             data-sort-dir="no-sort"
                             data-can-sort="true"
                             data-column-index="{{ $checkable ? count($indices) : count($indices)-1}}"
-                            onclick="sortTableByColumn(this, '{{$name}}')" @endif>
+                            @endif>
                             <span class="peer cursor-pointer">{{ str_replace('_', ' ', $columnAliases[$th] ?? $th ) }}</span>
                             @if($sortable && in_array($th, $sortableColumns))
                                 <x-bladewind::icon
@@ -251,8 +325,8 @@
                     @endif
                 </tr>
                 </thead>
+                <tbody>
                 @if($totalRecords > 0 && $layout == 'auto')
-                    <tbody>
                     @if($canGroup)
                         @foreach($groupedData as $heading => $rows)
                             <tr class="no-hover">
@@ -302,7 +376,7 @@
                     @endif
                     @else
                         <tr>
-                            <td colspan="{{count($tableHeadings)}}" class="text-center">
+                            <td colspan="{{ count($tableHeadings) ?: 1 }}" class="text-center">
                                 @if($messageAsEmptyState)
                                     <x-bladewind::empty-state
                                             :message="$noDataMessage"
@@ -314,10 +388,10 @@
                                 @else
                                     {{ $noDataMessage }}
                                 @endif
-                                <script :nonce="$nonce">
+                                <x-bladewind::script :nonce="$nonce">
                                     changeCss('.{{$name}}', 'with-hover-effect', 'remove');
                                     changeCss('.{{$name}}', 'has-no-data');
-                                </script>
+                                </x-bladewind::script>
                             </td>
                         </tr>
                     @endif

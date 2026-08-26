@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         failOnWarning="true"
+         failOnRisky="true"
+         cacheDirectory=".phpunit.cache">
+    <testsuites>
+        <testsuite name="Bladewind">
+            <directory>tests</directory>
+            <!-- generates the Playwright fixtures; run by npm run test:e2e -->
+            <exclude>tests/E2E</exclude>
+        </testsuite>
+        <testsuite name="fixtures">
+            <directory>tests/E2E</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory>packages</directory>
+        </include>
+    </source>
+</phpunit>

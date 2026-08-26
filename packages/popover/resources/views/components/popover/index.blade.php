@@ -67,6 +67,7 @@
 </x-bladewind::script>
 <x-bladewind::script :nonce="$nonce" :modular="$modular">
     const {{ $name }} = new BladewindPopover('{{ $name }}', {
-    triggerOn: '{{ $triggerOn }}'
+    triggerOn: '{{ $triggerOn }}',
+    position: '{{ $position }}'
     });
 </x-bladewind::script>

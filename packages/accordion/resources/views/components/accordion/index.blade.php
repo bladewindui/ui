@@ -47,6 +47,9 @@
         const title = domEl(`.${accordionName} .accordion-title`);
 
         targetAccordion.setAttribute('data-open', isOpen ? '1' : '0');
+        // the header is the disclosure button, so it owns aria-expanded
+        const header = targetAccordion.querySelector('[aria-controls]');
+        if (header) header.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
         if (content) content.style.maxHeight = isOpen ? `${content.scrollHeight}px` : null;
         changeCss(arrow, 'rotate-180', isOpen ? 'add' : 'remove', true);
         changeCss(title, 'text-gray-700 dark:text-slate-100', isOpen ? 'add' : 'remove', true);
@@ -61,5 +64,15 @@
         const isOpen = accordion.getAttribute('data-open') === '1';
         toggleState(accordion, !isOpen);
         };
+
+        /* bound by delegation rather than an inline onclick, so a strict CSP does
+           not disable the accordion. see #608 */
+        bwOn('click', '.bw-accordion', (item, e) => {
+        // content_can_close="false" marks the body, so clicking inside it does not
+        // collapse the item. this used to be an inline event.stopPropagation()
+        if (e.target.closest('[data-bw-keep-open]')) return;
+        toggleVisibility(item.getAttribute('data-name'));
+        });
+        bwActivateOnKey('.bw-accordion [role="button"][aria-controls]');
     </x-bladewind::script>
 @endonce

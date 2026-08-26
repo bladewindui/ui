@@ -110,6 +110,14 @@
 
     'emptyStateFrom' => null,
     'meta' => null,
+    // repopulate this field from old() after a validation redirect
+    'fillFromOld' => config('bladewind.forms.fill_from_old', false),
+
+    // give the field its error state and render $errors->first() beneath it
+    'showValidationError' => config('bladewind.forms.show_validation_error', false),
+
+    // which error bag to read; null uses Laravel's default
+    'errorBag' => config('bladewind.forms.error_bag', null),
     'nonce' => config('bladewind.script.nonce', null),
 
 ])
@@ -127,6 +135,14 @@
 
     $input_name = $name;
     $filter = parseBladewindName($filter);
+
+    $fillFromOld = parseBladewindVariable($fillFromOld);
+    $showValidationError = parseBladewindVariable($showValidationError);
+    // old() may hand back an array for a multiple select
+    $old_value = bladewindOldInput($name, $selectedValue, $fillFromOld);
+    $selectedValue = is_array($old_value) ? implode(',', $old_value) : $old_value;
+    $validation_error = bladewindValidationError($name, $showValidationError, $errorBag);
+
     $selectedValue = ($selectedValue != '') ? explode(',', str_replace(', ', ',', $selectedValue)) : [];
 
     if ($data !== 'manual') {
@@ -155,7 +171,6 @@
     }
 </style>
 <div class="relative bw-select bw-select-{{$input_name}} @if($addClearing) mb-3 @endif @if($searchable) searchable @endif"
-     role="combobox"
      data-multiple="{{$multiple}}" data-required="{{$required?'true':'false'}}"
      data-type="{{ $data !== 'manual' ? 'dynamic' : 'manual'}}"
      @if(!empty($filter)) data-filter="{{ $filter}}" @endif
@@ -163,10 +178,18 @@
      @if(!empty($emptyStateFrom)) data-copy-empty-state-from="{{ $emptyStateFrom}}" @endif
      @if($data == 'manual' && $selectedValue != '') data-selected-value="{{implode(',',$selectedValue)}}" @endif>
     <div tabindex="0"
-         class="flex justify-between text-sm items-center rounded-md bg-white text-gray-600
+         role="combobox"
+         aria-haspopup="listbox"
+         aria-expanded="false"
+         aria-controls="bw-select-list-{{$input_name}}"
+         @if(!empty($label)) aria-label="{{ strip_tags($label) }}" @elseif(!empty($placeholder)) aria-label="{{ strip_tags($placeholder) }}" @endif
+         @if($required) aria-required="true" @endif
+         @if($disabled) aria-disabled="true" @endif
+         class="flex justify-between text-sm items-center rounded-md bg-white dark:bg-transparent text-gray-600
          dark:text-dark-300 {{$sizes[$size]}} pl-4 pr-2 clickable focus:!outline-primary-500
          focus:!border-primary-500  dark:focus:!border-primary-500  dark:focus:!outline-primary-500
-         @if($disabled) disabled @elseif($readonly) readonly @else enabled @endif">
+         @if($disabled) disabled @elseif($readonly) readonly @else enabled @endif
+         @if($validation_error !== '') has-error @endif">
         <x-bladewind::icon name="chevron-left" class="!-ml-3 hidden scroll-left"/>
         <div class="text-left placeholder grow-0 text-blue-900/40 dark:text-dark-400/60">
             @if(!empty($label))
@@ -190,7 +213,7 @@
             <x-bladewind::icon name="chevron-up-down" class="opacity-40 opener !ml-2"/>
         </div>
     </div>
-    <div class="w-full absolute z-30 rounded-br-lg rounded-bl-lg bg-white shadow-sm shadow-gray-400 dark:shadow-none border-2
+    <div class="w-full absolute z-30 rounded-br-lg rounded-bl-lg bg-white dark:bg-dark-700 shadow-sm shadow-gray-400 dark:shadow-none border-2
         border-primary-500 dark:text-gray-300 dark:bg-dark-700 border-t-0 -mt-1.5
         hidden bw-select-items-container overflow-scroll max-h-64 animate__animated animate__fadeIn animate__faster">
         <div class="sticky top-0 min-w-full bg-gray-100 dark:bg-transparent py-1 pr-0 -pl-1 search-bar @if(!$searchable) hidden @endif">
@@ -199,11 +222,13 @@
                     add_clearing="false"
                     :placeholder="$searchPlaceholder"
                     suffix="magnifying-glass"
-                    onfocus="changeCss('.bw-select-{{$input_name}} .clickable', '!border-2, !outline-2, !-outline-offset-1, !outline-primary-500, !border-primary-500, dark:!border-primary-500, dark:!outline-primary-500')"
-                    onblur="changeCss('.bw-select-{{$input_name}} .clickable', '!border-2, !outline-2, !-outline-offset-1, !outline-primary-500, !border-primary-500, dark:!border-primary-500, dark:!outline-primary-500','remove')"
+                    data-bw-select-search="{{$input_name}}"
                     suffixIsIcon="true"/>
         </div>
-        <div class="divide-y divide-gray-100 dark:divide-dark-600/80 bw-select-items mt-0">
+        <div class="divide-y divide-gray-100 dark:divide-dark-600/80 bw-select-items mt-0"
+             id="bw-select-list-{{$input_name}}"
+             role="listbox"
+             @if($multiple) aria-multiselectable="true" @endif>
             @if($data !== 'manual')
                 @foreach($data as $item)
                     <x-bladewind::select.item
@@ -232,6 +257,9 @@
             @endif
         </div>
     </div>
+    @if($validation_error !== '')
+        <div class="text-red-500 text-xs p-1 {{ $input_name }}-validation-error">{{ $validation_error }}</div>
+    @endif
     <input type="hidden" name="{{ ($dataSerializeAs !== '') ? $dataSerializeAs : $input_name }}"
            class="bw-{{$input_name}} @if($required) required @endif"
            @if($required) data-parent="bw-select-{{$input_name}}" @endif

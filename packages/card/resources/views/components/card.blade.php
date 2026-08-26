@@ -31,6 +31,11 @@
     // the contact card uses this card component but needs to have a different class name
     'isContactCard' => false,
     'radius' => config('bladewind.card.radius', 'small'),
+
+    // padding scale. none, tiny, small, regular, medium, big, large — or any
+    // tailwind padding utility, emitted verbatim, so padding="p-5" works.
+    // compact and no_padding still work and are equivalent to small and none.
+    'padding' => config('bladewind.card.padding', ''),
 ])
 @php
     $compact = parseBladewindVariable($compact);
@@ -40,11 +45,28 @@
     $isContactCard = parseBladewindVariable($isContactCard);
     $noPadding = parseBladewindVariable($noPadding);
 
+    $named_padding = [
+        'none' => '',
+        'tiny' => 'p-2',
+        'small' => 'p-4',
+        'regular' => 'p-6',
+        'medium' => 'p-8',
+        'big' => 'p-10',
+        'large' => 'p-12',
+    ];
+
     $radius_css = getRadiusString($radius);
     $class = "bg-white dark:bg-dark-800/25 $radius_css $class";
     $contact_card_css =   ($isContactCard) ? 'bw-contact-card' : 'bw-card';
     $has_border_css =   ($hasBorder) ? 'border border-neutral-200 dark:border-dark-600/60 focus:outline-none' : '';
-    $header_compact_css =   (!$header && ! $compact && !$noPadding) ? 'p-6' : (($compact) ? 'p-4' : '');
+    // an explicit padding wins over the compact/no_padding booleans, which stay
+    // exactly as they were for markup that already uses them
+    if ($padding !== '') {
+        $padding_css = array_key_exists($padding, $named_padding) ? $named_padding[$padding] : $padding;
+        $header_compact_css = (!$header) ? $padding_css : '';
+    } else {
+        $header_compact_css = (!$header && ! $compact && !$noPadding) ? 'p-6' : (($compact) ? 'p-4' : '');
+    }
     $shadow_css =   ($hasShadow) ? 'shadowed' : '';
     $hover_css =  ($hasHover || !empty($url)) ? 'shadowed-hover hover:border hover:border-neutral-400/70 cursor-pointer' : '';
 
@@ -68,7 +90,7 @@
 @endphp
 {{-- format-ignore-end --}}
 
-<div {{ $attributes->merge([ 'class' => $classes]) }} @if($url) onclick="{!! $redirect !!}" @endif>
+<div {{ $attributes->exceptPropAliases(get_defined_vars())->merge([ 'class' => $classes]) }} @if($url) onclick="{!! $redirect !!}" @endif>
     @if($header)
         <div class="border-b border-gray-100/30 dark:border-dark-600/60">
             {{ $header }}

@@ -80,14 +80,22 @@ jobs:
           - { local_path: 'packages/navigation', split_repository: 'bladewind-navigation' }
 
           # NOTE: packages/meta is intentionally NOT split into its own repo.
-          # 'mkocansey/bladewind' on Packagist has been sourced directly from
-          # THIS monorepo (github.com/mkocansey/bladewind) since 2022 — the
-          # root composer.json IS the full-install package, and its `replace`
-          # block already declares every granular sub-package at self.version,
-          # so installing mkocansey/bladewind satisfies all of them. A split
-          # entry targeting a repo named 'bladewind' would collide with this
-          # monorepo's own remote and overwrite it (this happened once on
-          # 2026-06-08 — main was wiped and restored from a local clone).
+          # 'bladewindui/bladewindui' on Packagist is sourced directly from THIS
+          # monorepo — the root composer.json IS the full-install package, and its
+          # `replace` block declares every granular sub-package plus the former
+          # name 'mkocansey/bladewind', so installing it satisfies all of them.
+          #
+          # ⚠️ A split entry whose repository_organization + split_repository
+          # resolve to this monorepo's own remote will force-push filtered subtree
+          # history into it and overwrite main. That happened on 2026-06-08, when
+          # an entry targeted 'bladewind' while the monorepo lived at
+          # mkocansey/bladewind; main was wiped and restored from a local clone.
+          #
+          # The forbidden target moved with the repo. It is now:
+          #   repository_organization 'bladewindui' + split_repository 'bladewindui'
+          # The splits below still push to the 'mkocansey' org, so nothing here
+          # can currently collide — but if they are ever moved to 'bladewindui',
+          # a 'bladewindui' entry recreates the incident exactly.
 
     steps:
       - uses: actions/checkout@v4
@@ -104,6 +112,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.MONOREPO_SPLIT_TOKEN }}
         with:
           package_directory: ${{ matrix.package.local_path }}
+          # the split mirrors still live in the 'mkocansey' org. Moving them is a
+          # separate job: 48 new repos and 48 Packagist registrations. Read the
+          # warning above the matrix before changing this to 'bladewindui'.
           repository_organization: 'mkocansey'
           repository_name: ${{ matrix.package.split_repository }}
           user_name: 'BladewindUI Bot'

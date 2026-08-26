@@ -34,6 +34,9 @@
         "text-blue-900/40" => !$selectable,
         "hidden empty-state" => $isEmpty
         ])
+        role="option"
+        aria-selected="{{ $selected ? 'true' : 'false' }}"
+        @if(! $selectable) aria-disabled="true" @endif
         data-label="{!! $label !!}" data-value="{{ $value }}"
         @if($description !== '') data-description="{!! $description !!}" @endif
         @if(!$selectable) data-unselectable @endif

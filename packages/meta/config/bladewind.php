@@ -17,6 +17,87 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Laravel form-state integration
+    |--------------------------------------------------------------------------
+    |
+    | Shared by input, textarea, select, checkbox, radio, datepicker and
+    | filepicker. Both switches default to false so that upgrading changes
+    | nothing about what your existing markup renders — an app already printing
+    | its own validation messages would otherwise print every one of them twice.
+    |
+    | Turn them on here once and every form component starts speaking Laravel,
+    | or set the matching prop on a single field to override this.
+    |
+    | fill_from_old         repopulate a field from old() after a validation
+    |                       redirect. filepicker is exempt: a file input cannot
+    |                       be repopulated
+    | show_validation_error give the field its error state and render
+    |                       $errors->first() beneath it
+    | error_bag             which bag to read; null uses Laravel's default
+    |
+    */
+
+    'forms' => [
+        'fill_from_old' => false,
+        'show_validation_error' => false,
+        'error_bag' => null,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Pagination component
+    |--------------------------------------------------------------------------
+    |
+    | These apply to server mode, which the component switches to when it is
+    | handed a Laravel paginator. The DOM show/hide mode ignores them.
+    |
+    */
+
+    'pagination' => [
+        // page sizes offered in the per-page selector. empty hides the selector
+        'per_page_options' => [],
+        // query string parameter that selector writes to
+        'per_page_name' => 'per_page',
+        // how many page numbers to show either side of the current one
+        'on_each_side' => 1,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Selectable card component
+    |--------------------------------------------------------------------------
+    */
+
+    'selectable_card' => [
+        'compact' => false,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Sortable component
+    |--------------------------------------------------------------------------
+    */
+
+    'sortable' => [
+        // simple, swap, multidrag, clone
+        'type' => 'simple',
+        // drag animation in milliseconds
+        'animation' => 150,
+        // show a dedicated drag handle rather than dragging the whole row
+        'has_handle' => false,
+        'handle_icon' => 'bars-3',
+        // shared group name, so items can be dragged between lists
+        'group' => null,
+        // css selector for items that must not be draggable
+        'filter' => null,
+        'sortable' => true,
+        'swap' => false,
+        'multidrag' => false,
+        'clone' => false,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Alert component
     |--------------------------------------------------------------------------
     */
@@ -48,6 +129,9 @@ return [
         'dot_color' => 'primary',
         'dot_position' => 'bottom',
         'dotted' => false,
+        // background behind initials when there is no image. null lets the
+        // component pick one from the name
+        'bg_color' => null,
     ],
 
     /*
@@ -87,6 +171,15 @@ return [
     |--------------------------------------------------------------------------
     | Card component
     |--------------------------------------------------------------------------
+    |
+    | House style goes here rather than on every tag. A large app audited for
+    | this library carried has_border="false" has_shadow="true" on 790 separate
+    | cards; two lines below would have covered all of them.
+    |
+    | The shipped pairing is border on + shadow on. That stays the default
+    | because changing it would restyle every existing project on upgrade, but
+    | border off + shadow on is the combination most apps seem to land on.
+    |
     */
     'card' => [
         'compact' => false,
@@ -95,6 +188,9 @@ return [
         'has_border' => true,
         'has_hover' => false,
         'radius' => 'small',
+        // padding scale. none tiny small regular medium big large, or any
+        // tailwind padding utility. wins over compact and no_padding
+        'padding' => '',
     ],
 
     /*
@@ -192,6 +288,8 @@ return [
         'validate' => false,
         'show_error_inline' => false,
         'stacked' => true,
+        'label' => 'Select a date',
+        'placeholder' => 'Select a date',
     ],
 
     /*
@@ -289,6 +387,9 @@ return [
     'icon' => [
         'type' => 'outline',
         'dir' => '',
+        // default icon size. tiny small regular medium big large, or any
+        // tailwind size utility. a size- h- or w- class still wins over this
+        'size' => '',
     ],
 
     /*
@@ -305,6 +406,22 @@ return [
         'transparent_suffix' => true,
         'clearable' => false,
         'size' => 'medium',
+        // money="true" formatting
+        'money_decimal_separator' => '.',
+        'money_thousands_separator' => ',',
+        'money_precision' => 2,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Input group component
+    |--------------------------------------------------------------------------
+    */
+
+    'input_group' => [
+        // run attached controls flush against each other, removing the corners
+        // and doubled borders where they meet
+        'attached' => true,
     ],
 
     /*
@@ -464,6 +581,12 @@ return [
         'icon_position' => 'left',
         'has_shadow' => true,
         'has_border' => true,
+        // named tone for the note and the trend arrow. the colour map is owned
+        // by the library. neutral, positive, negative, warning, info
+        'tone' => 'neutral',
+        // for metrics where down is good — arrears, churn, cost per unit
+        'invert_direction' => false,
+        'radius' => 'small',
     ],
 
     /*
@@ -504,6 +627,11 @@ return [
     |--------------------------------------------------------------------------
     | Table component
     |--------------------------------------------------------------------------
+    |
+    | divider defaults to 'regular'. Apps that care about density almost always
+    | set 'thin' instead, and it is one line here rather than an attribute on
+    | every table.
+    |
     */
     'table' => [
         'striped' => false,
@@ -559,6 +687,9 @@ return [
         'shade' => 'faint',
         'color' => 'primary',
         'outline' => false,
+        'can_close' => false,
+        'add_clearing' => true,
+        'tiny' => false,
     ],
 
     /*
