@@ -1,4 +1,4 @@
-<p><img src="https://img.shields.io/github/license/mkocansey/bladewind" alt="License" /></p>
+<p><img src="https://img.shields.io/github/license/bladewindui/bladewindui" alt="License" /></p>
 <p><img src="https://bladewindui.com/assets/images/bw-logo.png" style="height: 30px; margin-bottom:10px" /></p>
 
 BladewindUI is a collection of UI components built with TailwindCSS, Laravel Blade templates, and vanilla JavaScript.
@@ -11,7 +11,7 @@ Every component is simple to use and ships with sensible defaults you can overri
 This pulls in all components.
 
 ```bash
-composer require mkocansey/bladewind
+composer require bladewindui/bladewindui
 ```
 
 ### Install a component group
@@ -179,7 +179,7 @@ pure Composer metapackages whose only job is to pull in the right leaf packages.
 
 ## Customising defaults
 
-Publish the config file (available when using the full `mkocansey/bladewind` package):
+Publish the config file (available when using the full `bladewindui/bladewindui` package):
 
 ```bash
 php artisan vendor:publish --tag=bladewind-config
