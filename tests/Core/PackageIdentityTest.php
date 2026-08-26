@@ -39,8 +39,13 @@ class PackageIdentityTest extends TestCase
     {
         $replace = $this->rootComposer()['replace'];
 
+        // monorepo-builder rewrites every "self.version" placeholder to the literal
+        // released version at release time, so this only pins that the former name
+        // tracks the same marker as everything else in the block - not a literal
+        // string, which flips between "self.version" and a version number depending
+        // on whether a release has run since the branch was last touched.
         $this->assertArrayHasKey('mkocansey/bladewind', $replace);
-        $this->assertSame('self.version', $replace['mkocansey/bladewind']);
+        $this->assertSame(reset($replace), $replace['mkocansey/bladewind']);
     }
 
     #[Test]
