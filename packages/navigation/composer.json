@@ -17,9 +17,9 @@
         }
     ],
     "require": {
-        "mkocansey/bladewind-tab": "^4.3",
-        "mkocansey/bladewind-dropmenu": "^4.3",
-        "mkocansey/bladewind-pagination": "^4.3",
-        "mkocansey/bladewind-theme-switcher": "^4.3"
+        "mkocansey/bladewind-tab": "^4.4",
+        "mkocansey/bladewind-dropmenu": "^4.4",
+        "mkocansey/bladewind-pagination": "^4.4",
+        "mkocansey/bladewind-theme-switcher": "^4.4"
     }
 }

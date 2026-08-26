@@ -18,8 +18,8 @@
     ],
     "require": {
         "php": ">=8.1",
-        "mkocansey/bladewind-core": "^4.3",
-        "mkocansey/bladewind-script": "^4.3"
+        "mkocansey/bladewind-core": "^4.4",
+        "mkocansey/bladewind-script": "^4.4"
     },
     "autoload": {
         "psr-4": {
