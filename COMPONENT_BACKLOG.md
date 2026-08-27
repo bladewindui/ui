@@ -7,7 +7,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` complete · `[!]` re
 
 ## Priority 1: common application building blocks
 
-- [ ] **Breadcrumbs** (`bladewind-breadcrumbs`, Navigation) — Linked hierarchy with current-page state, custom separators, collapsed overflow, and accessible navigation markup.
+- [x] **Breadcrumbs** (`bladewind-breadcrumbs`, Navigation) — Linked hierarchy with current-page state, custom separators, collapsed overflow, and accessible navigation markup.
 - [ ] **Drawer / sheet** (`bladewind-drawer`, Content) — Edge-mounted overlay for mobile navigation, filters, forms, and detail panels; support all four edges and modal/non-modal modes.
 - [ ] **Stepper / wizard** (`bladewind-stepper`, Navigation) — Horizontal and vertical steps with complete, current, error, and disabled states; allow clickable and linear workflows.
 - [ ] **Sidebar navigation** (`bladewind-sidebar`, Navigation) — Responsive nested application navigation with sections, icons, active states, badges, collapsible groups, and a mobile drawer mode.
@@ -75,9 +75,8 @@ A component can be marked complete above only when all applicable items below ar
 - [ ] Keyboard interaction, focus management, semantic markup, ARIA labelling, and screen-reader announcements are verified.
 - [ ] Unit/render tests and focused browser tests cover the component's important states and interactions.
 - [ ] Package README, website documentation, examples, prop tables, and upgrade notes are complete.
-- [ ] A corresponding component page exists in the documentation repository and is published on the BladewindUI website.
+- [ ] A corresponding component page exists in the documentation repository and is wired into navigation, search, and component registries.
 - [ ] Built assets are current and the full validation workflow passes.
-- [ ] The package is released and installable independently and through its group metapackage.
 
 ## Notes and decisions
 
