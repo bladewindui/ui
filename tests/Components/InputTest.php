@@ -28,7 +28,7 @@ class InputTest extends TestCase
     {
         $html = $this->render('<x-bladewind::input name="email" />');
 
-        $this->assertHasClasses($html, $this->withClass('dv-email'), ['relative', 'w-full', 'mb-4']);
+        $this->assertHasClasses($html, $this->withClass('dv-email'), ['bw-input-wrapper', 'relative', 'w-full', 'has-clearing']);
     }
 
     #[Test]
@@ -36,7 +36,7 @@ class InputTest extends TestCase
     {
         $html = $this->render('<x-bladewind::input name="email" add_clearing="false" />');
 
-        $this->assertMissingClasses($html, $this->withClass('dv-email'), ['mb-4']);
+        $this->assertMissingClasses($html, $this->withClass('dv-email'), ['has-clearing']);
     }
 
     #[Test]
@@ -213,6 +213,6 @@ class InputTest extends TestCase
         $html = $this->render('<x-bladewind::input name="email" />');
 
         $this->assertHasClasses($html, self::INPUT, ['big']);
-        $this->assertMissingClasses($html, $this->withClass('dv-email'), ['mb-4']);
+        $this->assertMissingClasses($html, $this->withClass('dv-email'), ['has-clearing']);
     }
 }

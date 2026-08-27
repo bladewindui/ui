@@ -156,12 +156,14 @@ composer require mkocansey/bladewind-navigation
 
 # or install any single component
 composer require mkocansey/bladewind-tab
+composer require mkocansey/bladewind-breadcrumbs
 composer require mkocansey/bladewind-pagination
 ...
 ```
 
 | Package                                                            | Composer name                        | Component(s)                            |
 |--------------------------------------------------------------------|--------------------------------------|-----------------------------------------|
+| [Breadcrumbs](https://bladewindui.com/component/breadcrumbs)       | `mkocansey/bladewind-breadcrumbs`    | Breadcrumbs, Breadcrumbs Item           |
 | [Dropmenu](https://bladewindui.com/component/dropmenu)             | `mkocansey/bladewind-dropmenu`       | Dropmenu, Dropmenu Item                 |
 | [Pagination](https://bladewindui.com/component/pagination)         | `mkocansey/bladewind-pagination`     | Pagination                              |
 | [Tab](https://bladewindui.com/component/tab)                       | `mkocansey/bladewind-tab`            | Tab, Tab Body, Tab Content, Tab Heading |

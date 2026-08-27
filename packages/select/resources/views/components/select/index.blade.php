@@ -170,7 +170,7 @@
         scroll-behavior: smooth;
     }
 </style>
-<div class="relative bw-select bw-select-{{$input_name}} @if($addClearing) mb-3 @endif @if($searchable) searchable @endif"
+<div class="relative bw-select bw-select-{{$input_name}} @if($addClearing) has-clearing @endif @if($searchable) searchable @endif"
      data-multiple="{{$multiple}}" data-required="{{$required?'true':'false'}}"
      data-type="{{ $data !== 'manual' ? 'dynamic' : 'manual'}}"
      @if(!empty($filter)) data-filter="{{ $filter}}" @endif
@@ -191,7 +191,7 @@
          @if($disabled) disabled @elseif($readonly) readonly @else enabled @endif
          @if($validation_error !== '') has-error @endif">
         <x-bladewind::icon name="chevron-left" class="!-ml-3 hidden scroll-left"/>
-        <div class="text-left placeholder grow-0 text-blue-900/40 dark:text-dark-400/60">
+        <div class="text-left placeholder grow-0 text-blue-900/40 dark:text-dark-400/60 text-nowrap">
             @if(!empty($label))
                 <span class="form-label !top-[13px]">{{$label}}
                     @if($required)
@@ -204,12 +204,12 @@
                 @endif
             @endif
         </div>
-        <div class="text-left grow display-area hidden whitespace-nowrap overflow-x-scroll p-0 m-0"></div>
-        <div class="whitespace-nowrap inline-flex">
+        <div class="text-left grow display-area hidden text-nowrap overflow-x-scroll p-0 m-0"></div>
+        <div class="text-nowrap inline-flex">
             <x-bladewind::icon name="chevron-right" class="scroll-right !-mr-2 !mt-0.5 !w-5 !h-5 hidden"/>
             <x-bladewind::icon
                     name="x-mark" type="solid"
-                    class="hidden reset size-5 rounded-full p-1 text-gray-600 hover:text-gray-800 dark:text-dark-300 bg-gray-200 hover:bg-gray-300 dark:bg-dark-800/60 dark:hover:bg-dark-900"/>
+                    class="hidden reset size-5 rounded-full ml-2 mt-0.5 p-1 text-gray-600 hover:text-gray-800 dark:text-dark-300 bg-gray-200 hover:bg-gray-300 dark:bg-dark-800/60 dark:hover:bg-dark-900"/>
             <x-bladewind::icon name="chevron-up-down" class="opacity-40 opener !ml-2"/>
         </div>
     </div>

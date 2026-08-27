@@ -110,6 +110,17 @@
         @apply text-gray-300! dark:text-dark-400/60! not-italic!
     }
 
+    /* Form-control spacing lives here instead of in utility classes so an input
+       group can remove it without fighting Tailwind's later utilities layer. */
+    .bw-input-wrapper.has-clearing {
+        @apply mb-4
+    }
+
+    .bw-textarea-wrapper.has-clearing,
+    .bw-select.has-clearing {
+        @apply mb-3
+    }
+
 
     /*
      | Input groups — an input with a button or select attached to it.
@@ -119,7 +130,7 @@
      | The group owns the corner surgery so the markup does not have to.
      */
     .bw-input-group {
-        @apply flex items-stretch w-full mb-4
+        @apply flex items-start w-full mb-4
     }
 
     .bw-input-group.gapped {
@@ -127,10 +138,30 @@
     }
 
     /* the wrapped controls bring their own bottom margin; the group owns it */
-    .bw-input-group > * {
+    .bw-input-group > :is(.bw-input-wrapper, .bw-textarea-wrapper, .bw-select) {
         @apply mb-0
     }
 
+    /* Inputs own the flexible width. Letting an attached button shrink can wrap
+       its label and make it taller than the height selected by its size prop. */
+    .bw-input-group > .bw-button {
+        @apply shrink-0
+    }
+
+    /* collapse the doubled 2px borders where two controls meet */
+    .bw-input-group.attached > :not(:first-child) {
+        @apply -ml-0.5
+    }
+
+    /* a control that is not meant to stretch, e.g. an attached button */
+    .bw-input-group .shrink-control {
+        @apply grow-0 shrink-0
+    }
+}
+
+/* Button radius props emit utilities. These composition rules belong in the
+   same layer so the attached shape wins by specificity, not importance. */
+@layer utilities {
     .bw-input-group.attached :is(.bw-input, .bw-textarea, .bw-button, .bw-select div.clickable) {
         @apply rounded-none
     }
@@ -143,15 +174,5 @@
     .bw-input-group.attached > :last-child,
     .bw-input-group.attached > :last-child :is(.bw-input, .bw-textarea, .bw-button, .bw-select div.clickable) {
         @apply rounded-r-md
-    }
-
-    /* collapse the doubled 2px borders where two controls meet */
-    .bw-input-group.attached > :not(:first-child) {
-        @apply -ml-0.5
-    }
-
-    /* a control that is not meant to stretch, e.g. an attached button */
-    .bw-input-group .shrink-control {
-        @apply grow-0 shrink-0
     }
 }

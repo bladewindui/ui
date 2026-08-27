@@ -207,4 +207,76 @@ class BuildFixturesTest extends TestCase
 
         $this->assertFileExists(self::OUT.'/delegated-handlers.html');
     }
+
+    /**
+     * Input clearing used to add 16px to the flex line, stretching the attached
+     * button below the input instead of leaving the two controls level.
+     */
+    #[Test]
+    public function it_writes_the_input_group_fixture(): void
+    {
+        $matched = $this->render(
+            '<x-bladewind::input-group>'
+            .'<x-bladewind::input id="matched-input" name="orders" size="medium" placeholder="Search orders" />'
+            .'<x-bladewind::button id="matched-button" size="medium">Search</x-bladewind::button>'
+            .'</x-bladewind::input-group>'
+        );
+
+        $mismatched = $this->render(
+            '<x-bladewind::input-group>'
+            .'<x-bladewind::input id="grouped-input" name="grouped" size="medium" placeholder="Medium input" />'
+            .'<x-bladewind::button id="grouped-button" size="big">Big button</x-bladewind::button>'
+            .'</x-bladewind::input-group>'
+        );
+
+        $referenceInput = $this->render(
+            '<x-bladewind::input id="reference-input" name="reference" size="medium" add_clearing="false" />'
+        );
+        $referenceButton = $this->render(
+            '<x-bladewind::button id="reference-button" size="big">Big button</x-bladewind::button>'
+        );
+
+        $body = '<div style="width:790px">'.$matched.$mismatched
+            .'<div style="margin-top:24px">'.$referenceInput.$referenceButton.'</div></div>';
+
+        file_put_contents(
+            self::OUT.'/input-group.html',
+            $this->relative($this->page('Input group', $body))
+        );
+
+        $this->assertFileExists(self::OUT.'/input-group.html');
+    }
+
+    #[Test]
+    public function it_writes_the_breadcrumbs_fixture(): void
+    {
+        $trail = $this->render(
+            '<x-bladewind::breadcrumbs aria-label="Order path">'
+            .'<x-bladewind::breadcrumbs.item href="/home" icon="home">Home</x-bladewind::breadcrumbs.item>'
+            .'<x-bladewind::breadcrumbs.item href="/sales">Sales</x-bladewind::breadcrumbs.item>'
+            .'<x-bladewind::breadcrumbs.item href="/sales/orders">Orders and fulfilment</x-bladewind::breadcrumbs.item>'
+            .'<x-bladewind::breadcrumbs.item href="/sales/orders/1042">Order 1042 with a deliberately long customer reference</x-bladewind::breadcrumbs.item>'
+            .'<x-bladewind::breadcrumbs.item current>Shipment details</x-bladewind::breadcrumbs.item>'
+            .'</x-bladewind::breadcrumbs>'
+        );
+
+        $rtl = $this->render(
+            '<x-bladewind::breadcrumbs aria-label="RTL path" dir="rtl" separator="slash">'
+            .'<x-bladewind::breadcrumbs.item href="/ar">الرئيسية</x-bladewind::breadcrumbs.item>'
+            .'<x-bladewind::breadcrumbs.item href="/ar/orders">الطلبات</x-bladewind::breadcrumbs.item>'
+            .'<x-bladewind::breadcrumbs.item current>التفاصيل</x-bladewind::breadcrumbs.item>'
+            .'</x-bladewind::breadcrumbs>'
+        );
+
+        $body = '<section id="light" style="max-width:760px">'.$trail.'</section>'
+            .'<section id="dark" class="dark" style="max-width:760px;background:#101114;padding:24px;margin-top:30px">'.$trail.'</section>'
+            .'<section id="rtl" style="max-width:760px;margin-top:30px">'.$rtl.'</section>';
+
+        file_put_contents(
+            self::OUT.'/breadcrumbs.html',
+            $this->relative($this->page('Breadcrumbs', $body))
+        );
+
+        $this->assertFileExists(self::OUT.'/breadcrumbs.html');
+    }
 }
