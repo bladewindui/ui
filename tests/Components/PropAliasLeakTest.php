@@ -35,6 +35,7 @@ class PropAliasLeakTest extends TestCase
             'textarea' => ['<x-bladewind::textarea name="t" add_clearing="false" />', 'add_clearing'],
             'statistic' => ['<x-bladewind::statistic title="t" value="1" has_shadow="false" />', 'has_shadow'],
             'sortable' => ['<x-bladewind::sortable name="s" has_handle="true"></x-bladewind::sortable>', 'has_handle'],
+            'drawer' => ['<x-bladewind::drawer name="d" show_close_button="false">c</x-bladewind::drawer>', 'show_close_button'],
         ];
     }
 

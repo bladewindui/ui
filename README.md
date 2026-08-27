@@ -86,6 +86,7 @@ They are pulled in as dependencies by other components that need them.
 | [Bell](https://bladewindui.com/component/bell)                 | `mkocansey/bladewind-bell`         | Bell                                           |
 | [Button](https://bladewindui.com/component/button)             | `mkocansey/bladewind-button`       | Button, Circle Button                          |
 | [Modal](https://bladewindui.com/component/modal)               | `mkocansey/bladewind-modal`        | Modal, Modal Icon                              |
+| [Drawer](https://bladewindui.com/component/drawer)             | `mkocansey/bladewind-drawer`       | Drawer                                         |
 | [Notification](https://bladewindui.com/component/notification) | `mkocansey/bladewind-notification` | Notification                                   |
 | [Spinner](https://bladewindui.com/component/spinner)           | `mkocansey/bladewind-spinner`      | Spinner, Shimmer, Processing, Process Complete |
 | [Table](https://bladewindui.com/component/table)               | `mkocansey/bladewind-table`        | Table, Table Icons                             |
@@ -144,6 +145,7 @@ composer require mkocansey/bladewind-chart
 | [Progress](https://bladewindui.com/component/progress-bar)                       | `mkocansey/bladewind-progress`              | Progress Bar, Progress Circle |
 | [Rating](https://bladewindui.com/component/rating)                               | `mkocansey/bladewind-rating`                | Rating                        |
 | [Sortable](https://bladewindui.com/component/sortable)                           | `mkocansey/bladewind-sortable`              | Sortable, Sortable Item       |
+| [Drawer](https://bladewindui.com/component/drawer)                               | `mkocansey/bladewind-drawer`                | Drawer                        |
 | [Statistic](https://bladewindui.com/component/statistic)                         | `mkocansey/bladewind-statistic`             | Statistic                     |
 | [Tag](https://bladewindui.com/component/tag)                                     | `mkocansey/bladewind-tag`                   | Tag, Tags                     |
 | [Timeline](https://bladewindui.com/component/timeline)                           | `mkocansey/bladewind-timeline`              | Timeline, Timelines           |
@@ -155,6 +157,7 @@ composer require mkocansey/bladewind-chart
 composer require mkocansey/bladewind-navigation
 
 # or install any single component
+composer require mkocansey/bladewind-breadcrumbs
 composer require mkocansey/bladewind-tab
 composer require mkocansey/bladewind-breadcrumbs
 composer require mkocansey/bladewind-pagination

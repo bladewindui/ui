@@ -100,6 +100,7 @@ class InlineHandlerTest extends TestCase
             'data-bw-tag-value' => 'packages/core/public/js/helpers.js',
             'data-bw-focuses' => 'packages/core/public/js/helpers.js',
             'data-bw-modal-close' => 'packages/core/public/js/helpers.js',
+            'data-bw-drawer-close' => 'packages/core/public/js/helpers.js',
             'data-bw-tab' => 'packages/core/public/js/helpers.js',
             'data-can-sort' => 'packages/core/public/js/table.js',
             'data-bw-select-search' => 'packages/core/public/js/select.js',

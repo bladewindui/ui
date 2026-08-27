@@ -1,6 +1,6 @@
 {
     "name": "mkocansey/bladewind-navigation",
-    "description": "BladewindUI navigation bundle — installs all navigation components (Tab, Dropmenu, Pagination, Theme Switcher)",
+    "description": "BladewindUI navigation bundle - installs Breadcrumbs, Tab, Dropmenu, Pagination, and Theme Switcher",
     "keywords": [
         "laravel",
         "blade",

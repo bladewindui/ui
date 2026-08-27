@@ -64,6 +64,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Breadcrumbs component
+    |--------------------------------------------------------------------------
+    */
+    'breadcrumbs' => [
+        'separator' => 'chevron',
+        'size' => 'regular',
+        'collapse' => true,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Button component
     |--------------------------------------------------------------------------
     */
@@ -336,6 +347,15 @@ return [
         'show_close_icon' => false,
         'size' => 'medium',
         'radius' => 'small',
+    ],
+
+    'drawer' => [
+        'position' => 'right',
+        'size' => 'medium',
+        'modal' => true,
+        'show_close_button' => true,
+        'backdrop_can_close' => true,
+        'escape_can_close' => true,
     ],
 
     /*

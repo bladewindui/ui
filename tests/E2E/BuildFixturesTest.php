@@ -279,4 +279,41 @@ class BuildFixturesTest extends TestCase
 
         $this->assertFileExists(self::OUT.'/breadcrumbs.html');
     }
+
+    #[Test]
+    public function it_writes_the_drawer_fixture(): void
+    {
+        $drawers = '';
+        foreach (['left', 'right', 'top', 'bottom'] as $position) {
+            $drawers .= $this->render(
+                '<x-bladewind::drawer name="'.$position.'" title="'.ucfirst($position).' drawer" position="'.$position.'">'
+                .'<button type="button" data-first>First</button><button type="button" data-last>Last</button>'
+                .'</x-bladewind::drawer>'
+            );
+        }
+        $drawers .= $this->render(
+            '<x-bladewind::drawer name="nonmodal" title="Non-modal" modal="false">'
+            .'<button type="button">Inside</button></x-bladewind::drawer>'
+        );
+        $drawers .= $this->render(
+            '<x-bladewind::drawer name="locked" title="Locked" backdrop_can_close="false" escape_can_close="false">Locked</x-bladewind::drawer>'
+        );
+
+        $buttons = '<button id="background">Background</button>';
+        foreach (['left', 'right', 'top', 'bottom', 'nonmodal', 'locked'] as $name) {
+            $buttons .= '<button type="button" data-open="'.$name.'">Open '.$name.'</button>';
+        }
+        $scripts = <<<'HTML'
+        <script>
+          document.querySelectorAll('[data-open]').forEach((button) => button.addEventListener('click', () => showDrawer(button.dataset.open)));
+        </script>
+        HTML;
+
+        file_put_contents(
+            self::OUT.'/drawer.html',
+            $this->relative($this->page('Drawer', $buttons.$drawers, $scripts))
+        );
+
+        $this->assertFileExists(self::OUT.'/drawer.html');
+    }
 }
