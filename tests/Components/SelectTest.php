@@ -30,7 +30,7 @@ class SelectTest extends TestCase
         $html = $this->select();
 
         $this->assertElementCount($html, self::ROOT, 1);
-        $this->assertHasClasses($html, self::ROOT, ['bw-select', 'bw-select-country', 'relative', 'mb-3']);
+        $this->assertHasClasses($html, self::ROOT, ['bw-select', 'bw-select-country', 'relative', 'has-clearing']);
         $this->assertAttribute($html, self::ROOT, 'data-type', 'dynamic');
         $this->assertAttribute($html, self::ROOT, 'data-required', 'false');
     }
@@ -116,7 +116,7 @@ class SelectTest extends TestCase
     #[Test]
     public function add_clearing_false_removes_the_bottom_margin(): void
     {
-        $this->assertMissingClasses($this->select('add_clearing="false"'), self::ROOT, ['mb-3']);
+        $this->assertMissingClasses($this->select('add_clearing="false"'), self::ROOT, ['has-clearing']);
     }
 
     #[Test]

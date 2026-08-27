@@ -194,7 +194,7 @@
 @endphp
 {{-- format-ignore-end --}}
 
-<div class="relative w-full dv-{{$name}} @if($add_clearing) mb-4 @endif">
+<div class="bw-input-wrapper relative w-full dv-{{$name}} @if($add_clearing) has-clearing @endif">
     <input
             {{ $attributes->exceptPropAliases(get_defined_vars())->class(["bw-input peer $is_required $name $placeholder_color $size $has_error_css focus:outline-primary-500 focus:border-primary-500"])->merge([
                 'type' => $type,
