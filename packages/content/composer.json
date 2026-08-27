@@ -33,6 +33,7 @@
         "mkocansey/bladewind-listview": "^4.4",
         "mkocansey/bladewind-tooltip": "^4.4",
         "mkocansey/bladewind-popover": "^4.4",
-        "mkocansey/bladewind-sortable": "^4.4"
+        "mkocansey/bladewind-sortable": "^4.4",
+        "mkocansey/bladewind-drawer": "^4.4"
     }
 }

@@ -207,4 +207,73 @@ class BuildFixturesTest extends TestCase
 
         $this->assertFileExists(self::OUT.'/delegated-handlers.html');
     }
+
+    #[Test]
+    public function it_writes_the_breadcrumbs_fixture(): void
+    {
+        $trail = $this->render(
+            '<x-bladewind::breadcrumbs aria-label="Order path">'
+            .'<x-bladewind::breadcrumbs.item href="/home" icon="home">Home</x-bladewind::breadcrumbs.item>'
+            .'<x-bladewind::breadcrumbs.item href="/sales">Sales</x-bladewind::breadcrumbs.item>'
+            .'<x-bladewind::breadcrumbs.item href="/sales/orders">Orders and fulfilment</x-bladewind::breadcrumbs.item>'
+            .'<x-bladewind::breadcrumbs.item href="/sales/orders/1042">Order 1042 with a deliberately long customer reference</x-bladewind::breadcrumbs.item>'
+            .'<x-bladewind::breadcrumbs.item current>Shipment details</x-bladewind::breadcrumbs.item>'
+            .'</x-bladewind::breadcrumbs>'
+        );
+
+        $rtl = $this->render(
+            '<x-bladewind::breadcrumbs aria-label="RTL path" dir="rtl" separator="slash">'
+            .'<x-bladewind::breadcrumbs.item href="/ar">الرئيسية</x-bladewind::breadcrumbs.item>'
+            .'<x-bladewind::breadcrumbs.item href="/ar/orders">الطلبات</x-bladewind::breadcrumbs.item>'
+            .'<x-bladewind::breadcrumbs.item current>التفاصيل</x-bladewind::breadcrumbs.item>'
+            .'</x-bladewind::breadcrumbs>'
+        );
+
+        $body = '<section id="light" style="max-width:760px">'.$trail.'</section>'
+            .'<section id="dark" class="dark" style="max-width:760px;background:#101114;padding:24px;margin-top:30px">'.$trail.'</section>'
+            .'<section id="rtl" style="max-width:760px;margin-top:30px">'.$rtl.'</section>';
+
+        file_put_contents(
+            self::OUT.'/breadcrumbs.html',
+            $this->relative($this->page('Breadcrumbs', $body))
+        );
+
+        $this->assertFileExists(self::OUT.'/breadcrumbs.html');
+    }
+
+    #[Test]
+    public function it_writes_the_drawer_fixture(): void
+    {
+        $drawers = '';
+        foreach (['left', 'right', 'top', 'bottom'] as $position) {
+            $drawers .= $this->render(
+                '<x-bladewind::drawer name="'.$position.'" title="'.ucfirst($position).' drawer" position="'.$position.'">'
+                .'<button type="button" data-first>First</button><button type="button" data-last>Last</button>'
+                .'</x-bladewind::drawer>'
+            );
+        }
+        $drawers .= $this->render(
+            '<x-bladewind::drawer name="nonmodal" title="Non-modal" modal="false">'
+            .'<button type="button">Inside</button></x-bladewind::drawer>'
+        );
+        $drawers .= $this->render(
+            '<x-bladewind::drawer name="locked" title="Locked" backdrop_can_close="false" escape_can_close="false">Locked</x-bladewind::drawer>'
+        );
+
+        $buttons = '<button id="background">Background</button>';
+        foreach (['left', 'right', 'top', 'bottom', 'nonmodal', 'locked'] as $name) {
+            $buttons .= '<button type="button" data-open="'.$name.'">Open '.$name.'</button>';
+        }
+        $scripts = <<<'HTML'
+        <script>
+          document.querySelectorAll('[data-open]').forEach((button) => button.addEventListener('click', () => showDrawer(button.dataset.open)));
+        </script>
+        HTML;
+
+        file_put_contents(
+            self::OUT.'/drawer.html',
+            $this->relative($this->page('Drawer', $buttons.$drawers, $scripts))
+        );
+        $this->assertFileExists(self::OUT.'/drawer.html');
+    }
 }

@@ -19,6 +19,7 @@
 /* ── Per-component CSS ─────────────────────────────────────────────────────── */
 @import "./packages/core/public/css/animate.min.css";
 @import "./packages/button/resources/assets/css/button.css";
+@import "./packages/breadcrumbs/resources/assets/css/breadcrumbs.css";
 @import "./packages/card/resources/assets/css/card.css";
 @import "./packages/input/resources/assets/css/input.css";
 @import "./packages/datepicker/resources/assets/css/datepicker.css";
@@ -30,6 +31,7 @@
 @import "./packages/progress/resources/assets/css/progress.css";
 @import "./packages/tooltip/resources/assets/css/tooltip.css";
 @import "./packages/popover/resources/assets/css/popover.css";
+@import "./packages/drawer/resources/assets/css/drawer.css";
 @import "./packages/core/resources/assets/css/core.css";
 
 /* ── Theme ─────────────────────────────────────────────────────────────────── */

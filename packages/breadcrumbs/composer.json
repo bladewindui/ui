@@ -1,0 +1,37 @@
+{
+    "name": "mkocansey/bladewind-breadcrumbs",
+    "description": "BladewindUI - accessible, responsive Breadcrumbs component",
+    "keywords": [
+        "laravel",
+        "blade",
+        "tailwindcss",
+        "bladewindui",
+        "breadcrumbs",
+        "navigation"
+    ],
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Michael K. Ocansey",
+            "email": "mike@bladewindui.com"
+        }
+    ],
+    "require": {
+        "php": ">=8.1",
+        "mkocansey/bladewind-core": "^4.4",
+        "mkocansey/bladewind-icon": "^4.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Mkocansey\\Bladewind\\Breadcrumbs\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Mkocansey\\Bladewind\\Breadcrumbs\\BladewindBreadcrumbsServiceProvider"
+            ]
+        }
+    }
+}

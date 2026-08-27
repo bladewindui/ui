@@ -5,6 +5,8 @@
  */
 
 const openModals = [];
+const openDrawers = [];
+const drawerReturnFocus = new Map();
 /**
  * Shortcut for document.querySelector.
  * @param {string} element - The element to find in the DOM.
@@ -370,12 +372,92 @@ const trapFocusInModal = (event) => {
 const hideModal = (element) => {
     animateCss(`.bw-${element}`, 'zoomOut').then(() => {
         openModals.pop();
-        document.body.classList.remove('overflow-hidden');
+        syncDrawerScrollLock();
         domEl(`.bw-${element}-modal`).removeEventListener('keydown', trapFocusInModal);
         animateCss(`.bw-${element}-modal`, 'zoomOut').then(() => {
             hide(`.bw-${element}-modal`);
         });
     });
+};
+
+const drawerByName = (name) => Array.from(domEls('[data-bw-drawer]'))
+    .find((drawer) => drawer.getAttribute('data-name') === name);
+
+const drawerFocusable = (drawer) => Array.from(drawer.querySelectorAll(
+    'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+)).filter((element) => !element.hidden && element.getAttribute('aria-hidden') !== 'true');
+
+const syncDrawerScrollLock = () => {
+    const hasModalDrawer = openDrawers.some((name) => drawerByName(name)?.getAttribute('data-modal') === 'true');
+    document.body.classList.toggle('overflow-hidden', hasModalDrawer || openModals.length > 0);
+};
+
+const focusDrawer = (drawer) => {
+    const preferred = drawer.querySelector('[autofocus]') || drawerFocusable(drawer)[0] || drawer.querySelector('.bw-drawer-panel');
+    preferred?.focus({preventScroll: true});
+};
+
+const showDrawer = (name) => {
+    const drawer = drawerByName(name);
+    if (!drawer || drawer.getAttribute('data-state') === 'open') return false;
+    drawerReturnFocus.set(name, document.activeElement);
+    drawer.hidden = false;
+    drawer.setAttribute('data-state', 'opening');
+    drawer.setAttribute('aria-hidden', 'false');
+    drawer.style.zIndex = String(50 + (openDrawers.length * 10));
+    openDrawers.push(name);
+    syncDrawerScrollLock();
+    requestAnimationFrame(() => {
+        if (drawer.getAttribute('data-state') !== 'opening') return;
+        drawer.setAttribute('data-state', 'open');
+        focusDrawer(drawer);
+        drawer.dispatchEvent(new CustomEvent('bladewind:drawer-opened', {bubbles: true, detail: {name}}));
+    });
+    return true;
+};
+
+const hideDrawer = (name) => {
+    const drawer = drawerByName(name);
+    if (!drawer || drawer.hidden || drawer.getAttribute('data-state') === 'closed') return false;
+    drawer.setAttribute('data-state', 'closing');
+    drawer.setAttribute('aria-hidden', 'true');
+    const index = openDrawers.lastIndexOf(name);
+    if (index !== -1) openDrawers.splice(index, 1);
+    syncDrawerScrollLock();
+
+    let finished = false;
+    const finish = () => {
+        if (finished) return;
+        finished = true;
+        drawer.hidden = true;
+        drawer.setAttribute('data-state', 'closed');
+        drawer.style.removeProperty('z-index');
+        const trigger = drawerReturnFocus.get(name);
+        drawerReturnFocus.delete(name);
+        if (trigger?.isConnected) trigger.focus({preventScroll: true});
+        drawer.dispatchEvent(new CustomEvent('bladewind:drawer-closed', {bubbles: true, detail: {name}}));
+    };
+    drawer.querySelector('.bw-drawer-panel')?.addEventListener('transitionend', finish, {once: true});
+    setTimeout(finish, 300);
+    return true;
+};
+
+const toggleDrawer = (name) => {
+    const drawer = drawerByName(name);
+    if (!drawer) return false;
+    return drawer.hidden || drawer.getAttribute('data-state') !== 'open' ? showDrawer(name) : hideDrawer(name);
+};
+
+const initialiseDrawers = () => {
+    domEls('[data-bw-drawer][data-state="open"]').forEach((drawer) => {
+        const name = drawer.getAttribute('data-name');
+        drawer.hidden = false;
+        drawer.setAttribute('aria-hidden', 'false');
+        if (!openDrawers.includes(name)) openDrawers.push(name);
+    });
+    syncDrawerScrollLock();
+    const activeDrawer = drawerByName(openDrawers[openDrawers.length - 1]);
+    if (activeDrawer) focusDrawer(activeDrawer);
 };
 
 /**
@@ -1040,6 +1122,46 @@ bwOn('click', '[data-bw-tag-remove]', (link) => link.parentElement?.remove());
 // the modal's own close buttons. a consumer-supplied ok/cancel action is their
 // javascript and stays inline, so it is not handled here
 bwOn('click', '[data-bw-modal-close]', (el) => hideModal(el.getAttribute('data-bw-modal-close')));
+bwOn('click', '[data-bw-drawer-close]', (el) => hideDrawer(el.getAttribute('data-bw-drawer-close')));
+bwOn('click', '[data-bw-drawer-backdrop]', (backdrop) => {
+    const drawer = backdrop.closest('[data-bw-drawer]');
+    if (drawer?.getAttribute('data-backdrop-can-close') === 'true') hideDrawer(drawer.getAttribute('data-name'));
+});
+
+document.addEventListener('keydown', (event) => {
+    const name = openDrawers[openDrawers.length - 1];
+    const drawer = name ? drawerByName(name) : null;
+    if (!drawer) return;
+    if (event.key === 'Escape' && drawer.getAttribute('data-escape-can-close') === 'true') {
+        event.preventDefault();
+        hideDrawer(name);
+        return;
+    }
+    if (event.key !== 'Tab' || drawer.getAttribute('data-modal') !== 'true') return;
+    const focusable = drawerFocusable(drawer);
+    if (focusable.length === 0) {
+        event.preventDefault();
+        drawer.querySelector('.bw-drawer-panel')?.focus();
+        return;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (!drawer.contains(document.activeElement)) {
+        event.preventDefault();
+        first.focus();
+        return;
+    }
+    if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+    }
+});
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initialiseDrawers);
+else initialiseDrawers();
 
 // a tab heading either switches tab or navigates, depending on its url prop
 bwOn('click', '[data-bw-tab]', (tab) => {
@@ -1101,6 +1223,9 @@ Object.assign(window, {
     showModal,
     trapFocusInModal,
     hideModal,
+    showDrawer,
+    hideDrawer,
+    toggleDrawer,
     showButtonSpinner,
     hideButtonSpinner,
     showModalActionButtons,

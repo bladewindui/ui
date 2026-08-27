@@ -27,6 +27,7 @@ jobs:
           - { local_path: 'packages/bell',         split_repository: 'bladewind-bell'         }
           - { local_path: 'packages/notification', split_repository: 'bladewind-notification' }
           - { local_path: 'packages/modal',   split_repository: 'bladewind-modal'   }
+          - { local_path: 'packages/drawer',  split_repository: 'bladewind-drawer'  }
           - { local_path: 'packages/table',   split_repository: 'bladewind-table'   }
 
           # ── Form leaf packages ────────────────────────────────────────────────
@@ -71,6 +72,7 @@ jobs:
           - { local_path: 'packages/content', split_repository: 'bladewind-content' }
 
           # ── Navigation leaf packages ──────────────────────────────────────────
+          - { local_path: 'packages/breadcrumbs',   split_repository: 'bladewind-breadcrumbs'   }
           - { local_path: 'packages/tab',           split_repository: 'bladewind-tab'           }
           - { local_path: 'packages/dropmenu',      split_repository: 'bladewind-dropmenu'      }
           - { local_path: 'packages/pagination',    split_repository: 'bladewind-pagination'    }

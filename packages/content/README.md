@@ -32,6 +32,7 @@ composer require mkocansey/bladewind-content
 | `mkocansey/bladewind-listview` | List View |
 | `mkocansey/bladewind-tooltip` | Tooltip |
 | `mkocansey/bladewind-popover` | Popover |
+| `mkocansey/bladewind-drawer` | Drawer |
 
 You can also install the full BladewindUI library in one go:
 

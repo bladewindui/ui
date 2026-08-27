@@ -21,7 +21,7 @@ const src = readFileSync(resolve(here, '../packages/core/public/js/helpers.js'),
 // the smallest DOM that answers what helpers.js touches at load, and matches nothing
 const element = () => ({
   style: { setProperty() {} },
-  classList: { add() {}, remove() {}, contains: () => false },
+  classList: { add() {}, remove() {}, toggle() {}, contains: () => false },
   querySelector: () => null,
   querySelectorAll: () => [],
   getBoundingClientRect: () => ({ width: 0, height: 0, left: 0, top: 0 }),
@@ -66,6 +66,7 @@ try {
 const required = [
   'showModal', 'hideModal', 'showModalActionButtons', 'hideModalActionButtons',
   'domEl', 'domEls', 'changeCss', 'goToTab', 'togglePassword', 'unhide', 'hide',
+  'showDrawer', 'hideDrawer', 'toggleDrawer',
 ]
 
 const missing = required.filter((name) => typeof window[name] !== 'function')

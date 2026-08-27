@@ -43,6 +43,15 @@ return [
         'error_bag' => null,
     ],
 
+    'drawer' => [
+        'position' => 'right',
+        'size' => 'medium',
+        'modal' => true,
+        'show_close_button' => true,
+        'backdrop_can_close' => true,
+        'escape_can_close' => true,
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Pagination component
@@ -144,6 +153,17 @@ return [
         'animate_dot' => false,
         'size' => 'small',
         'color' => 'primary',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Breadcrumbs component
+    |--------------------------------------------------------------------------
+    */
+    'breadcrumbs' => [
+        'separator' => 'chevron',
+        'size' => 'regular',
+        'collapse' => true,
     ],
 
     /*
