@@ -1,0 +1,21 @@
+{
+    "name": "mkocansey/bladewind-stepper",
+    "description": "BladewindUI - accessible Stepper and Wizard component",
+    "keywords": ["laravel", "blade", "tailwindcss", "bladewindui", "stepper", "wizard", "navigation"],
+    "license": "MIT",
+    "type": "library",
+    "authors": [{"name": "Michael K. Ocansey", "email": "mike@bladewindui.com"}],
+    "require": {
+        "php": ">=8.1",
+        "mkocansey/bladewind-core": "^4.4",
+        "mkocansey/bladewind-icon": "^4.4"
+    },
+    "autoload": {
+        "psr-4": {"Mkocansey\\Bladewind\\Stepper\\": "src/"}
+    },
+    "extra": {
+        "laravel": {
+            "providers": ["Mkocansey\\Bladewind\\Stepper\\BladewindStepperServiceProvider"]
+        }
+    }
+}
