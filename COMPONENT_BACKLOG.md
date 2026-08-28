@@ -8,7 +8,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` complete · `[!]` re
 ## Priority 1: common application building blocks
 
 - [x] **Breadcrumbs** (`bladewind-breadcrumbs`, Navigation) — Linked hierarchy with current-page state, custom separators, collapsed overflow, and accessible navigation markup.
-- [ ] **Drawer / sheet** (`bladewind-drawer`, Content) — Edge-mounted overlay for mobile navigation, filters, forms, and detail panels; support all four edges and modal/non-modal modes.
+- [x] **Drawer / sheet** (`bladewind-drawer`, Content) — Edge-mounted overlay for mobile navigation, filters, forms, and detail panels; support all four edges and modal/non-modal modes.
 - [ ] **Stepper / wizard** (`bladewind-stepper`, Navigation) — Horizontal and vertical steps with complete, current, error, and disabled states; allow clickable and linear workflows.
 - [ ] **Sidebar navigation** (`bladewind-sidebar`, Navigation) — Responsive nested application navigation with sections, icons, active states, badges, collapsible groups, and a mobile drawer mode.
 - [ ] **Command palette** (`bladewind-command-palette`, Navigation) — Keyboard-first searchable action launcher with grouped actions, shortcuts, empty states, and asynchronous results.
