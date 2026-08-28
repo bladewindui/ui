@@ -20,6 +20,7 @@
 @import "./packages/core/public/css/animate.min.css";
 @import "./packages/button/resources/assets/css/button.css";
 @import "./packages/breadcrumbs/resources/assets/css/breadcrumbs.css";
+@import "./packages/stepper/resources/assets/css/stepper.css";
 @import "./packages/card/resources/assets/css/card.css";
 @import "./packages/input/resources/assets/css/input.css";
 @import "./packages/datepicker/resources/assets/css/datepicker.css";

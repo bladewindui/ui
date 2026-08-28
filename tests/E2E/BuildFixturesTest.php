@@ -316,4 +316,72 @@ class BuildFixturesTest extends TestCase
 
         $this->assertFileExists(self::OUT.'/drawer.html');
     }
+
+    #[Test]
+    public function it_writes_the_stepper_fixture(): void
+    {
+        $linear = $this->render(
+            '<x-bladewind::stepper name="setup" current="profile" aria-label="Account setup">'
+            .'<x-bladewind::stepper.item name="account" label="Account details with a deliberately long label" state="complete" />'
+            .'<x-bladewind::stepper.item name="profile" label="Profile" description="Personal details" state="upcoming" />'
+            .'<x-bladewind::stepper.item name="security" label="Security" />'
+            .'<x-bladewind::stepper.item name="optional" label="Optional" disabled="true" />'
+            .'<x-bladewind::stepper.content name="account"><input aria-label="Account field"></x-bladewind::stepper.content>'
+            .'<x-bladewind::stepper.content name="profile" has-border="false"><input aria-label="Profile field"></x-bladewind::stepper.content>'
+            .'<x-bladewind::stepper.content name="security"><input aria-label="Security field"></x-bladewind::stepper.content>'
+            .'</x-bladewind::stepper>'
+        );
+        $styles = collect(['chevrons', 'bars', 'line'])->map(fn (string $style) => $this->render(
+            '<x-bladewind::stepper name="style-'.$style.'" current="two" style="'.$style.'" linear="false" aria-label="'.$style.' style">'
+            .'<x-bladewind::stepper.item name="one" label="First stage" state="complete" />'
+            .'<x-bladewind::stepper.item name="two" label="Second stage" />'
+            .'<x-bladewind::stepper.item name="three" label="Third stage" />'
+            .'<x-bladewind::stepper.content name="one">First panel</x-bladewind::stepper.content>'
+            .'<x-bladewind::stepper.content name="two">Second panel</x-bladewind::stepper.content>'
+            .'<x-bladewind::stepper.content name="three">Third panel</x-bladewind::stepper.content>'
+            .'</x-bladewind::stepper>'
+        ))->implode('');
+        $nonlinear = $this->render(
+            '<x-bladewind::stepper name="free" current="one" linear="false" orientation="vertical" aria-label="Free workflow">'
+            .'<x-bladewind::stepper.item name="one" label="One" />'
+            .'<x-bladewind::stepper.item name="two" label="Two" state="error" />'
+            .'<x-bladewind::stepper.item name="three" label="Three" />'
+            .'<x-bladewind::stepper.content name="one">Panel one</x-bladewind::stepper.content>'
+            .'<x-bladewind::stepper.content name="two">Panel two</x-bladewind::stepper.content>'
+            .'<x-bladewind::stepper.content name="three">Panel three</x-bladewind::stepper.content>'
+            .'</x-bladewind::stepper>'
+        );
+        $rtl = $this->render(
+            '<x-bladewind::stepper name="rtl" current="a" dir="rtl" linear="false" aria-label="RTL workflow">'
+            .'<x-bladewind::stepper.item name="a" label="الأول" />'
+            .'<x-bladewind::stepper.item name="b" label="الثاني" />'
+            .'<x-bladewind::stepper.item name="c" label="الثالث" />'
+            .'</x-bladewind::stepper>'
+        );
+
+        $scripts = <<<'HTML'
+        <script>
+          window.blockSecurity = false;
+          window.stepperEvents = [];
+          document.querySelector('[data-name="setup"]').addEventListener('bladewind:stepper:before-change', (event) => {
+            window.stepperEvents.push({type: event.type, ...event.detail});
+            if (window.blockSecurity && event.detail.nextStep === 'security') event.preventDefault();
+          });
+          document.querySelector('[data-name="setup"]').addEventListener('bladewind:stepper:changed', (event) => window.stepperEvents.push({type: event.type, ...event.detail}));
+          document.querySelector('[data-name="setup"]').addEventListener('bladewind:stepper:complete', (event) => window.stepperEvents.push({type: event.type, ...event.detail}));
+        </script>
+        HTML;
+
+        $body = '<section id="linear" style="max-width:720px">'.$linear.'</section>'
+            .'<section id="nonlinear" class="dark" style="max-width:420px;background:#101114;padding:24px;margin-top:30px">'.$nonlinear.'</section>'
+            .'<section id="rtl" style="max-width:620px;margin-top:30px">'.$rtl.'</section>'
+            .'<section id="styles" style="max-width:720px;margin-top:30px">'.$styles.'</section>';
+
+        file_put_contents(
+            self::OUT.'/stepper.html',
+            $this->relative($this->page('Stepper', $body, $scripts))
+        );
+
+        $this->assertFileExists(self::OUT.'/stepper.html');
+    }
 }

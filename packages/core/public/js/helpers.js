@@ -1108,6 +1108,154 @@ const bwActivateOnKey = (selector) => {
     });
 };
 
+/** Find a stepper by its public name without interpolating untrusted text into CSS. */
+const stepperByName = (name) => {
+    const steppers = Array.from(document.querySelectorAll('[data-bw-stepper]'));
+    const stepper = steppers.find((candidate) => candidate.getAttribute('data-name') === String(name)) || null;
+    if (stepper && stepper.dataset.bwInitialised !== 'true') initialiseStepper(stepper, steppers.indexOf(stepper));
+    return stepper;
+};
+
+const stepperParts = (stepper) => ({
+    items: Array.from(stepper.querySelectorAll('[data-bw-stepper-item]')),
+    triggers: Array.from(stepper.querySelectorAll('[data-bw-stepper-step]')),
+    panels: Array.from(stepper.querySelectorAll('[data-bw-stepper-panel]')),
+});
+
+const stepperDetail = (stepper, previousStep, nextStep, direction) => ({
+    stepperName: stepper.getAttribute('data-name'),
+    previousStep,
+    nextStep,
+    direction,
+});
+
+const initialiseStepper = (stepper, index = 0) => {
+    if (stepper.dataset.bwInitialised === 'true') return;
+    const {items, triggers, panels} = stepperParts(stepper);
+    if (!items.length) return;
+
+    // Content components share the default slot with items. Move them outside the
+    // ordered list so the final DOM keeps list semantics and panels remain siblings.
+    panels.forEach((panel) => stepper.appendChild(panel));
+
+    const safeStepper = (stepper.getAttribute('data-name') || `stepper-${index + 1}`)
+        .replace(/[^A-Za-z0-9_-]/g, '-');
+    triggers.forEach((trigger, triggerIndex) => {
+        const step = trigger.getAttribute('data-bw-stepper-step');
+        const safeStep = (step || `step-${triggerIndex + 1}`).replace(/[^A-Za-z0-9_-]/g, '-');
+        const idBase = `bw-stepper-${index + 1}-${safeStepper}-${safeStep}`;
+        const panel = panels.find((candidate) => candidate.getAttribute('data-bw-stepper-panel') === step);
+        trigger.id = `${idBase}-step`;
+        if (panel) {
+            panel.id = `${idBase}-panel`;
+            panel.setAttribute('aria-labelledby', trigger.id);
+            trigger.setAttribute('aria-controls', panel.id);
+        }
+    });
+
+    const requested = stepper.getAttribute('data-current');
+    const requestedTrigger = triggers.find((trigger) => trigger.getAttribute('data-bw-stepper-step') === requested
+        && trigger.getAttribute('aria-disabled') !== 'true');
+    const stateTrigger = triggers.find((trigger) => trigger.closest('[data-bw-stepper-item]')?.getAttribute('data-state') === 'current'
+        && trigger.getAttribute('aria-disabled') !== 'true');
+    const initial = requestedTrigger || stateTrigger || triggers.find((trigger) => trigger.getAttribute('aria-disabled') !== 'true');
+    stepper.dataset.bwInitialised = 'true';
+    if (initial) setStepperCurrent(stepper, initial.getAttribute('data-bw-stepper-step'), {focus: false, emit: false, force: true});
+};
+
+const initialiseSteppers = () => document.querySelectorAll('[data-bw-stepper]')
+    .forEach((stepper, index) => initialiseStepper(stepper, index));
+
+const setStepperCurrent = (stepper, stepName, options = {}) => {
+    if (!stepper) return false;
+    const {items, triggers, panels} = stepperParts(stepper);
+    const target = triggers.find((trigger) => trigger.getAttribute('data-bw-stepper-step') === String(stepName));
+    if (!target || target.getAttribute('aria-disabled') === 'true') return false;
+
+    const currentName = stepper.getAttribute('data-current') || null;
+    const currentIndex = triggers.findIndex((trigger) => trigger.getAttribute('data-bw-stepper-step') === currentName);
+    const targetIndex = triggers.indexOf(target);
+    const direction = targetIndex > currentIndex ? 'forward' : targetIndex < currentIndex ? 'backward' : 'none';
+    if (!options.force && stepper.getAttribute('data-linear') === 'true') {
+        if (direction === 'forward' && !options.allowForward) return false;
+        const targetState = target.closest('[data-bw-stepper-item]')?.getAttribute('data-state');
+        if (direction === 'backward' && !options.allowBackward && targetState !== 'complete') return false;
+    }
+    if (currentName === String(stepName) && !options.force) return true;
+
+    const detail = stepperDetail(stepper, currentName, String(stepName), direction);
+    if (options.emit !== false) {
+        const before = new CustomEvent('bladewind:stepper:before-change', {bubbles: true, cancelable: true, detail});
+        if (!stepper.dispatchEvent(before)) return false;
+    }
+
+    items.forEach((item, itemIndex) => {
+        const trigger = triggers[itemIndex];
+        if (!trigger) return;
+        const isTarget = trigger === target;
+        const disabled = trigger.getAttribute('aria-disabled') === 'true';
+        const existing = item.getAttribute('data-state');
+        let state = isTarget ? 'current' : itemIndex < targetIndex ? 'complete' : 'upcoming';
+        if (disabled) state = 'disabled';
+        else if (!isTarget && existing === 'error') state = 'error';
+        item.setAttribute('data-state', state);
+        trigger.setAttribute('aria-current', isTarget ? 'step' : 'false');
+        trigger.setAttribute('tabindex', isTarget ? '0' : '-1');
+        const stateText = trigger.querySelector('.bw-stepper-state-text');
+        if (stateText) stateText.textContent = state.charAt(0).toUpperCase() + state.slice(1);
+    });
+    panels.forEach((panel) => {
+        const shown = panel.getAttribute('data-bw-stepper-panel') === String(stepName);
+        panel.hidden = !shown;
+        panel.setAttribute('aria-hidden', shown ? 'false' : 'true');
+        if (!shown) panel.setAttribute('inert', '');
+        else panel.removeAttribute('inert');
+    });
+    stepper.setAttribute('data-current', String(stepName));
+    if (options.focus !== false) target.focus({preventScroll: true});
+    if (options.emit !== false) stepper.dispatchEvent(new CustomEvent('bladewind:stepper:changed', {bubbles: true, detail}));
+    return true;
+};
+
+const showStepperStep = (stepperName, stepName) => setStepperCurrent(stepperByName(stepperName), stepName);
+
+const nextStepperStep = (stepperName) => {
+    const stepper = stepperByName(stepperName);
+    if (!stepper) return false;
+    const {triggers} = stepperParts(stepper);
+    const current = triggers.findIndex((trigger) => trigger.getAttribute('data-bw-stepper-step') === stepper.getAttribute('data-current'));
+    const next = triggers.slice(current + 1).find((trigger) => trigger.getAttribute('aria-disabled') !== 'true');
+    if (!next) {
+        const detail = stepperDetail(stepper, stepper.getAttribute('data-current'), null, 'complete');
+        stepper.dispatchEvent(new CustomEvent('bladewind:stepper:complete', {bubbles: true, detail}));
+        return true;
+    }
+    return setStepperCurrent(stepper, next.getAttribute('data-bw-stepper-step'), {allowForward: true});
+};
+
+const previousStepperStep = (stepperName) => {
+    const stepper = stepperByName(stepperName);
+    if (!stepper) return false;
+    const {triggers} = stepperParts(stepper);
+    const current = triggers.findIndex((trigger) => trigger.getAttribute('data-bw-stepper-step') === stepper.getAttribute('data-current'));
+    const previous = triggers.slice(0, current).reverse().find((trigger) => trigger.getAttribute('aria-disabled') !== 'true');
+    return previous ? setStepperCurrent(stepper, previous.getAttribute('data-bw-stepper-step'), {allowBackward: true}) : false;
+};
+
+const resetStepper = (stepperName) => {
+    const stepper = stepperByName(stepperName);
+    if (!stepper) return false;
+    const {items, triggers} = stepperParts(stepper);
+    items.forEach((item, index) => {
+        const initial = triggers[index]?.getAttribute('data-initial-state') || 'upcoming';
+        item.setAttribute('data-state', initial);
+    });
+    const initialName = stepper.getAttribute('data-initial-current');
+    const initial = triggers.find((trigger) => trigger.getAttribute('data-bw-stepper-step') === initialName
+        && trigger.getAttribute('aria-disabled') !== 'true') || triggers.find((trigger) => trigger.getAttribute('aria-disabled') !== 'true');
+    return initial ? setStepperCurrent(stepper, initial.getAttribute('data-bw-stepper-step'), {force: true}) : false;
+};
+
 /*
  | Delegated bindings for components whose behaviour lives in this file.
  | Replaces inline on* attributes, which a strict CSP blocks. See #608.
@@ -1177,6 +1325,38 @@ bwOn('click', '[data-bw-tab-url]', (tab) => {
     location.href = tab.getAttribute('data-bw-tab-url');
 });
 
+bwOn('click', '[data-bw-stepper-step]', (trigger) => {
+    const stepper = trigger.closest('[data-bw-stepper]');
+    if (!stepper || trigger.getAttribute('aria-disabled') === 'true') return;
+    const clickable = trigger.getAttribute('data-clickable') ?? stepper.getAttribute('data-clickable');
+    if (clickable !== 'true') return;
+    setStepperCurrent(stepper, trigger.getAttribute('data-bw-stepper-step'));
+});
+
+bwOn('keydown', '[data-bw-stepper-step]', (trigger, event) => {
+    const stepper = trigger.closest('[data-bw-stepper]');
+    if (!stepper) return;
+    const {triggers} = stepperParts(stepper);
+    const enabled = triggers.filter((candidate) => candidate.getAttribute('aria-disabled') !== 'true');
+    const index = enabled.indexOf(trigger);
+    if (index < 0) return;
+    const orientation = stepper.getAttribute('data-orientation');
+    const rtl = getComputedStyle(stepper).direction === 'rtl';
+    let target = null;
+    if (event.key === 'Home') target = enabled[0];
+    else if (event.key === 'End') target = enabled[enabled.length - 1];
+    else if (orientation === 'vertical' && event.key === 'ArrowDown') target = enabled[(index + 1) % enabled.length];
+    else if (orientation === 'vertical' && event.key === 'ArrowUp') target = enabled[(index - 1 + enabled.length) % enabled.length];
+    else if (orientation === 'horizontal' && event.key === 'ArrowRight') target = enabled[(index + (rtl ? -1 : 1) + enabled.length) % enabled.length];
+    else if (orientation === 'horizontal' && event.key === 'ArrowLeft') target = enabled[(index + (rtl ? 1 : -1) + enabled.length) % enabled.length];
+    if (!target) return;
+    event.preventDefault();
+    target.focus();
+});
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initialiseSteppers);
+else initialiseSteppers();
+
 // clicking an input or textarea label focuses its field
 bwOn('click', '[data-bw-focuses]', (label) => {
     domEl(`.${label.getAttribute('data-bw-focuses')}`)?.focus();
@@ -1239,6 +1419,11 @@ Object.assign(window, {
     enableTabKeyboardNavigation,
     positionTabActiveLine,
     initialiseTabActiveLines,
+    showStepperStep,
+    nextStepperStep,
+    previousStepperStep,
+    resetStepper,
+    initialiseSteppers,
     getPrefixSuffixOffsetWidth,
     positionPrefix,
     positionSuffix,
