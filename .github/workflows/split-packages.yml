@@ -29,6 +29,7 @@ jobs:
           - { local_path: 'packages/modal',   split_repository: 'modal'   }
           - { local_path: 'packages/drawer',  split_repository: 'drawer'  }
           - { local_path: 'packages/table',   split_repository: 'table'   }
+          - { local_path: 'packages/data-grid', split_repository: 'data-grid' }
 
           # ── Form leaf packages ────────────────────────────────────────────────
           - { local_path: 'packages/input',       split_repository: 'input'       }
@@ -67,6 +68,7 @@ jobs:
           - { local_path: 'packages/tooltip',              split_repository: 'tooltip'              }
           - { local_path: 'packages/popover',              split_repository: 'popover'              }
           - { local_path: 'packages/sortable',             split_repository: 'sortable'             }
+          - { local_path: 'packages/calendar',             split_repository: 'calendar'             }
 
           # ── Content aggregate (metapackage) ───────────────────────────────────
           - { local_path: 'packages/content', split_repository: 'content' }
@@ -74,6 +76,7 @@ jobs:
           # ── Navigation leaf packages ──────────────────────────────────────────
           - { local_path: 'packages/breadcrumbs',   split_repository: 'breadcrumbs'   }
           - { local_path: 'packages/sidebar',       split_repository: 'sidebar'       }
+          - { local_path: 'packages/command-palette',split_repository: 'command-palette'}
           - { local_path: 'packages/stepper',       split_repository: 'stepper'       }
           - { local_path: 'packages/tab',           split_repository: 'tab'           }
           - { local_path: 'packages/dropmenu',      split_repository: 'dropmenu'      }

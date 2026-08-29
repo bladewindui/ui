@@ -133,4 +133,14 @@ class DrawerTest extends TestCase
         $this->assertAttribute($html, $this->withClass('bw-drawer-close', 'button'), 'aria-label', 'Close "now"');
         $this->assertAttribute($html, $this->drawer(), 'data-note', '<bad>');
     }
+
+    #[Test]
+    public function contained_defaults_to_false_and_can_be_turned_on(): void
+    {
+        $default = $this->render('<x-bladewind::drawer name="d">B</x-bladewind::drawer>');
+        $this->assertAttribute($default, $this->drawer(), 'data-contained', 'false');
+
+        $contained = $this->render('<x-bladewind::drawer name="d" contained="true">B</x-bladewind::drawer>');
+        $this->assertAttribute($contained, $this->drawer(), 'data-contained', 'true');
+    }
 }

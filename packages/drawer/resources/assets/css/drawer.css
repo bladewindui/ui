@@ -1,5 +1,10 @@
 .bw-drawer { position: fixed; inset: 0; z-index: 50; pointer-events: none; }
 .bw-drawer[hidden] { display: none; }
+/* contained: pinned to the nearest positioned ancestor instead of the
+ * viewport, so it stays inside one component (that ancestor needs its own
+ * position:relative and, usually, overflow:hidden to clip the panel to its
+ * own rounded corners) rather than covering the whole page. */
+.bw-drawer[data-contained="true"] { position: absolute; }
 .bw-drawer-backdrop { position: absolute; inset: 0; background: rgb(0 0 0 / .45); opacity: 0; transition: opacity .25s ease; pointer-events: auto; }
 .bw-drawer-panel { position: absolute; display: flex; flex-direction: column; max-width: 100vw; max-height: 100vh; overflow: hidden; pointer-events: auto; background: white; color: rgb(31 41 55); box-shadow: 0 25px 50px -12px rgb(0 0 0 / .3); transition: transform .25s ease; }
 .bw-drawer-panel { @variant dark { background: #262a2f; color: #d2d4d7; border-color: rgb(74 78 83 / .65); } }

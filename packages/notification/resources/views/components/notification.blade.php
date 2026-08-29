@@ -33,6 +33,6 @@
     <x-bladewind::modal-icon class="hidden {{$css}}" type="success"/>
 </div>
 
-<x-bladewind::script :nonce="$nonce">
-    @php include_once(public_path('vendor/bladewind/js/notification.js')); @endphp
-</x-bladewind::script>
+@once
+    <x-bladewind::script :nonce="$nonce" src="{{ asset('vendor/bladewind/js/notification.js') }}"></x-bladewind::script>
+@endonce

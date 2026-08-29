@@ -1,6 +1,6 @@
 {
     "name": "bladewindui/navigation",
-    "description": "BladewindUI navigation bundle - installs Breadcrumbs, Sidebar, Stepper, Tab, Dropmenu, Pagination, and Theme Switcher",
+    "description": "BladewindUI navigation bundle - installs Breadcrumbs, Sidebar, Command Palette, Stepper, Tab, Dropmenu, Pagination, and Theme Switcher",
     "keywords": [
         "laravel",
         "blade",
@@ -17,12 +17,13 @@
         }
     ],
     "require": {
-        "bladewindui/breadcrumbs": "^4.5",
-        "bladewindui/sidebar": "^4.5",
-        "bladewindui/stepper": "^4.5",
-        "bladewindui/tab": "^4.5",
-        "bladewindui/dropmenu": "^4.5",
-        "bladewindui/pagination": "^4.5",
-        "bladewindui/theme-switcher": "^4.5"
+        "bladewindui/breadcrumbs": "^4.4",
+        "bladewindui/sidebar": "^4.4",
+        "bladewindui/command-palette": "^4.4",
+        "bladewindui/stepper": "^4.4",
+        "bladewindui/tab": "^4.4",
+        "bladewindui/dropmenu": "^4.4",
+        "bladewindui/pagination": "^4.4",
+        "bladewindui/theme-switcher": "^4.4"
     }
 }

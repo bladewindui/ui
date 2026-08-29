@@ -8,5 +8,6 @@ return [
         'show_close_button' => true,
         'backdrop_can_close' => true,
         'escape_can_close' => true,
+        'contained' => false,
     ],
 ];

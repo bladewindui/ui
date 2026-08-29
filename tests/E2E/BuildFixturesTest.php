@@ -459,4 +459,197 @@ class BuildFixturesTest extends TestCase
 
         $this->assertFileExists(self::OUT.'/sidebar.html');
     }
+
+    #[Test]
+    public function it_writes_the_command_palette_fixture(): void
+    {
+        $primary = $this->render(
+            '<x-bladewind::command-palette name="app-commands" label="Command palette" placeholder="Search for a command or page…" class="e2e-command-palette">'
+            .'<x-bladewind::command-palette.group name="navigate" label="Navigate">'
+            .'<x-bladewind::command-palette.item name="dashboard" label="Dashboard" description="Overview of your workspace" href="#dashboard" icon="home" />'
+            .'<x-bladewind::command-palette.item name="orders" label="Orders" description="Review recent orders" href="#orders" icon="shopping-bag" />'
+            .'<x-bladewind::command-palette.item name="locked" label="Locked report" href="#locked" disabled="true" />'
+            .'</x-bladewind::command-palette.group>'
+            .'<x-bladewind::command-palette.group name="actions" label="Actions">'
+            .'<x-bladewind::command-palette.item name="new-order" label="Create order" icon="plus" shortcut="Ctrl+N" keywords="add new" />'
+            .'<x-bladewind::command-palette.item name="docs" label="Documentation" href="https://example.com" external="true" />'
+            .'</x-bladewind::command-palette.group>'
+            .'</x-bladewind::command-palette>'
+        );
+
+        $secondary = $this->render(
+            '<x-bladewind::command-palette name="secondary" label="Secondary palette" shortcut="mod+p">'
+            .'<x-bladewind::command-palette.item name="secondary-item" label="Secondary action" />'
+            .'</x-bladewind::command-palette>'
+        );
+
+        $scripts = <<<'HTML'
+        <script>
+          window.commandPaletteEvents = [];
+          window.blockOpen = false;
+          window.blockClose = false;
+          window.blockSelect = false;
+          const app = document.querySelector('[data-bw-command-palette][data-name="app-commands"]');
+          ['before-open', 'opened', 'before-close', 'closed', 'before-select', 'select', 'search'].forEach((name) => {
+            app.addEventListener(`bladewind:command-palette:${name}`, (event) => {
+              window.commandPaletteEvents.push({type: event.type, itemName: event.detail.itemName, source: event.detail.source, query: event.detail.query});
+              if (window.blockOpen && name === 'before-open') event.preventDefault();
+              if (window.blockClose && name === 'before-close') event.preventDefault();
+              if (window.blockSelect && name === 'before-select') event.preventDefault();
+            });
+          });
+          document.querySelectorAll('[data-open-command-palette]').forEach((button) => button.addEventListener('click', () => openCommandPalette(button.dataset.openCommandPalette, {triggeringElement: button, source: 'fixture'})));
+        </script>
+        HTML;
+
+        $body = '<button type="button" id="open-app" data-open-command-palette="app-commands">Open command palette</button>'
+            .'<button type="button" id="open-secondary" data-open-command-palette="secondary">Open secondary</button>'
+            .'<button type="button" id="after-palette">After</button>'
+            .$primary.$secondary;
+
+        file_put_contents(
+            self::OUT.'/command-palette.html',
+            $this->relative($this->page('Command Palette', $body, $scripts))
+        );
+
+        $this->assertFileExists(self::OUT.'/command-palette.html');
+    }
+
+    #[Test]
+    public function it_writes_the_data_grid_fixture(): void
+    {
+        $orders = [];
+        foreach (range(1, 7) as $index) {
+            $orders[] = [
+                'id' => $index,
+                'reference' => sprintf('ORD-%03d', $index),
+                'customer' => ['Ama Mensah', 'Kofi Addo', 'Akosua Owusu'][$index % 3],
+                'total' => $index * 1500,
+            ];
+        }
+
+        $columns = [
+            ['key' => 'reference', 'label' => 'Reference', 'sortable' => true],
+            ['key' => 'customer', 'label' => 'Customer', 'sortable' => true],
+            ['key' => 'total', 'label' => 'Total', 'align' => 'right', 'sortable' => true, 'format' => fn ($value) => '$'.number_format($value / 100, 2)],
+        ];
+
+        $primary = $this->render(
+            '<x-bladewind::data-grid name="orders" label="Orders" searchable="true" selectable="true"'
+            .' paginated="true" page-size="3" :columns="$columns" :rows="$rows" class="e2e-data-grid" />',
+            ['columns' => $columns, 'rows' => $orders]
+        );
+
+        $single = $this->render(
+            '<x-bladewind::data-grid name="assignee" label="Assign to" selectable="true" selection-mode="single"'
+            .' :columns="$columns" :rows="$rows" />',
+            [
+                'columns' => [['key' => 'name', 'label' => 'Name']],
+                'rows' => [['id' => 'ama', 'name' => 'Ama Mensah'], ['id' => 'kofi', 'name' => 'Kofi Addo']],
+            ]
+        );
+
+        $paginator = new \Illuminate\Pagination\LengthAwarePaginator(
+            array_slice($orders, 0, 3), count($orders), 3, 1,
+            ['path' => '/data-grid.html', 'pageName' => 'page']
+        );
+        $server = $this->render(
+            '<x-bladewind::data-grid name="server-orders" label="Server orders" :columns="$columns" :rows="$rows" :paginator="$paginator" />',
+            ['columns' => $columns, 'rows' => $paginator->items(), 'paginator' => $paginator]
+        );
+
+        $scripts = <<<'HTML'
+        <script>
+          window.dataGridEvents = [];
+          window.blockSort = false;
+          window.blockSelect = false;
+          const grid = document.querySelector('[data-bw-data-grid][data-name="orders"]');
+          ['before-sort-change', 'sort-change', 'before-select-change', 'select-change', 'before-page-change', 'page-change', 'search'].forEach((name) => {
+            grid.addEventListener(`bladewind:data-grid:${name}`, (event) => {
+              window.dataGridEvents.push({type: event.type, key: event.detail.key, direction: event.detail.direction, page: event.detail.page, selected: event.detail.selected, query: event.detail.query});
+              if (window.blockSort && name === 'before-sort-change') event.preventDefault();
+              if (window.blockSelect && name === 'before-select-change') event.preventDefault();
+            });
+          });
+        </script>
+        HTML;
+
+        $body = '<main style="display:flex;flex-direction:column;gap:24px;padding:16px;max-width:900px">'
+            .$primary.$single.$server
+            .'</main>';
+
+        file_put_contents(
+            self::OUT.'/data-grid.html',
+            $this->relative($this->page('Data Grid', $body, $scripts))
+        );
+
+        $this->assertFileExists(self::OUT.'/data-grid.html');
+    }
+
+    #[Test]
+    public function it_writes_the_calendar_fixture(): void
+    {
+        $events = [
+            ['date' => '2026-08-05', 'label' => 'Standup', 'type' => 'info', 'description' => "Daily sync in the main conference room.\nBring your update.", 'href' => '/events/standup'],
+            ['date' => '2026-08-05', 'label' => 'Design review', 'type' => 'success'],
+            ['date' => '2026-08-05', 'label' => 'Retro', 'type' => 'warning'],
+            ['date' => '2026-08-05', 'label' => 'Overflow item', 'type' => 'danger'],
+            ['date' => '2026-08-18', 'end' => '2026-08-20', 'label' => 'Conference', 'type' => 'success'],
+            // within the week view of date=2026-08-15 (Sun 2026-08-09 - Sat 2026-08-15)
+            ['date' => '2026-08-11 09:00', 'end' => '2026-08-11 10:00', 'label' => 'Standup', 'type' => 'info'],
+            ['date' => '2026-08-11 09:30', 'end' => '2026-08-11 10:30', 'label' => 'Design sync', 'type' => 'success', 'description' => 'Review the wireframes before the call.'],
+            ['date' => '2026-08-11 14:00', 'end' => '2026-08-11 15:30', 'label' => 'Kenya project review', 'type' => 'warning', 'description' => 'Quarterly numbers, then open questions.'],
+            ['date' => '2026-08-13', 'end' => '2026-08-14', 'label' => 'Bisqui expected', 'type' => 'warning', 'description' => 'Bisqui arrives from the airport around noon.'],
+        ];
+
+        $primary = $this->render(
+            '<x-bladewind::calendar name="team" label="Team calendar" date="2026-08-15" selectable="multiple"'
+            .' selected="2026-08-10" class="e2e-calendar" :events="$events" />',
+            ['events' => $events]
+        );
+
+        $restricted = $this->render(
+            '<x-bladewind::calendar name="booking" label="Booking calendar" date="2026-08-15" selectable="single"'
+            .' min-date="2026-08-10" max-date="2026-08-20" disabled-dates="2026-08-14" />'
+        );
+
+        $serverDriven = $this->render(
+            '<x-bladewind::calendar name="remote" label="Server-driven calendar" date="2026-08-15" client-navigation="false" />'
+        );
+
+        $sized = $this->render(
+            '<x-bladewind::calendar name="sized" label="Fixed-height calendar" date="2026-08-15" height="6rem" class="e2e-sized-calendar" />'
+        );
+
+        $scripts = <<<'HTML'
+        <script>
+          window.calendarEvents = [];
+          window.blockSelect = false;
+          window.blockNavigate = false;
+          const team = document.querySelector('[data-bw-calendar][data-name="team"]');
+          ['before-navigate', 'navigate', 'before-view-change', 'view-change', 'before-select', 'select'].forEach((name) => {
+            team.addEventListener(`bladewind:calendar:${name}`, (event) => {
+              window.calendarEvents.push({type: event.type, date: event.detail.date, selected: event.detail.selected, anchor: event.detail.anchor, view: event.detail.view});
+              if (window.blockSelect && name === 'before-select') event.preventDefault();
+              if (window.blockNavigate && name === 'before-navigate') event.preventDefault();
+            });
+          });
+          window.remoteCalendarEvents = [];
+          document.querySelector('[data-bw-calendar][data-name="remote"]').addEventListener('bladewind:calendar:navigate', (event) => {
+            window.remoteCalendarEvents.push({anchor: event.detail.anchor});
+          });
+        </script>
+        HTML;
+
+        $body = '<main style="display:flex;flex-direction:column;gap:24px;padding:16px;max-width:700px">'
+            .$primary.$restricted.$serverDriven.$sized
+            .'</main>';
+
+        file_put_contents(
+            self::OUT.'/calendar.html',
+            $this->relative($this->page('Calendar', $body, $scripts))
+        );
+
+        $this->assertFileExists(self::OUT.'/calendar.html');
+    }
 }

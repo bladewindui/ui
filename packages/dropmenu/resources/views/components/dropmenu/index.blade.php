@@ -74,9 +74,9 @@
     </div>
 </div>
 
-<x-bladewind::script :nonce="$nonce">
-    @php include_once(public_path('vendor/bladewind/js/dropmenu.js')); @endphp
-</x-bladewind::script>
+@once
+    <x-bladewind::script :nonce="$nonce" src="{{ asset('vendor/bladewind/js/dropmenu.js') }}"></x-bladewind::script>
+@endonce
 <x-bladewind::script :nonce="$nonce" :modular="$modular">
     const {{ $name }} = new BladewindDropmenu('{{ $name }}', {
     triggerOn: '{{$triggerOn}}',

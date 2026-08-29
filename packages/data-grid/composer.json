@@ -1,0 +1,22 @@
+{
+    "name": "bladewindui/data-grid",
+    "description": "BladewindUI accessible data grid — a higher-level companion to Table with column sorting, filtering, selection, sticky headers, and server-driven state",
+    "keywords": ["laravel", "blade", "tailwindcss", "bladewindui", "data-grid", "table", "content"],
+    "license": "MIT",
+    "type": "library",
+    "authors": [{"name": "Michael K. Ocansey", "email": "mike@bladewindui.com"}],
+    "require": {
+        "php": ">=8.1",
+        "bladewindui/core": "^4.4",
+        "bladewindui/icon": "^4.4",
+        "bladewindui/pagination": "^4.4"
+    },
+    "autoload": {
+        "psr-4": {"Mkocansey\\Bladewind\\DataGrid\\": "src/"}
+    },
+    "extra": {
+        "laravel": {
+            "providers": ["Mkocansey\\Bladewind\\DataGrid\\BladewindDataGridServiceProvider"]
+        }
+    }
+}
