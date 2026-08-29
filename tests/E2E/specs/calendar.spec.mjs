@@ -112,6 +112,51 @@ test('paging weeks while in week view rebuilds the hour grid for the new week', 
   await expect(calendar.locator('[data-bw-calendar-day]')).toHaveCount(7)
 })
 
+test('day view is a single-column hour grid with positioned timed events, reached client-side', async ({ page }) => {
+  const calendar = page.locator('[data-bw-calendar][data-name="team"]')
+  await calendar.locator('[data-bw-calendar-view="day"]').click()
+  await expect(calendar.locator('[data-bw-calendar-view="day"]')).toHaveAttribute('aria-pressed', 'true')
+  await expect(calendar.locator('[data-bw-calendar-day]')).toHaveCount(1)
+  await expect(calendar.locator('[data-bw-calendar-title]')).toHaveText('Saturday, August 15, 2026')
+
+  for (let i = 0; i < 4; i++) await calendar.locator('[data-bw-calendar-prev]').click()
+  await expect(calendar.locator('[data-bw-calendar-title]')).toHaveText('Tuesday, August 11, 2026')
+  await expect(calendar.locator('.bw-calendar-week-timed-event')).toHaveCount(3)
+})
+
+test('arrow keys, PageUp/PageDown, and Shift+PageUp/PageDown all navigate by day in day view', async ({ page }) => {
+  const calendar = page.locator('[data-bw-calendar][data-name="team"]')
+  await calendar.locator('[data-bw-calendar-view="day"]').click()
+  const day = () => calendar.locator('[data-bw-calendar-day]')
+  await day().click()
+  await expect(calendar.locator('[data-bw-calendar-title]')).toHaveText('Saturday, August 15, 2026')
+
+  await page.keyboard.press('ArrowRight')
+  await expect(calendar.locator('[data-bw-calendar-title]')).toHaveText('Sunday, August 16, 2026')
+  await expect(day()).toBeFocused()
+
+  await page.keyboard.press('PageDown')
+  await expect(calendar.locator('[data-bw-calendar-title]')).toHaveText('Monday, August 17, 2026')
+
+  await page.keyboard.press('Shift+PageDown')
+  await expect(calendar.locator('[data-bw-calendar-title]')).toHaveText('Monday, August 24, 2026')
+})
+
+test('the view switch cycles between month, week, and day', async ({ page }) => {
+  const calendar = page.locator('[data-bw-calendar][data-name="team"]')
+  await calendar.locator('[data-bw-calendar-view="week"]').click()
+  await expect(calendar.locator('[data-bw-calendar-view="week"]')).toHaveAttribute('aria-pressed', 'true')
+
+  await calendar.locator('[data-bw-calendar-view="day"]').click()
+  await expect(calendar.locator('[data-bw-calendar-view="day"]')).toHaveAttribute('aria-pressed', 'true')
+  await expect(calendar.locator('[data-bw-calendar-view="week"]')).toHaveAttribute('aria-pressed', 'false')
+  await expect(calendar.locator('[data-bw-calendar-view="month"]')).toHaveAttribute('aria-pressed', 'false')
+
+  await calendar.locator('[data-bw-calendar-view="month"]').click()
+  await expect(calendar.locator('[data-bw-calendar-view="month"]')).toHaveAttribute('aria-pressed', 'true')
+  await expect(calendar.locator('[data-bw-calendar-day]')).toHaveCount(42)
+})
+
 test('clicking a day toggles multiple selection and syncs hidden inputs', async ({ page }) => {
   const calendar = page.locator('[data-bw-calendar][data-name="team"]')
   const day10 = calendar.locator('[data-bw-calendar-day][data-date="2026-08-10"]')

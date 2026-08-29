@@ -4,7 +4,7 @@
 
 # Calendar
 
-An inline month/week calendar for displaying and selecting dates or events — distinct from [Datepicker](https://bladewindui.com/component/datepicker), which is a popup calendar bound to a single form input. Calendar is always visible, can show events on any day, and supports single or multiple (non-contiguous) date selection. For a form-bound date range, use Datepicker's `range` option instead.
+An inline month/week/day calendar for displaying and selecting dates or events — distinct from [Datepicker](https://bladewindui.com/component/datepicker), which is a popup calendar bound to a single form input. Calendar is always visible, can show events on any day, and supports single or multiple (non-contiguous) date selection. For a form-bound date range, use Datepicker's `range` option instead.
 
 ## Installation
 
@@ -29,7 +29,7 @@ The package installs Bladewind Core and Icon automatically.
 
 ## Views
 
-`view` is `month` or `week`. Both are shown by default with a toggle in the header; `date` is the anchor day (`Y-m-d`, defaults to today) — month view shows the month containing it, week view the week containing it. Week view is a real hour grid: an all-day row across the top for date-only and multi-day events, and 24 scrollable hour rows below with timed events positioned and sized to their duration, similar to Outlook or Google Calendar's week view. It opens scrolled to a sensible hour rather than midnight.
+`view` is `month`, `week`, or `day`. All three are shown by default with a toggle in the header; `date` is the anchor day (`Y-m-d`, defaults to today) — month view shows the month containing it, week view the week containing it, day view just that day. Week and day view share the same hour grid: an all-day row across the top for date-only and multi-day events, and 24 scrollable hour rows below with timed events positioned and sized to their duration, similar to Outlook or Google Calendar. Day view is that same grid narrowed to one column. Both open scrolled to a sensible hour rather than midnight.
 
 ## Selection
 
@@ -39,9 +39,9 @@ The package installs Bladewind Core and Icon automatically.
 
 `events` is an array of `['date' => 'Y-m-d', 'end' => optional, 'label', 'type' => info|success|warning|danger, 'href' => optional]`.
 
-An event without a clock time in `date` is all-day: `end` (also date-only) spans it across multiple days, and it shows as a marker in month view and a banner across the days it covers in week view's all-day row. Each day shows up to `max-events-per-day` (default 3) markers in month view; the rest sit behind a real, focusable "+N more" button.
+An event without a clock time in `date` is all-day: `end` (also date-only) spans it across multiple days, and it shows as a marker in month view and a banner across the days it covers in week and day view's all-day row. Each day shows up to `max-events-per-day` (default 3) markers in month view; the rest sit behind a real, focusable "+N more" button.
 
-An event with a clock time in `date` (e.g. `'2026-09-01 15:00'`) is timed: `end` is also a time on the same day, defaulting to one hour after `date` when omitted. Timed events are positioned in week view's hour grid; events that overlap in time are placed in side-by-side columns. In month view, timed events still show as a marker, prefixed with their start time (e.g. "3:00pm Kenya project review"). Cross-midnight timed events are clamped to end at 23:59 the same day.
+An event with a clock time in `date` (e.g. `'2026-09-01 15:00'`) is timed: `end` is also a time on the same day, defaulting to one hour after `date` when omitted. Timed events are positioned in week and day view's hour grid; events that overlap in time are placed in side-by-side columns. In month view, timed events still show as a marker, prefixed with their start time (e.g. "3:00pm Kenya project review"). Cross-midnight timed events are clamped to end at 23:59 the same day.
 
 ## Restricting dates
 
@@ -49,11 +49,11 @@ An event with a clock time in `date` (e.g. `'2026-09-01 15:00'`) is timed: `end`
 
 ## Fixed height
 
-The grid has a fixed height by default (`40rem`, room for a 6-week month — the tallest a month view ever renders), with an internal scrollbar — so the calendar never changes size navigating between months or switching between month and week view. A month with fewer weeks, or week view, just leaves empty space at the bottom of the grid rather than shrinking. Pass `height` with your own value (e.g. `28rem`) to use a different fixed size, or an empty string (`height=""`) to fall back to natural, content-driven sizing instead. Each day cell itself already has a fixed height regardless of how many events it holds; a day with more events than `max-events-per-day` gets its own small internal scrollbar once "+N more" is expanded, rather than growing the row.
+The grid has a fixed height by default (`40rem`, room for a 6-week month — the tallest a month view ever renders), with an internal scrollbar — so the calendar never changes size navigating between months or switching views. A month with fewer weeks, or week or day view, just leaves empty space at the bottom of the grid rather than shrinking. Pass `height` with your own value (e.g. `28rem`) to use a different fixed size, or an empty string (`height=""`) to fall back to natural, content-driven sizing instead. Each day cell itself already has a fixed height regardless of how many events it holds; a day with more events than `max-events-per-day` gets its own small internal scrollbar once "+N more" is expanded, rather than growing the row.
 
 ## Navigation
 
-Previous/next/today controls and PageUp/PageDown (Shift+PageUp/PageDown for the year in month view, or the month in week view) rebuild the grid in the browser using the `events` already passed in — no round trip. Set `client-navigation="false"` for a server-driven calendar instead: navigation only fires `before-navigate`/`navigate` and the application re-renders (e.g. a fresh page, or your own Livewire/Inertia update).
+Previous/next/today controls and PageUp/PageDown (a day in day view, a week in week view, a month in month view; Shift+PageUp/PageDown steps one level up from that — a week, a month, or a year) rebuild the grid in the browser using the `events` already passed in — no round trip. Set `client-navigation="false"` for a server-driven calendar instead: navigation only fires `before-navigate`/`navigate` and the application re-renders (e.g. a fresh page, or your own Livewire/Inertia update).
 
 ## JavaScript API
 
@@ -74,7 +74,7 @@ Cancelable `before-navigate`, `before-view-change`, and `before-select`, and `na
 
 ## Accessibility
 
-The grid is a real `role="grid"` with `role="gridcell"` days and roving `tabindex` — arrow keys move focus by day (in week view, between the day-column headers), Home/End jump to the start/end of the row, PageUp/PageDown change the month or week, and Enter/Space selects. Event markers, including timed events positioned in week view's hour grid, are real, independently focusable links or buttons, not decorations bolted onto a hand-rolled widget.
+The grid is a real `role="grid"` with `role="gridcell"` days and roving `tabindex` — arrow keys move focus by day (in week and day view, between the day-column headers; in day view there is only one, so left/right navigate to the previous/next day), Home/End jump to the start/end of the row, PageUp/PageDown change the period, and Enter/Space selects. Event markers, including timed events positioned in week and day view's hour grid, are real, independently focusable links or buttons, not decorations bolted onto a hand-rolled widget.
 
 ## Documentation
 

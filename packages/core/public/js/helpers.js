@@ -2462,7 +2462,11 @@ const calendarWeekOfYear = (date) => {
 
 const computeCalendarGrid = (anchor, view, weekStarts) => {
     let gridStart, gridEnd, periodMonth;
-    if (view === 'week') {
+    if (view === 'day') {
+        gridStart = new Date(anchor); gridStart.setHours(0, 0, 0, 0);
+        gridEnd = new Date(gridStart);
+        periodMonth = anchor.getMonth();
+    } else if (view === 'week') {
         gridStart = calendarStartOfWeek(anchor, weekStarts);
         gridEnd = calendarAddDays(gridStart, 6);
         periodMonth = anchor.getMonth();
@@ -2483,19 +2487,25 @@ const computeCalendarGrid = (anchor, view, weekStarts) => {
             date: new Date(cursor),
             iso: calendarISO(cursor),
             day: cursor.getDate(),
-            inPeriod: view === 'week' || cursor.getMonth() === periodMonth,
+            inPeriod: view === 'week' || view === 'day' || cursor.getMonth() === periodMonth,
             isToday: calendarSameDay(cursor, today),
             weekNumber: calendarWeekOfYear(cursor),
         });
         cursor = calendarAddDays(cursor, 1);
     }
 
+    // month/week view always divide evenly into chunks of 7; day view's
+    // single day is its own one-item chunk
     const weeks = [];
-    for (let i = 0; i < days.length; i += 7) weeks.push(days.slice(i, i + 7));
+    const chunkSize = view === 'day' ? 1 : 7;
+    for (let i = 0; i < days.length; i += chunkSize) weeks.push(days.slice(i, i + chunkSize));
     return weeks;
 };
 
-const calendarPeriodLabel = (anchor, view, weekStarts, monthNames) => {
+const calendarPeriodLabel = (anchor, view, weekStarts, monthNames, dayNames) => {
+    if (view === 'day') {
+        return `${dayNames[anchor.getDay()]}, ${monthNames[anchor.getMonth()]} ${anchor.getDate()}, ${anchor.getFullYear()}`;
+    }
     if (view === 'week') {
         const start = calendarStartOfWeek(anchor, weekStarts);
         const end = calendarAddDays(start, 6);
@@ -2560,6 +2570,7 @@ const renderCalendarWeekGrid = (calendar, scroll, weekDays, registry, previously
     week.className = 'bw-calendar-week';
     week.setAttribute('data-bw-calendar-week', '');
     week.setAttribute('aria-labelledby', calendar.querySelector('[data-bw-calendar-title]')?.id || '');
+    week.style.setProperty('--bw-calendar-week-days', String(weekDays.length));
 
     let focusIso = null;
 
@@ -2609,7 +2620,7 @@ const renderCalendarWeekGrid = (calendar, scroll, weekDays, registry, previously
     week.appendChild(headerRow);
 
     const gridStart = weekDays[0].date;
-    const gridEnd = weekDays[6].date;
+    const gridEnd = weekDays[weekDays.length - 1].date;
     const rawAllDay = [];
     (registry.allDaySpans || []).forEach((event) => {
         const clipStart = event.start < gridStart ? gridStart : event.start;
@@ -2849,8 +2860,9 @@ const renderCalendarGrid = (calendar, anchor) => {
     const weeks = computeCalendarGrid(anchor, view, weekStarts);
     scroll.innerHTML = '';
 
+    const isTimelineView = view === 'week' || view === 'day';
     const ctx = {selectable, maxEventsPerDay, showOtherMonthDays, showWeekNumbers, min, max, disabled, selected};
-    let focusIso = view === 'week'
+    let focusIso = isTimelineView
         ? renderCalendarWeekGrid(calendar, scroll, weeks[0], registry, previouslyFocused, ctx)
         : renderCalendarMonthTable(calendar, scroll, weeks, registry, previouslyFocused, ctx);
 
@@ -2863,14 +2875,14 @@ const renderCalendarGrid = (calendar, anchor) => {
     if (focusCell) focusCell.tabIndex = 0;
 
     const title = calendar.querySelector('[data-bw-calendar-title]');
-    if (title) title.textContent = calendarPeriodLabel(anchor, view, weekStarts, registry.monthNames);
+    if (title) title.textContent = calendarPeriodLabel(anchor, view, weekStarts, registry.monthNames, registry.dayNames);
 
     calendar.setAttribute('data-anchor', calendarISO(anchor));
     calendar.querySelectorAll('[data-bw-calendar-view]').forEach((button) => {
         button.setAttribute('aria-pressed', button.getAttribute('data-bw-calendar-view') === view ? 'true' : 'false');
     });
 
-    if (view === 'week') scrollCalendarWeekBodyToHour(calendar);
+    if (isTimelineView) scrollCalendarWeekBodyToHour(calendar);
 };
 
 const applyCalendarNavigation = (calendar, target, options = {}) => {
@@ -2896,19 +2908,25 @@ const navigateCalendar = (name, delta, options = {}) => {
     if (delta.years) target.setFullYear(target.getFullYear() + delta.years);
     if (delta.months) target.setMonth(target.getMonth() + delta.months);
     if (delta.weeks) target.setDate(target.getDate() + delta.weeks * 7);
+    if (delta.days) target.setDate(target.getDate() + delta.days);
     return navigateCalendarTo(calendar, target, options);
 };
+
+/** One step forward/backward in the given view: a day in day view, a week in week view, a month in month view. */
+const calendarStepDelta = (view, direction) => (
+    view === 'day' ? {days: direction} : view === 'week' ? {weeks: direction} : {months: direction}
+);
 
 const nextCalendarPeriod = (name, options = {}) => {
     const calendar = calendarByName(name);
     if (!calendar) return false;
-    return navigateCalendar(name, calendar.getAttribute('data-view') === 'week' ? {weeks: 1} : {months: 1}, options);
+    return navigateCalendar(name, calendarStepDelta(calendar.getAttribute('data-view'), 1), options);
 };
 
 const previousCalendarPeriod = (name, options = {}) => {
     const calendar = calendarByName(name);
     if (!calendar) return false;
-    return navigateCalendar(name, calendar.getAttribute('data-view') === 'week' ? {weeks: -1} : {months: -1}, options);
+    return navigateCalendar(name, calendarStepDelta(calendar.getAttribute('data-view'), -1), options);
 };
 
 const goToCalendarToday = (name, options = {}) => {
@@ -2928,7 +2946,7 @@ const goToCalendarMonth = (name, year, month, options = {}) => {
 
 const setCalendarView = (name, view, options = {}) => {
     const calendar = calendarByName(name);
-    if (!calendar || !['month', 'week'].includes(view)) return false;
+    if (!calendar || !['month', 'week', 'day'].includes(view)) return false;
     if (calendar.getAttribute('data-view') === view) return true;
     const detail = calendarDetail(calendar, {view, source: options.source || 'api'});
     if (!calendarEvent(calendar, 'before-view-change', detail, true)) return false;
@@ -3059,9 +3077,11 @@ bwOn('keydown', '[data-bw-calendar-day]', (cell, event) => {
         event.preventDefault();
         const direction = event.key === 'PageUp' ? -1 : 1;
         const view = calendar.getAttribute('data-view');
+        // Shift steps one level up from the plain step: a week in day view, a
+        // month in week view, a year in month view.
         const delta = event.shiftKey
-            ? (view === 'week' ? {months: direction} : {years: direction})
-            : (view === 'week' ? {weeks: direction} : {months: direction});
+            ? (view === 'day' ? {weeks: direction} : view === 'week' ? {months: direction} : {years: direction})
+            : calendarStepDelta(view, direction);
         navigateCalendar(name, delta, {source: 'keyboard'});
     }
 });
@@ -3097,7 +3117,7 @@ bwOn('click', '[data-bw-calendar-view]', (button) => {
 });
 
 /** A server-rendered week view starts scrolled to the top of the day; give it the same sensible window client-side navigation already gets. */
-const initialiseCalendars = () => document.querySelectorAll('[data-bw-calendar][data-view="week"]').forEach((calendar) => scrollCalendarWeekBodyToHour(calendar));
+const initialiseCalendars = () => document.querySelectorAll('[data-bw-calendar][data-view="week"], [data-bw-calendar][data-view="day"]').forEach((calendar) => scrollCalendarWeekBodyToHour(calendar));
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initialiseCalendars);
 else initialiseCalendars();
 

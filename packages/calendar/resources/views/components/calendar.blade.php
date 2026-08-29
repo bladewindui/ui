@@ -7,11 +7,12 @@
     // accessible name for the calendar grid
     'label' => 'Calendar',
 
-    // month or week
+    // month, week, or day
     'view' => null,
 
     // anchor date (Y-m-d). Month view shows the month containing it, week view
-    // shows the week containing it. Defaults to today.
+    // shows the week containing it, day view shows just that day. Defaults to
+    // today.
     'date' => '',
 
     // first day of the week
@@ -66,7 +67,7 @@
     $name = preg_replace('/[^A-Za-z0-9_-]/', '-', trim((string) $name));
     if ($name === '') $name = defaultBladewindName('bw-calendar-');
 
-    $view = in_array($view, ['month', 'week'], true) ? $view : config('bladewind.calendar.view', 'month');
+    $view = in_array($view, ['month', 'week', 'day'], true) ? $view : config('bladewind.calendar.view', 'month');
     $weekStarts = in_array($weekStarts, ['sunday', 'monday'], true) ? $weekStarts : config('bladewind.calendar.week_starts', 'sunday');
     $selectable = in_array($selectable, ['none', 'single', 'multiple'], true) ? $selectable : config('bladewind.calendar.selectable', 'none');
     $maxEventsPerDay = max(0, (int) parseBladewindVariable($maxEventsPerDay ?? config('bladewind.calendar.max_events_per_day', 3), 'int'));
@@ -94,7 +95,11 @@
     $weekStartConst = $weekStarts === 'monday' ? \Carbon\Carbon::MONDAY : \Carbon\Carbon::SUNDAY;
     $weekEndConst = $weekStarts === 'monday' ? \Carbon\Carbon::SUNDAY : \Carbon\Carbon::SATURDAY;
 
-    if ($view === 'week') {
+    if ($view === 'day') {
+        $gridStart = $anchor->copy()->startOfDay();
+        $gridEnd = $anchor->copy()->startOfDay();
+        $periodLabel = $anchor->translatedFormat('l, F j, Y');
+    } elseif ($view === 'week') {
         $gridStart = $anchor->copy()->startOfWeek($weekStartConst);
         $gridEnd = $anchor->copy()->endOfWeek($weekEndConst);
         $periodLabel = $gridStart->isSameMonth($gridEnd)
@@ -197,7 +202,7 @@
     $cursor = $gridStart->copy();
     while ($cursor->lte($gridEnd)) {
         $iso = $cursor->toDateString();
-        $inPeriod = $view === 'week' || $cursor->month === $anchor->month;
+        $inPeriod = in_array($view, ['week', 'day'], true) || $cursor->month === $anchor->month;
         $isDisabled = ! $inPeriod
             || ($minCarbon && $cursor->lt($minCarbon))
             || ($maxCarbon && $cursor->gt($maxCarbon))
@@ -220,6 +225,11 @@
         if (count($week) === 7) { $weeks[] = $week; $week = []; }
         $cursor->addDay();
     }
+    // day view's single-day grid never reaches a full week of 7, so it would
+    // otherwise never get flushed into $weeks at all. Month and week view's
+    // grid boundaries are always aligned to whole weeks, so this is a no-op
+    // for them — $week is already empty by the time the loop above ends.
+    if (count($week)) { $weeks[] = $week; }
 
     $dayKeys = $weekStarts === 'monday'
         ? ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
@@ -238,21 +248,23 @@
     }
     $focusIso ??= $weeks[0][0]['iso'] ?? $gridStart->toDateString();
 
-    $hourRowHeight = 3; // rem per hour in week view's hour grid
+    $hourRowHeight = 3; // rem per hour in week/day view's hour grid
     $hoursInDay = 24;
 
-    // week view only: all-day banners, clipped to the visible week and spanning
-    // the day columns they cover, stacked into as few rows as they need so
-    // overlapping banners don't sit on top of each other
+    // week and day view only: all-day banners, clipped to the visible range and
+    // spanning the day columns they cover (a single column in day view),
+    // stacked into as few rows as they need so overlapping banners don't sit
+    // on top of each other
     $allDayBanners = [];
     $allDayRowCount = 0;
-    // week view only: each day's timed events packed into side-by-side columns
-    // — events that don't overlap anything share column 0; a run of mutually
-    // overlapping events gets one column each, sized to fit the widest moment
-    // in that run. Simple and robust rather than perfectly space-optimal.
+    // week and day view only: each day's timed events packed into side-by-side
+    // columns — events that don't overlap anything share column 0; a run of
+    // mutually overlapping events gets one column each, sized to fit the
+    // widest moment in that run. Simple and robust rather than perfectly
+    // space-optimal.
     $timedLayout = [];
 
-    if ($view === 'week') {
+    if (in_array($view, ['week', 'day'], true)) {
         $rawAllDay = [];
         foreach ((array) $events as $event) {
             if (empty($event['date']) || $isTimedEvent($event['date'])) continue;
@@ -365,6 +377,7 @@
             <div class="bw-calendar-view-switch" role="group" aria-label="Calendar view">
                 <button type="button" class="bw-calendar-view-button" data-bw-calendar-view="month" aria-pressed="{{ $view === 'month' ? 'true' : 'false' }}">Month</button>
                 <button type="button" class="bw-calendar-view-button" data-bw-calendar-view="week" aria-pressed="{{ $view === 'week' ? 'true' : 'false' }}">Week</button>
+                <button type="button" class="bw-calendar-view-button" data-bw-calendar-view="day" aria-pressed="{{ $view === 'day' ? 'true' : 'false' }}">Day</button>
             </div>
             <button type="button" class="bw-calendar-today-button" data-bw-calendar-today>{{ $todayLabel }}</button>
             <button type="button" class="bw-calendar-nav-button" data-bw-calendar-prev aria-label="{{ $previousLabel }}">
@@ -377,8 +390,12 @@
     </div>
 
     <div class="bw-calendar-scroll" data-bw-calendar-scroll @if($height) style="height: {{ $height }}" @endif>
-    @if($view === 'week')
-        <div class="bw-calendar-week" data-bw-calendar-week aria-labelledby="{{ $titleId }}">
+    @if(in_array($view, ['week', 'day'], true))
+        {{-- the same hour-grid structure serves both views; day view is just a
+             one-column week. --bw-calendar-week-days drives every grid-
+             template-columns declaration in calendar.css so the column count
+             follows it automatically. --}}
+        <div class="bw-calendar-week" data-bw-calendar-week aria-labelledby="{{ $titleId }}" style="--bw-calendar-week-days: {{ count($weeks[0]) }}">
             <div class="bw-calendar-week-header-row" role="row">
                 <div class="bw-calendar-week-gutter">
                     @if($showWeekNumbers)<span class="bw-calendar-week-gutter-number">W{{ $weeks[0][0]['weekNumber'] }}</span>@endif

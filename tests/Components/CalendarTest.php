@@ -45,6 +45,40 @@ class CalendarTest extends TestCase
         $this->assertAttribute($html, '//button[@data-bw-calendar-view="month"]', 'aria-pressed', 'false');
     }
 
+    #[Test]
+    public function day_view_renders_a_single_column_hour_grid_and_marks_the_view_switch(): void
+    {
+        $html = $this->calendar('name="team" view="day" date="2026-08-15"');
+
+        $this->assertAttribute($html, '//*[@data-bw-calendar]', 'data-view', 'day');
+        $this->assertElementCount($html, '//*[@data-bw-calendar-day]', 1);
+        $this->assertElementCount($html, '//*[@data-bw-calendar-week]', 1);
+        $this->assertAttribute($html, '//*[@data-bw-calendar-week]', 'style', '--bw-calendar-week-days: 1');
+        $this->assertElementCount($html, '//*[contains(concat(" ", normalize-space(@class), " "), " bw-calendar-week-day-column ")]', 1);
+        $this->assertAttribute($html, '//button[@data-bw-calendar-view="day"]', 'aria-pressed', 'true');
+        $this->assertAttribute($html, '//button[@data-bw-calendar-view="week"]', 'aria-pressed', 'false');
+        $this->assertStringContainsString('Saturday, August 15, 2026', $html);
+    }
+
+    #[Test]
+    public function day_view_positions_a_timed_event_and_shows_an_all_day_banner(): void
+    {
+        $events = [
+            ['date' => '2026-08-15 09:00', 'end' => '2026-08-15 10:30', 'label' => 'Standup', 'type' => 'info'],
+            ['date' => '2026-08-15', 'label' => 'Holiday', 'type' => 'warning'],
+        ];
+        $html = $this->calendar('name="team" view="day" date="2026-08-15"', $events);
+
+        $event = $this->timedEventXpath('2026-08-15');
+        $this->assertElementCount($html, $event, 1);
+        $this->assertAttributeContains($html, $event, 'style', 'top: 27rem'); // 9h * 3rem/h
+        $this->assertAttributeContains($html, $event, 'style', 'left: 0%'); // nothing to overlap with
+
+        $banner = '//*[contains(concat(" ", normalize-space(@class), " "), " bw-calendar-week-allday-banner ")]';
+        $this->assertElementCount($html, $banner, 1);
+        $this->assertAttributeContains($html, $banner, 'style', 'span 1');
+    }
+
     /** Exact class-token match — plain contains(@class,...) also matches e.g. bw-calendar-week-timed-event-label. */
     private function timedEventXpath(string $date): string
     {

@@ -57,11 +57,14 @@
 .bw-calendar-event-more { display: block; padding: .0625rem .375rem; font-size: .6875rem; font-weight: 600; text-align: left; color: var(--color-primary-600); }
 .bw-calendar-event-more { @variant dark { color: #d2d4d7; } }
 .bw-calendar-event-more:focus-visible { outline: 2px solid var(--color-primary-500); outline-offset: 1px; }
-/* Week view: an hour grid, not the month table above. Header row and all-day
- * row share a "gutter + 7 equal columns" layout with the scrollable hour body
- * below them, so everything lines up in one continuous grid. */
+/* Week and day view: an hour grid, not the month table above — day view is
+ * just this same structure with one column instead of seven, driven by the
+ * --bw-calendar-week-days custom property set on .bw-calendar-week. Header
+ * row and all-day row share a "gutter + N equal columns" layout with the
+ * scrollable hour body below them, so everything lines up in one continuous
+ * grid. */
 .bw-calendar-week { display: flex; flex-direction: column; min-width: 40rem; }
-.bw-calendar-week-header-row { display: grid; grid-template-columns: 3.5rem repeat(7, 1fr); position: sticky; top: 0; z-index: 3; background: white; border-bottom: 1px solid rgb(226 232 240); }
+.bw-calendar-week-header-row { display: grid; grid-template-columns: 3.5rem repeat(var(--bw-calendar-week-days, 7), 1fr); position: sticky; top: 0; z-index: 3; background: white; border-bottom: 1px solid rgb(226 232 240); }
 .bw-calendar-week-header-row { @variant dark { background: #1c1f24; border-color: rgb(74 78 83 / .75); } }
 .bw-calendar-week-gutter { display: flex; align-items: flex-end; justify-content: center; padding-bottom: .375rem; font-size: .625rem; color: rgb(148 163 184); border-right: 1px solid rgb(226 232 240); }
 .bw-calendar-week-gutter { @variant dark { border-color: rgb(74 78 83 / .4); } }
@@ -73,13 +76,13 @@
 .bw-calendar-week-allday-row { display: grid; grid-template-columns: 3.5rem 1fr; position: sticky; top: 2.9rem; z-index: 3; background: white; border-bottom: 1px solid rgb(226 232 240); }
 .bw-calendar-week-allday-row { @variant dark { background: #1c1f24; border-color: rgb(74 78 83 / .75); } }
 .bw-calendar-week-allday-label { align-items: flex-start; padding-top: .375rem; font-size: .625rem; text-transform: uppercase; letter-spacing: .02em; }
-.bw-calendar-week-allday-track { display: grid; grid-template-columns: repeat(7, 1fr); grid-auto-rows: 1.5rem; gap: .1875rem; padding: .1875rem; }
+.bw-calendar-week-allday-track { display: grid; grid-template-columns: repeat(var(--bw-calendar-week-days, 7), 1fr); grid-auto-rows: 1.5rem; gap: .1875rem; padding: .1875rem; }
 .bw-calendar-week-allday-banner { align-self: start; padding: .0625rem .5rem; }
 .bw-calendar-week-body { position: relative; display: grid; grid-template-columns: 3.5rem 1fr; }
 .bw-calendar-week-hours { position: relative; border-right: 1px solid rgb(226 232 240); }
 .bw-calendar-week-hours { @variant dark { border-color: rgb(74 78 83 / .4); } }
 .bw-calendar-week-hour-label { position: absolute; right: .375rem; transform: translateY(-50%); font-size: .625rem; color: rgb(148 163 184); white-space: nowrap; }
-.bw-calendar-week-days { position: relative; display: grid; grid-template-columns: repeat(7, 1fr); }
+.bw-calendar-week-days { position: relative; display: grid; grid-template-columns: repeat(var(--bw-calendar-week-days, 7), 1fr); }
 .bw-calendar-week-day-column { position: relative; border-right: 1px solid rgb(241 245 249); }
 .bw-calendar-week-day-column { @variant dark { border-color: rgb(74 78 83 / .4); } }
 .bw-calendar-week-day-column:last-child { border-right: 0; }
