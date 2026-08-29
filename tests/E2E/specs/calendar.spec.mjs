@@ -338,3 +338,67 @@ test('a calendar with no height prop still does not jump across months and views
   const week = await heightFor()
   expect(Math.abs(august - week)).toBeLessThan(2)
 })
+
+test('a month-view event with a description opens the contained event details drawer', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' }) // skip the slide-in transition so the panel's settled position can be measured
+  const calendar = page.locator('[data-bw-calendar][data-name="team"]')
+  const drawer = calendar.locator('[data-bw-calendar-event-drawer]')
+
+  await calendar.locator('[data-bw-calendar-event-trigger]').first().click() // Standup, 2026-08-05
+  await expect(drawer).toHaveAttribute('data-state', 'open')
+  await expect(drawer.locator('[data-bw-calendar-event-drawer-title]')).toHaveText('Standup')
+  await expect(drawer.locator('[data-bw-calendar-event-drawer-time]')).toHaveText('Wednesday, August 5, 2026')
+  await expect(drawer.locator('[data-bw-calendar-event-drawer-description]')).toContainText('Daily sync in the main conference room.')
+  await expect(drawer.locator('[data-bw-calendar-event-drawer-link]')).toHaveAttribute('href', '/events/standup')
+
+  // anchored to the calendar's own box (top, bottom, and right edge all pinned to
+  // it), not the viewport — a non-contained drawer would instead span the full
+  // browser window regardless of where the calendar sits on the page
+  const drawerBox = await drawer.locator('.bw-drawer-panel').boundingBox()
+  const calendarBox = await calendar.boundingBox()
+  expect(Math.abs(drawerBox.y - calendarBox.y)).toBeLessThan(2)
+  expect(Math.abs((drawerBox.y + drawerBox.height) - (calendarBox.y + calendarBox.height))).toBeLessThan(2)
+  expect(Math.abs((drawerBox.x + drawerBox.width) - (calendarBox.x + calendarBox.width))).toBeLessThan(2)
+})
+
+test('escape closes the event details drawer, and a plain event stays a link with no trigger', async ({ page }) => {
+  const calendar = page.locator('[data-bw-calendar][data-name="team"]')
+  const drawer = calendar.locator('[data-bw-calendar-event-drawer]')
+
+  await calendar.locator('[data-bw-calendar-event-trigger]').first().click()
+  await expect(drawer).toHaveAttribute('data-state', 'open')
+  await page.keyboard.press('Escape')
+  await expect(drawer).toHaveAttribute('data-state', 'closed')
+
+  // "Design review" on the same day has no description, so it renders as plain text, not a trigger
+  const day = calendar.locator('[data-bw-calendar-day][data-date="2026-08-05"]')
+  await expect(day.locator('[data-bw-calendar-event-trigger]', { hasText: 'Design review' })).toHaveCount(0)
+  await expect(day.getByText('Design review')).toHaveCount(1)
+})
+
+test('a week-view all-day banner with a description opens the drawer', async ({ page }) => {
+  const calendar = page.locator('[data-bw-calendar][data-name="team"]')
+  const drawer = calendar.locator('[data-bw-calendar-event-drawer]')
+
+  await calendar.locator('[data-bw-calendar-view="week"]').click()
+  await calendar.locator('.bw-calendar-week-allday-banner[data-bw-calendar-event-trigger]').click() // Bisqui expected
+  await expect(drawer).toHaveAttribute('data-state', 'open')
+  await expect(drawer.locator('[data-bw-calendar-event-drawer-title]')).toHaveText('Bisqui expected')
+  await expect(drawer.locator('[data-bw-calendar-event-drawer-description]')).toContainText('Bisqui arrives from the airport around noon.')
+  await expect(drawer.locator('[data-bw-calendar-event-drawer-link]')).toBeHidden()
+})
+
+test('clicking a different event while the drawer is open swaps its content in place', async ({ page }) => {
+  const calendar = page.locator('[data-bw-calendar][data-name="team"]')
+  const drawer = calendar.locator('[data-bw-calendar-event-drawer]')
+  const day11 = calendar.locator('.bw-calendar-week-day-column[data-date="2026-08-11"]')
+
+  await calendar.locator('[data-bw-calendar-view="week"]').click()
+  await day11.locator('[data-bw-calendar-event-trigger]').nth(0).click() // Design sync, 9:30-10:30
+  await expect(drawer.locator('[data-bw-calendar-event-drawer-title]')).toHaveText('Design sync')
+
+  await day11.locator('[data-bw-calendar-event-trigger]').nth(1).click() // Kenya project review, 14:00-15:30
+  await expect(drawer).toHaveAttribute('data-state', 'open')
+  await expect(drawer.locator('[data-bw-calendar-event-drawer-title]')).toHaveText('Kenya project review')
+  await expect(drawer.locator('[data-bw-calendar-event-drawer-description]')).toContainText('Quarterly numbers, then open questions.')
+})

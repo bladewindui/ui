@@ -128,7 +128,12 @@
     // $timedLayout below), keyed the same way
     $timedByDate = [];
 
-    foreach ((array) $events as $event) {
+    // an event with a description gets a real button that opens the event
+    // details drawer instead of (or as well as) linking out — see
+    // $eventDetailsByIndex below. Keyed by the event's own position in
+    // $events so every day it touches, however it got expanded, points back
+    // at the same drawer content.
+    foreach ((array) $events as $eventIndex => $event) {
         if (empty($event['date'])) continue;
 
         if ($isTimedEvent($event['date'])) {
@@ -146,6 +151,8 @@
                 'label' => (string) ($event['label'] ?? ''),
                 'type' => (string) ($event['type'] ?? 'info'),
                 'href' => $event['href'] ?? null,
+                'description' => (string) ($event['description'] ?? ''),
+                'eventIndex' => $eventIndex,
                 'start' => $start,
                 'end' => $end,
                 'startMinutes' => $start->hour * 60 + $start->minute,
@@ -167,6 +174,8 @@
                 'label' => (string) ($event['label'] ?? ''),
                 'type' => (string) ($event['type'] ?? 'info'),
                 'href' => $event['href'] ?? null,
+                'description' => (string) ($event['description'] ?? ''),
+                'eventIndex' => $eventIndex,
             ];
             $cursor->addDay();
             $guard++;
@@ -183,6 +192,8 @@
                 'label' => $timed['start']->format('g:ia').' '.$timed['label'],
                 'type' => $timed['type'],
                 'href' => $timed['href'],
+                'description' => $timed['description'],
+                'eventIndex' => $timed['eventIndex'],
             ];
         }
     }
@@ -266,7 +277,7 @@
 
     if (in_array($view, ['week', 'day'], true)) {
         $rawAllDay = [];
-        foreach ((array) $events as $event) {
+        foreach ((array) $events as $eventIndex => $event) {
             if (empty($event['date']) || $isTimedEvent($event['date'])) continue;
             $start = \Illuminate\Support\Carbon::parse($event['date'])->startOfDay();
             $end = ! empty($event['end']) ? \Illuminate\Support\Carbon::parse($event['end'])->startOfDay() : $start->copy();
@@ -280,6 +291,8 @@
                 'label' => (string) ($event['label'] ?? ''),
                 'type' => (string) ($event['type'] ?? 'info'),
                 'href' => $event['href'] ?? null,
+                'description' => (string) ($event['description'] ?? ''),
+                'eventIndex' => $eventIndex,
                 'startIndex' => (int) $gridStart->diffInDays($clipStart),
                 'span' => (int) $gridStart->diffInDays($clipEnd) - (int) $gridStart->diffInDays($clipStart) + 1,
             ];
@@ -339,13 +352,20 @@
         }
     }
 
+    // kept unfiltered and in original order, deliberately: every event marker
+    // rendered server-side embeds its position in this same $events array as
+    // data-bw-calendar-event-index, so the client-side event-details lookup
+    // has to be able to find event N at index N too
     $eventsPayload = collect($events)->map(fn ($e) => [
         'date' => (string) ($e['date'] ?? ''),
         'end' => ! empty($e['end']) ? (string) $e['end'] : null,
         'label' => (string) ($e['label'] ?? ''),
         'type' => (string) ($e['type'] ?? 'info'),
         'href' => $e['href'] ?? null,
-    ])->filter(fn ($e) => $e['date'] !== '')->values();
+        'description' => (string) ($e['description'] ?? ''),
+    ])->values();
+
+    $hasEventDetails = collect($events)->contains(fn ($e) => ! empty($e['description']));
 
     $titleId = 'bw-'.$name.'-title';
     $rootAttributes = $attributes->exceptPropAliases(get_defined_vars())->class(['bw-calendar']);
@@ -426,7 +446,11 @@
                     <div class="bw-calendar-week-gutter bw-calendar-week-allday-label">All day</div>
                     <div class="bw-calendar-week-allday-track">
                         @foreach($allDayBanners as $banner)
-                            @if($banner['href'])
+                            @if(! empty($banner['description']))
+                                <button type="button" class="bw-calendar-event bw-calendar-week-allday-banner bw-calendar-event-{{ $banner['type'] }}"
+                                   data-bw-calendar-event-trigger data-bw-calendar-event-index="{{ $banner['eventIndex'] }}"
+                                   style="grid-column: {{ $banner['startIndex'] + 1 }} / span {{ $banner['span'] }}; grid-row: {{ $banner['row'] + 1 }}">{{ $banner['label'] }}</button>
+                            @elseif($banner['href'])
                                 <a href="{{ $banner['href'] }}" class="bw-calendar-event bw-calendar-week-allday-banner bw-calendar-event-{{ $banner['type'] }}"
                                    style="grid-column: {{ $banner['startIndex'] + 1 }} / span {{ $banner['span'] }}; grid-row: {{ $banner['row'] + 1 }}">{{ $banner['label'] }}</a>
                             @else
@@ -458,7 +482,14 @@
                                     $widthPct = 100 / $event['totalCols'];
                                     $leftPct = $widthPct * $event['col'];
                                 @endphp
-                                @if($event['href'])
+                                @if(! empty($event['description']))
+                                    <button type="button" class="bw-calendar-event bw-calendar-week-timed-event bw-calendar-event-{{ $event['type'] }}"
+                                       data-bw-calendar-event-trigger data-bw-calendar-event-index="{{ $event['eventIndex'] }}"
+                                       style="top: {{ $top }}rem; height: {{ $height }}rem; left: {{ $leftPct }}%; width: calc({{ $widthPct }}% - 2px)">
+                                        <span class="bw-calendar-week-timed-event-time">{{ $event['start']->format('g:ia') }}</span>
+                                        <span class="bw-calendar-week-timed-event-label">{{ $event['label'] }}</span>
+                                    </button>
+                                @elseif($event['href'])
                                     <a href="{{ $event['href'] }}" class="bw-calendar-event bw-calendar-week-timed-event bw-calendar-event-{{ $event['type'] }}"
                                        style="top: {{ $top }}rem; height: {{ $height }}rem; left: {{ $leftPct }}%; width: calc({{ $widthPct }}% - 2px)">
                                         <span class="bw-calendar-week-timed-event-time">{{ $event['start']->format('g:ia') }}</span>
@@ -518,7 +549,13 @@
                                         <div class="bw-calendar-cell-events">
                                             @foreach($day['events'] as $index => $event)
                                                 @php $isOverflow = $index >= $maxEventsPerDay; @endphp
-                                                @if($event['href'])
+                                                @if(! empty($event['description']))
+                                                    <button type="button"
+                                                       class="bw-calendar-event bw-calendar-event-{{ $event['type'] }}"
+                                                       data-bw-calendar-event-trigger data-bw-calendar-event-index="{{ $event['eventIndex'] }}"
+                                                       data-bw-calendar-overflow-event="{{ $isOverflow ? 'true' : 'false' }}"
+                                                       @if($isOverflow) hidden @endif>{{ $event['label'] }}</button>
+                                                @elseif($event['href'])
                                                     <a href="{{ $event['href'] }}"
                                                        class="bw-calendar-event bw-calendar-event-{{ $event['type'] }}"
                                                        data-bw-calendar-overflow-event="{{ $isOverflow ? 'true' : 'false' }}"
@@ -550,6 +587,25 @@
                 <input type="hidden" name="{{ $selectable === 'multiple' ? $name.'[]' : $name }}" value="{{ $selectedDate }}" data-bw-calendar-input="{{ $selectedDate }}" />
             @endforeach
         </div>
+    @endif
+
+    @if($hasEventDetails)
+        {{-- populated per-click by JS from the event's own data, not rendered
+             per-event server-side — one drawer, reused for whichever event
+             was last clicked. contained so it stays inside this calendar's
+             own box rather than covering the whole page, and non-modal so it's
+             a quick peek: no backdrop blocking the rest of the calendar, so
+             clicking straight from one event to another swaps the drawer's
+             content without having to close it first. --}}
+        <x-bladewind::drawer name="{{ $name }}-event-details" data-bw-calendar-event-drawer="true" position="right" size="small" contained="true" modal="false" aria-label="Event details">
+            <div class="bw-calendar-event-drawer-eyebrow">
+                <span data-bw-calendar-event-drawer-type class="bw-calendar-event-drawer-dot" aria-hidden="true"></span>
+                <span data-bw-calendar-event-drawer-time class="bw-calendar-event-drawer-time"></span>
+            </div>
+            <h2 data-bw-calendar-event-drawer-title class="bw-calendar-event-drawer-title"></h2>
+            <p data-bw-calendar-event-drawer-description class="bw-calendar-event-drawer-description"></p>
+            <a data-bw-calendar-event-drawer-link class="bw-calendar-event-drawer-link" href="#" hidden>View full details</a>
+        </x-bladewind::drawer>
     @endif
 </div>
 
