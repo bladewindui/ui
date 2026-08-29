@@ -4,6 +4,20 @@ test.beforeEach(async ({ page }) => {
   await page.goto('/calendar.html')
 })
 
+test('a day with an overflowing event list stays the same row height as an empty day', async ({ page }) => {
+  const calendar = page.locator('[data-bw-calendar][data-name="team"]')
+  const busyDay = calendar.locator('[data-bw-calendar-day][data-date="2026-08-05"]') // 4 events, 1 overflowing
+  const emptyDay = calendar.locator('[data-bw-calendar-day][data-date="2026-08-06"]')
+
+  const busyHeight = (await busyDay.boundingBox()).height
+  const emptyHeight = (await emptyDay.boundingBox()).height
+  expect(busyHeight).toBe(emptyHeight)
+
+  // expanding "+1 more" reveals it within the cell's own scroll, not by growing the row
+  await busyDay.locator('[data-bw-calendar-more]').click()
+  expect((await busyDay.boundingBox()).height).toBe(busyHeight)
+})
+
 test('next/previous rebuild the grid client-side and update the title', async ({ page }) => {
   const calendar = page.locator('[data-bw-calendar][data-name="team"]')
   await expect(calendar.locator('[data-bw-calendar-title]')).toHaveText('August 2026')
@@ -178,4 +192,35 @@ test('a server-driven calendar only emits navigate and does not rebuild its own 
 
   const events = await page.evaluate(() => window.remoteCalendarEvents)
   expect(events).toEqual([{ anchor: '2026-09-15' }])
+})
+
+test('a fixed height caps the grid and the header stays pinned while the body scrolls', async ({ page }) => {
+  const calendar = page.locator('[data-bw-calendar][data-name="sized"]')
+  const scroller = calendar.locator('[data-bw-calendar-scroll]')
+
+  const box = await scroller.boundingBox()
+  expect(box.height).toBeLessThanOrEqual(97) // 6rem + a hair of rounding
+
+  const { scrollHeight, clientHeight } = await scroller.evaluate((el) => ({ scrollHeight: el.scrollHeight, clientHeight: el.clientHeight }))
+  expect(scrollHeight).toBeGreaterThan(clientHeight)
+
+  const header = calendar.locator('thead th').first()
+  const headerTopBefore = (await header.boundingBox()).y
+  await scroller.evaluate((el) => { el.scrollTop = el.scrollHeight })
+  const headerTopAfter = (await header.boundingBox()).y
+  expect(headerTopAfter).toBe(headerTopBefore)
+})
+
+test('a fixed height keeps the calendar the same size across months and views with different row counts', async ({ page }) => {
+  const calendar = page.locator('[data-bw-calendar][data-name="sized"]')
+  const heightFor = async () => (await calendar.boundingBox()).height
+
+  const august = await heightFor() // August 2026 is a 6-row month
+  await calendar.locator('[data-bw-calendar-next]').click() // September 2026 has fewer weeks
+  const september = await heightFor()
+  expect(Math.abs(august - september)).toBeLessThan(2)
+
+  await calendar.locator('[data-bw-calendar-view="week"]').click() // one row instead of several
+  const week = await heightFor()
+  expect(Math.abs(august - week)).toBeLessThan(2)
 })

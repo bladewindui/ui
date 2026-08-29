@@ -140,11 +140,22 @@ class CalendarTest extends TestCase
     }
 
     #[Test]
+    public function a_height_caps_the_scroll_wrapper_so_the_calendar_does_not_change_size_across_views(): void
+    {
+        $withHeight = $this->calendar('name="team" date="2026-08-15" height="28rem"');
+        $this->assertAttribute($withHeight, '//*[@data-bw-calendar-scroll]', 'style', 'max-height: 28rem');
+
+        $withoutHeight = $this->calendar('name="team" date="2026-08-15"');
+        $this->assertAttribute($withoutHeight, '//*[@data-bw-calendar-scroll]', 'style', null);
+    }
+
+    #[Test]
     public function configuration_defaults_are_applied(): void
     {
         config()->set('bladewind.calendar.selectable', 'single');
         config()->set('bladewind.calendar.max_events_per_day', 1);
         config()->set('bladewind.calendar.week_starts', 'monday');
+        config()->set('bladewind.calendar.height', '30rem');
 
         $events = [
             ['date' => '2026-08-15', 'label' => 'One', 'type' => 'info'],
@@ -154,6 +165,7 @@ class CalendarTest extends TestCase
 
         $this->assertAttribute($html, '//*[@data-bw-calendar]', 'data-selectable', 'single');
         $this->assertAttribute($html, '//*[@data-bw-calendar]', 'data-week-starts', 'monday');
+        $this->assertAttribute($html, '//*[@data-bw-calendar-scroll]', 'style', 'max-height: 30rem');
         $this->assertStringContainsString('+1 more', $html);
     }
 

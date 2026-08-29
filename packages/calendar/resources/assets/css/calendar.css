@@ -19,13 +19,21 @@
 .bw-calendar-nav-button:hover { background: rgb(248 250 252); }
 .bw-calendar-nav-button:hover { @variant dark { background: #22262b; } }
 .bw-calendar-today-button:focus-visible,.bw-calendar-nav-button:focus-visible { outline: 2px solid var(--color-primary-500); outline-offset: 2px; }
+.bw-calendar-scroll { min-height: 0; overflow-y: auto; }
 .bw-calendar-grid { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: .8125rem; }
-.bw-calendar-grid thead th { padding: .5rem .25rem; color: rgb(100 116 139); font-size: .6875rem; font-weight: 600; letter-spacing: .02em; text-align: center; text-transform: uppercase; border-bottom: 1px solid rgb(226 232 240); }
-.bw-calendar-grid thead th { @variant dark { color: #a7aaad; border-color: rgb(74 78 83 / .75); } }
+.bw-calendar-grid thead th { padding: .5rem .25rem; color: rgb(100 116 139); font-size: .6875rem; font-weight: 600; letter-spacing: .02em; text-align: center; text-transform: uppercase; background: white; border-bottom: 1px solid rgb(226 232 240); }
+.bw-calendar-grid thead th { @variant dark { color: #a7aaad; background: #1c1f24; border-color: rgb(74 78 83 / .75); } }
+.bw-calendar-scroll .bw-calendar-grid thead th { position: sticky; top: 0; z-index: 2; }
 .bw-calendar-week-number-header,.bw-calendar-week-number { width: 2.25rem; color: rgb(148 163 184); font-size: .6875rem; text-align: center; }
-.bw-calendar-cell { position: relative; width: calc(100% / 7); min-width: 0; height: 5.5rem; vertical-align: top; padding: .375rem; border: 1px solid rgb(241 245 249); overflow: hidden; }
+.bw-calendar-cell { position: relative; width: calc(100% / 7); min-width: 0; vertical-align: top; padding: .375rem; border: 1px solid rgb(241 245 249); }
 .bw-calendar-cell { @variant dark { border-color: rgb(74 78 83 / .4); } }
 .bw-calendar-cell:focus-visible { outline: 2px solid var(--color-primary-500); outline-offset: -2px; z-index: 1; }
+/* min-height on a table cell isn't reliably honoured under table-layout:fixed
+ * (content can render shorter than the declared minimum), so the fixed size
+ * that keeps every row the same height regardless of event count lives on
+ * this ordinary block-level wrapper instead, where height/overflow behave
+ * as expected. */
+.bw-calendar-cell-inner { display: flex; flex-direction: column; height: 5.5rem; overflow: hidden; }
 .bw-calendar-cell-date { display: inline-flex; align-items: center; justify-content: center; min-width: 1.375rem; height: 1.375rem; border-radius: 9999px; font-size: .8125rem; }
 .bw-calendar-cell-today .bw-calendar-cell-date { background: var(--color-primary-100); color: var(--color-primary-700); font-weight: 600; }
 .bw-calendar-cell-today .bw-calendar-cell-date { @variant dark { background: rgb(71 85 105 / .5); color: #f0f1f2; } }
@@ -35,7 +43,7 @@
 .bw-calendar-cell-outside .bw-calendar-cell-date,.bw-calendar-cell-outside { color: rgb(148 163 184); }
 .bw-calendar-cell-outside { @variant dark { color: #6c7075; } }
 .bw-calendar-cell-disabled { cursor: not-allowed; opacity: .55; }
-.bw-calendar-cell-events { display: flex; flex-direction: column; gap: .1875rem; margin-top: .25rem; }
+.bw-calendar-cell-events { display: flex; flex: 1 1 auto; flex-direction: column; gap: .1875rem; margin-top: .25rem; min-height: 0; overflow-y: auto; }
 .bw-calendar-event { display: block; overflow: hidden; border-radius: .25rem; padding: .0625rem .375rem; font-size: .6875rem; line-height: 1.3; text-overflow: ellipsis; white-space: nowrap; }
 .bw-calendar-event:focus-visible { outline: 2px solid var(--color-primary-500); outline-offset: 1px; }
 .bw-calendar-event-info { background: rgb(219 234 254); color: rgb(30 64 175); }
@@ -49,9 +57,10 @@
 .bw-calendar-event-more { display: block; padding: .0625rem .375rem; font-size: .6875rem; font-weight: 600; text-align: left; color: var(--color-primary-600); }
 .bw-calendar-event-more { @variant dark { color: #d2d4d7; } }
 .bw-calendar-event-more:focus-visible { outline: 2px solid var(--color-primary-500); outline-offset: 1px; }
-[data-view="week"] .bw-calendar-cell { height: 9rem; }
+[data-view="week"] .bw-calendar-cell-inner { height: 9rem; }
 @media (max-width: 640px) {
-    .bw-calendar-cell { height: 3.75rem; padding: .25rem; }
+    .bw-calendar-cell-inner { height: 3.75rem; }
+    .bw-calendar-cell { padding: .25rem; }
     .bw-calendar-event { display: none; }
     .bw-calendar-cell-events { align-items: center; }
     .bw-calendar-cell:has(.bw-calendar-cell-events) .bw-calendar-cell-date::after { content: ""; display: block; width: .25rem; height: .25rem; margin: .125rem auto 0; border-radius: 9999px; background: var(--color-primary-500); }

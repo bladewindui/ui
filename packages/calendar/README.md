@@ -43,6 +43,10 @@ The package installs Bladewind Core and Icon automatically.
 
 `min-date` and `max-date` bound the navigable/selectable range. `disabled-dates` disables specific days (e.g. holidays) regardless of range. Disabled days remain visible and reachable with the arrow keys, but cannot be selected. `show-other-month-days` (default `true`) renders adjacent-month days to fill the grid, dimmed and disabled.
 
+## Fixed height
+
+Without `height`, the calendar's overall size follows its content: a month can render 4, 5, or 6 weeks depending on where it starts, and week view is naturally much shorter than month view. Set `height` (e.g. `28rem`) to cap the grid at a fixed size with an internal scrollbar instead — useful when the calendar sits in a layout that shouldn't jump around as the user navigates or switches views. Each day cell itself already has a fixed height regardless of how many events it holds; a day with more events than `max-events-per-day` gets its own small internal scrollbar once "+N more" is expanded, rather than growing the row.
+
 ## Navigation
 
 Previous/next/today controls and PageUp/PageDown (Shift+PageUp/PageDown for the year in month view, or the month in week view) rebuild the grid in the browser using the `events` already passed in — no round trip. Set `client-navigation="false"` for a server-driven calendar instead: navigation only fires `before-navigate`/`navigate` and the application re-renders (e.g. a fresh page, or your own Livewire/Inertia update).

@@ -612,6 +612,10 @@ class BuildFixturesTest extends TestCase
             '<x-bladewind::calendar name="remote" label="Server-driven calendar" date="2026-08-15" client-navigation="false" />'
         );
 
+        $sized = $this->render(
+            '<x-bladewind::calendar name="sized" label="Fixed-height calendar" date="2026-08-15" height="6rem" class="e2e-sized-calendar" />'
+        );
+
         $scripts = <<<'HTML'
         <script>
           window.calendarEvents = [];
@@ -633,7 +637,7 @@ class BuildFixturesTest extends TestCase
         HTML;
 
         $body = '<main style="display:flex;flex-direction:column;gap:24px;padding:16px;max-width:700px">'
-            .$primary.$restricted.$serverDriven
+            .$primary.$restricted.$serverDriven.$sized
             .'</main>';
 
         file_put_contents(

@@ -2469,10 +2469,14 @@ const renderCalendarGrid = (calendar, anchor) => {
                 + (isDisabled ? ' bw-calendar-cell-disabled' : '');
             if (!day.inPeriod && !showOtherMonthDays) cell.hidden = true;
 
+            const inner = document.createElement('div');
+            inner.className = 'bw-calendar-cell-inner';
+            cell.appendChild(inner);
+
             const dateSpan = document.createElement('span');
             dateSpan.className = 'bw-calendar-cell-date';
             dateSpan.textContent = String(day.day);
-            cell.appendChild(dateSpan);
+            inner.appendChild(dateSpan);
 
             const events = registry.eventsIndex[day.iso] || [];
             if (events.length) {
@@ -2498,7 +2502,7 @@ const renderCalendarGrid = (calendar, anchor) => {
                     more.textContent = `+${overflowCount} more`;
                     wrap.appendChild(more);
                 }
-                cell.appendChild(wrap);
+                inner.appendChild(wrap);
             }
 
             row.appendChild(cell);

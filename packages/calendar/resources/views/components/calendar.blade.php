@@ -40,6 +40,11 @@
 
     'showWeekNumbers' => null,
 
+    // caps the grid at a fixed height (e.g. '28rem') with an internal scrollbar,
+    // so switching between months with different week counts, or between month
+    // and week view, doesn't change the calendar's overall height
+    'height' => null,
+
     // rebuild the grid in the browser on navigation using the events already
     // passed in. Set false for a server-driven calendar: navigation only
     // emits before-navigate/navigate and the application re-renders.
@@ -61,6 +66,7 @@
     $maxEventsPerDay = max(0, (int) parseBladewindVariable($maxEventsPerDay ?? config('bladewind.calendar.max_events_per_day', 3), 'int'));
     $showOtherMonthDays = parseBladewindVariable($showOtherMonthDays ?? config('bladewind.calendar.show_other_month_days', true));
     $showWeekNumbers = parseBladewindVariable($showWeekNumbers ?? config('bladewind.calendar.show_week_numbers', false));
+    $height = $height ?? config('bladewind.calendar.height', null);
     $clientNavigation = parseBladewindVariable($clientNavigation ?? config('bladewind.calendar.client_navigation', true));
     $todayLabel = $todayLabel ?? config('bladewind.calendar.today_label', 'Today');
     $previousLabel = $previousLabel ?? config('bladewind.calendar.previous_label', 'Previous');
@@ -214,6 +220,7 @@
         </div>
     </div>
 
+    <div class="bw-calendar-scroll" data-bw-calendar-scroll @if($height) style="max-height: {{ $height }}" @endif>
     <table class="bw-calendar-grid" data-bw-calendar-table role="grid" aria-labelledby="{{ $titleId }}">
         <thead>
             <tr role="row">
@@ -248,33 +255,36 @@
                                 'bw-calendar-cell-disabled' => $day['isDisabled'],
                             ])
                             @if(! $day['inPeriod'] && ! $showOtherMonthDays) hidden @endif>
-                            <span class="bw-calendar-cell-date">{{ $day['day'] }}</span>
-                            @if(count($day['events']))
-                                <div class="bw-calendar-cell-events">
-                                    @foreach($day['events'] as $index => $event)
-                                        @php $isOverflow = $index >= $maxEventsPerDay; @endphp
-                                        @if($event['href'])
-                                            <a href="{{ $event['href'] }}"
-                                               class="bw-calendar-event bw-calendar-event-{{ $event['type'] }}"
-                                               data-bw-calendar-overflow-event="{{ $isOverflow ? 'true' : 'false' }}"
-                                               @if($isOverflow) hidden @endif>{{ $event['label'] }}</a>
-                                        @else
-                                            <span class="bw-calendar-event bw-calendar-event-{{ $event['type'] }}"
-                                                  data-bw-calendar-overflow-event="{{ $isOverflow ? 'true' : 'false' }}"
-                                                  @if($isOverflow) hidden @endif>{{ $event['label'] }}</span>
+                            <div class="bw-calendar-cell-inner">
+                                <span class="bw-calendar-cell-date">{{ $day['day'] }}</span>
+                                @if(count($day['events']))
+                                    <div class="bw-calendar-cell-events">
+                                        @foreach($day['events'] as $index => $event)
+                                            @php $isOverflow = $index >= $maxEventsPerDay; @endphp
+                                            @if($event['href'])
+                                                <a href="{{ $event['href'] }}"
+                                                   class="bw-calendar-event bw-calendar-event-{{ $event['type'] }}"
+                                                   data-bw-calendar-overflow-event="{{ $isOverflow ? 'true' : 'false' }}"
+                                                   @if($isOverflow) hidden @endif>{{ $event['label'] }}</a>
+                                            @else
+                                                <span class="bw-calendar-event bw-calendar-event-{{ $event['type'] }}"
+                                                      data-bw-calendar-overflow-event="{{ $isOverflow ? 'true' : 'false' }}"
+                                                      @if($isOverflow) hidden @endif>{{ $event['label'] }}</span>
+                                            @endif
+                                        @endforeach
+                                        @if($overflow > 0)
+                                            <button type="button" class="bw-calendar-event-more" data-bw-calendar-more aria-expanded="false">+{{ $overflow }} more</button>
                                         @endif
-                                    @endforeach
-                                    @if($overflow > 0)
-                                        <button type="button" class="bw-calendar-event-more" data-bw-calendar-more aria-expanded="false">+{{ $overflow }} more</button>
-                                    @endif
-                                </div>
-                            @endif
+                                    </div>
+                                @endif
+                            </div>
                         </td>
                     @endforeach
                 </tr>
             @endforeach
         </tbody>
     </table>
+    </div>
 
     @if($selectable !== 'none')
         <div data-bw-calendar-inputs>
