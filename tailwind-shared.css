@@ -24,6 +24,7 @@
 @import "./packages/sidebar/resources/assets/css/sidebar.css";
 @import "./packages/command-palette/resources/assets/css/command-palette.css";
 @import "./packages/data-grid/resources/assets/css/data-grid.css";
+@import "./packages/calendar/resources/assets/css/calendar.css";
 @import "./packages/card/resources/assets/css/card.css";
 @import "./packages/input/resources/assets/css/input.css";
 @import "./packages/datepicker/resources/assets/css/datepicker.css";

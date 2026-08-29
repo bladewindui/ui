@@ -732,6 +732,20 @@ return [
         'dense' => false,
     ],
 
+    'calendar' => [
+        'view' => 'month',
+        'week_starts' => 'sunday',
+        'selectable' => 'none',
+        'max_events_per_day' => 3,
+        'show_other_month_days' => true,
+        'show_week_numbers' => false,
+        'height' => '40rem',
+        'client_navigation' => true,
+        'today_label' => 'Today',
+        'previous_label' => 'Previous',
+        'next_label' => 'Next',
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Tags component
