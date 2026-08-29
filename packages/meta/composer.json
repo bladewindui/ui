@@ -29,6 +29,7 @@
         "bladewindui/modal": "^4.4",
         "bladewindui/drawer": "^4.4",
         "bladewindui/table": "^4.4",
+        "bladewindui/data-grid": "^4.4",
         "bladewindui/forms": "^4.4",
         "bladewindui/content": "^4.4",
         "bladewindui/navigation": "^4.4"

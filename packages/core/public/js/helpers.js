@@ -1709,6 +1709,273 @@ const resetSidebar = (sidebarName) => {
     return true;
 };
 
+/** Find one Data Grid without interpolating its public name into a selector. */
+const dataGridByName = (name) => Array.from(document.querySelectorAll('[data-bw-data-grid]'))
+    .find((candidate) => candidate.getAttribute('data-name') === String(name)) || null;
+
+const dataGridDetail = (grid, values = {}) => ({name: grid.getAttribute('data-name'), ...values});
+
+const dataGridEvent = (grid, name, detail, cancelable = false) => grid.dispatchEvent(
+    new CustomEvent(`bladewind:data-grid:${name}`, {bubbles: true, cancelable, detail})
+);
+
+const dataGridRows = (grid) => Array.from(grid.querySelectorAll('[data-bw-data-grid-row]'));
+
+const dataGridPageSize = (grid) => Number(grid.getAttribute('data-page-size')) || 25;
+
+/** Text a sortable column header shows and search matches against — the value
+ *  in data-sort-value when the row supplies one, otherwise the cell's own text. */
+const dataGridCellValue = (row, key, attribute) => {
+    const cell = row.querySelector(`[data-column="${key}"]`);
+    return (attribute ? cell?.getAttribute(attribute) : null) ?? cell?.textContent?.trim() ?? '';
+};
+
+const compareDataGridValues = (a, b) => {
+    const numA = Number(a);
+    const numB = Number(b);
+    if (a !== '' && b !== '' && !Number.isNaN(numA) && !Number.isNaN(numB)) return numA - numB;
+    return a.localeCompare(b, undefined, {numeric: true, sensitivity: 'base'});
+};
+
+const dataGridOriginalOrder = new WeakMap();
+
+const updateDataGridPaginationUi = (grid, page, totalPages) => {
+    const pageSize = dataGridPageSize(grid);
+    const totalRows = dataGridRows(grid).length;
+    const from = totalRows === 0 ? 0 : ((page - 1) * pageSize) + 1;
+    const to = Math.min(page * pageSize, totalRows);
+    const label = grid.querySelector('[data-bw-data-grid-pagination-label]');
+    if (label) label.textContent = `Page ${page} of ${totalPages}`;
+    const summary = grid.querySelector('[data-bw-data-grid-pagination-summary]');
+    if (summary) summary.textContent = totalRows === 0 ? '' : `Showing ${from}–${to} of ${totalRows}`;
+    const prev = grid.querySelector('[data-bw-data-grid-page="prev"]');
+    const next = grid.querySelector('[data-bw-data-grid-page="next"]');
+    if (prev) prev.disabled = page <= 1;
+    if (next) next.disabled = page >= totalPages;
+};
+
+const setDataGridPage = (gridName, page, options = {}) => {
+    const grid = dataGridByName(gridName);
+    if (!grid || grid.getAttribute('data-paginated') !== 'true') return false;
+    const table = grid.querySelector('[data-bw-data-grid-table]');
+    const totalPages = Math.max(1, Math.ceil(dataGridRows(grid).length / dataGridPageSize(grid)));
+    const previousPage = Number(table?.getAttribute('data-current-page')) || 1;
+    const nextPage = Math.min(Math.max(1, Number(page) || 1), totalPages);
+    if (nextPage === previousPage && options.force !== true) return false;
+    const detail = dataGridDetail(grid, {page: nextPage, previousPage});
+    if (options.emit !== false && !dataGridEvent(grid, 'before-page-change', detail, true)) return false;
+    dataGridRows(grid).forEach((row) => {
+        row.hidden = Number(row.getAttribute('data-page')) !== nextPage;
+    });
+    table?.setAttribute('data-current-page', String(nextPage));
+    updateDataGridPaginationUi(grid, nextPage, totalPages);
+    if (options.emit !== false) dataGridEvent(grid, 'page-change', detail);
+    return true;
+};
+
+/** Recompute data-page after a client-side sort or filter change reorders rows. */
+const recomputeDataGridPages = (grid) => {
+    if (grid.getAttribute('data-paginated') !== 'true') return;
+    const pageSize = dataGridPageSize(grid);
+    dataGridRows(grid).forEach((row, index) => row.setAttribute('data-page', String(Math.ceil((index + 1) / pageSize))));
+    grid.querySelector('[data-bw-data-grid-table]')?.removeAttribute('data-current-page');
+    setDataGridPage(grid.getAttribute('data-name'), 1, {emit: false, force: true});
+};
+
+const filterDataGrid = (grid, query) => {
+    const normalised = query.trim().toLowerCase();
+    const paginated = grid.getAttribute('data-paginated') === 'true';
+    const table = grid.querySelector('[data-bw-data-grid-table]');
+    const currentPage = Number(table?.getAttribute('data-current-page')) || 1;
+    let visibleCount = 0;
+    dataGridRows(grid).forEach((row) => {
+        const matches = normalised === '' || (row.getAttribute('data-search') || '').includes(normalised);
+        row.hidden = paginated && normalised === ''
+            ? Number(row.getAttribute('data-page')) !== currentPage
+            : !matches;
+        if (matches) visibleCount++;
+    });
+    const empty = grid.querySelector('[data-bw-data-grid-empty]');
+    if (empty) empty.hidden = visibleCount > 0;
+    const pagination = grid.querySelector('[data-bw-data-grid-pagination]');
+    if (pagination) pagination.hidden = normalised !== '';
+    dataGridEvent(grid, 'search', dataGridDetail(grid, {query}));
+};
+
+const sortDataGrid = (gridName, key, direction) => {
+    const grid = dataGridByName(gridName);
+    if (!grid || grid.getAttribute('data-client-sort') !== 'true') return false;
+    const body = grid.querySelector('[data-bw-data-grid-body]');
+    const empty = grid.querySelector('[data-bw-data-grid-empty]');
+    if (!body) return false;
+    if (!dataGridOriginalOrder.has(grid)) dataGridOriginalOrder.set(grid, dataGridRows(grid));
+
+    const detail = dataGridDetail(grid, {key, direction});
+    if (!dataGridEvent(grid, 'before-sort-change', detail, true)) return false;
+
+    grid.querySelectorAll('[data-bw-data-grid-sort]').forEach((button) => {
+        button.setAttribute('data-direction', button.getAttribute('data-bw-data-grid-sort') === key && direction ? direction : 'none');
+        button.closest('th')?.setAttribute('aria-sort', button.getAttribute('data-bw-data-grid-sort') === key && direction
+            ? (direction === 'desc' ? 'descending' : 'ascending') : 'none');
+    });
+
+    if (!direction) {
+        (dataGridOriginalOrder.get(grid) || []).forEach((row) => body.insertBefore(row, empty || null));
+    } else {
+        const sorted = [...dataGridRows(grid)].sort((a, b) => {
+            const result = compareDataGridValues(
+                dataGridCellValue(a, key, 'data-sort-value'),
+                dataGridCellValue(b, key, 'data-sort-value')
+            );
+            return direction === 'desc' ? -result : result;
+        });
+        sorted.forEach((row) => body.insertBefore(row, empty || null));
+    }
+    recomputeDataGridPages(grid);
+    dataGridEvent(grid, 'sort-change', detail);
+    return true;
+};
+
+const dataGridSortCycle = (grid, key) => {
+    const current = grid.querySelector(`[data-bw-data-grid-sort="${key}"]`)?.getAttribute('data-direction') || 'none';
+    const clientSort = grid.getAttribute('data-client-sort') === 'true';
+    const next = current === 'none' ? 'asc' : (current === 'asc' ? 'desc' : (clientSort ? null : 'asc'));
+    if (clientSort) return sortDataGrid(grid.getAttribute('data-name'), key, next);
+    grid.querySelectorAll('[data-bw-data-grid-sort]').forEach((button) => {
+        const isTarget = button.getAttribute('data-bw-data-grid-sort') === key;
+        button.setAttribute('data-direction', isTarget ? next : 'none');
+        button.closest('th')?.setAttribute('aria-sort', isTarget ? (next === 'desc' ? 'descending' : 'ascending') : 'none');
+    });
+    dataGridEvent(grid, 'sort-change', dataGridDetail(grid, {key, direction: next}));
+    return true;
+};
+
+/** All selection inputs by default; visibleOnly narrows to the current page/search
+ *  results, which is what "select all" and the header checkbox's tri-state operate on. */
+const dataGridSelectionInputs = (grid, {visibleOnly = false} = {}) => {
+    const inputs = Array.from(grid.querySelectorAll('[data-bw-data-grid-select]'));
+    return visibleOnly ? inputs.filter((input) => !input.closest('[data-bw-data-grid-row]')?.hidden) : inputs;
+};
+
+const updateDataGridSelectionUi = (grid) => {
+    const checked = dataGridSelectionInputs(grid).filter((input) => input.checked);
+    const bar = grid.querySelector('[data-bw-data-grid-selection-bar]');
+    if (bar) bar.hidden = checked.length === 0;
+    const count = grid.querySelector('[data-bw-data-grid-selection-count]');
+    if (count) count.textContent = `${checked.length} selected`;
+    const selectAll = grid.querySelector('[data-bw-data-grid-select-all]');
+    if (selectAll) {
+        const visible = dataGridSelectionInputs(grid, {visibleOnly: true}).filter((input) => !input.disabled);
+        const visibleChecked = visible.filter((input) => input.checked);
+        selectAll.checked = visible.length > 0 && visibleChecked.length === visible.length;
+        selectAll.indeterminate = visibleChecked.length > 0 && visibleChecked.length < visible.length;
+    }
+};
+
+const dataGridSelectedKeys = (gridName) => {
+    const grid = dataGridByName(gridName);
+    if (!grid) return [];
+    return dataGridSelectionInputs(grid).filter((input) => input.checked).map((input) => input.value);
+};
+
+const setDataGridRowSelected = (input, selected, options = {}) => {
+    const grid = input.closest('[data-bw-data-grid]');
+    const row = input.closest('[data-bw-data-grid-row]');
+    if (!grid || !row) return false;
+    const detail = dataGridDetail(grid, {
+        rowKey: row.getAttribute('data-row-key'),
+        triggeringElement: input,
+        source: options.source || 'pointer',
+    });
+    if (options.emit !== false && !dataGridEvent(grid, 'before-select-change', detail, true)) {
+        input.checked = !selected;
+        return false;
+    }
+    if (input.type === 'radio') {
+        grid.querySelectorAll('[data-bw-data-grid-row]').forEach((candidate) => {
+            candidate.setAttribute('aria-selected', 'false');
+            candidate.classList.remove('bw-data-grid-row-selected');
+        });
+    }
+    input.checked = selected;
+    row.setAttribute('aria-selected', selected ? 'true' : 'false');
+    row.classList.toggle('bw-data-grid-row-selected', selected);
+    updateDataGridSelectionUi(grid);
+    if (options.emit !== false) {
+        dataGridEvent(grid, 'select-change', dataGridDetail(grid, {selected: dataGridSelectedKeys(grid.getAttribute('data-name'))}));
+    }
+    return true;
+};
+
+/** Toggles every currently visible, enabled row — the current page and/or search
+ *  results, matching the header checkbox. Use clearDataGridSelection to reset
+ *  selections made on other pages too. */
+const selectAllDataGridRows = (gridName, selected) => {
+    const grid = dataGridByName(gridName);
+    if (!grid || grid.getAttribute('data-selection-mode') !== 'multiple') return false;
+    const detail = dataGridDetail(grid, {source: 'select-all'});
+    if (!dataGridEvent(grid, 'before-select-change', detail, true)) return false;
+    dataGridSelectionInputs(grid, {visibleOnly: true}).forEach((input) => {
+        if (input.disabled) return;
+        input.checked = selected;
+        const row = input.closest('[data-bw-data-grid-row]');
+        row?.setAttribute('aria-selected', selected ? 'true' : 'false');
+        row?.classList.toggle('bw-data-grid-row-selected', selected);
+    });
+    updateDataGridSelectionUi(grid);
+    dataGridEvent(grid, 'select-change', dataGridDetail(grid, {selected: dataGridSelectedKeys(gridName)}));
+    return true;
+};
+
+const clearDataGridSelection = (gridName) => {
+    const grid = dataGridByName(gridName);
+    if (!grid) return false;
+    const detail = dataGridDetail(grid, {source: 'clear-selection'});
+    if (!dataGridEvent(grid, 'before-select-change', detail, true)) return false;
+    dataGridSelectionInputs(grid).forEach((input) => {
+        input.checked = false;
+        const row = input.closest('[data-bw-data-grid-row]');
+        row?.setAttribute('aria-selected', 'false');
+        row?.classList.remove('bw-data-grid-row-selected');
+    });
+    updateDataGridSelectionUi(grid);
+    dataGridEvent(grid, 'select-change', dataGridDetail(grid, {selected: []}));
+    return true;
+};
+
+const setDataGridLoading = (gridName, loading) => {
+    const grid = dataGridByName(gridName);
+    if (!grid) return false;
+    grid.setAttribute('data-loading', loading ? 'true' : 'false');
+    grid.querySelector('[data-bw-data-grid-table]')?.setAttribute('aria-busy', loading ? 'true' : 'false');
+    return true;
+};
+
+const resetDataGrid = (gridName) => {
+    const grid = dataGridByName(gridName);
+    if (!grid) return false;
+    const search = grid.querySelector('[data-bw-data-grid-search]');
+    if (search) { search.value = ''; filterDataGrid(grid, ''); }
+    grid.querySelectorAll('[data-bw-data-grid-sort]').forEach((button) => {
+        if (button.getAttribute('data-direction') !== 'none') sortDataGrid(gridName, button.getAttribute('data-bw-data-grid-sort'), null);
+    });
+    clearDataGridSelection(gridName);
+    if (grid.getAttribute('data-paginated') === 'true') setDataGridPage(gridName, 1, {emit: false, force: true});
+    return true;
+};
+
+const initialiseDataGrid = (grid) => {
+    if (grid.dataset.bwInitialised === 'true') return;
+    updateDataGridSelectionUi(grid);
+    if (grid.getAttribute('data-paginated') === 'true') {
+        const totalPages = Math.max(1, Math.ceil(dataGridRows(grid).length / dataGridPageSize(grid)));
+        updateDataGridPaginationUi(grid, 1, totalPages);
+    }
+    grid.dataset.bwInitialised = 'true';
+};
+
+const initialiseDataGrids = () => document.querySelectorAll('[data-bw-data-grid]').forEach(initialiseDataGrid);
+
 /*
  | Delegated bindings for components whose behaviour lives in this file.
  | Replaces inline on* attributes, which a strict CSP blocks. See #608.
@@ -1984,6 +2251,43 @@ window.addEventListener('resize', () => {
     });
 });
 
+bwOn('input', '[data-bw-data-grid-search]', (input) => {
+    const grid = input.closest('[data-bw-data-grid]');
+    if (grid?.getAttribute('data-client-search') === 'true') filterDataGrid(grid, input.value);
+    else if (grid) dataGridEvent(grid, 'search', dataGridDetail(grid, {query: input.value}));
+});
+
+bwOn('click', '[data-bw-data-grid-sort]', (button) => {
+    const grid = button.closest('[data-bw-data-grid]');
+    const key = button.getAttribute('data-bw-data-grid-sort');
+    if (grid && key) dataGridSortCycle(grid, key);
+});
+
+bwOn('change', '[data-bw-data-grid-select-all]', (checkbox) => {
+    const grid = checkbox.closest('[data-bw-data-grid]');
+    if (grid) selectAllDataGridRows(grid.getAttribute('data-name'), checkbox.checked);
+});
+
+bwOn('change', '[data-bw-data-grid-select]', (input) => {
+    setDataGridRowSelected(input, input.checked, {source: 'pointer'});
+});
+
+bwOn('click', '[data-bw-data-grid-clear-selection]', (button) => {
+    clearDataGridSelection(button.getAttribute('data-bw-data-grid-clear-selection'));
+});
+
+bwOn('click', '[data-bw-data-grid-page]', (button) => {
+    const grid = button.closest('[data-bw-data-grid]');
+    if (!grid) return;
+    const table = grid.querySelector('[data-bw-data-grid-table]');
+    const currentPage = Number(table?.getAttribute('data-current-page')) || 1;
+    const direction = button.getAttribute('data-bw-data-grid-page');
+    setDataGridPage(grid.getAttribute('data-name'), direction === 'next' ? currentPage + 1 : currentPage - 1);
+});
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initialiseDataGrids);
+else initialiseDataGrids();
+
 // a tab heading either switches tab or navigates, depending on its url prop
 bwOn('click', '[data-bw-tab]', (tab) => {
     goToTab(
@@ -2093,6 +2397,13 @@ Object.assign(window, {
     toggleCommandPalette,
     resetCommandPalette,
     setCommandPaletteLoading,
+    sortDataGrid,
+    setDataGridPage,
+    selectAllDataGridRows,
+    clearDataGridSelection,
+    dataGridSelectedKeys,
+    setDataGridLoading,
+    resetDataGrid,
     showButtonSpinner,
     hideButtonSpinner,
     showModalActionButtons,
