@@ -68,6 +68,7 @@ jobs:
           - { local_path: 'packages/tooltip',              split_repository: 'tooltip'              }
           - { local_path: 'packages/popover',              split_repository: 'popover'              }
           - { local_path: 'packages/sortable',             split_repository: 'sortable'             }
+          - { local_path: 'packages/calendar',             split_repository: 'calendar'             }
 
           # ── Content aggregate (metapackage) ───────────────────────────────────
           - { local_path: 'packages/content', split_repository: 'content' }
