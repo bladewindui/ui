@@ -103,6 +103,8 @@ class InlineHandlerTest extends TestCase
             'data-bw-drawer-close' => 'packages/core/public/js/helpers.js',
             'data-bw-tab' => 'packages/core/public/js/helpers.js',
             'data-bw-stepper-step' => 'packages/core/public/js/helpers.js',
+            'data-bw-sidebar-group-trigger' => 'packages/core/public/js/helpers.js',
+            'data-bw-sidebar-item-action' => 'packages/core/public/js/helpers.js',
             'data-can-sort' => 'packages/core/public/js/table.js',
             'data-bw-select-search' => 'packages/core/public/js/select.js',
         ];

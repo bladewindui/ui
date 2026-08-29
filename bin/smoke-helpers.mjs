@@ -68,6 +68,8 @@ const required = [
   'domEl', 'domEls', 'changeCss', 'goToTab', 'togglePassword', 'unhide', 'hide',
   'showDrawer', 'hideDrawer', 'toggleDrawer',
   'showStepperStep', 'nextStepperStep', 'previousStepperStep', 'resetStepper',
+  'openSidebar', 'closeSidebar', 'toggleSidebar', 'collapseSidebar', 'expandSidebar',
+  'toggleSidebarGroup', 'expandSidebarGroup', 'collapseSidebarGroup', 'resetSidebar',
 ]
 
 const missing = required.filter((name) => typeof window[name] !== 'function')

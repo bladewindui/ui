@@ -1256,6 +1256,270 @@ const resetStepper = (stepperName) => {
     return initial ? setStepperCurrent(stepper, initial.getAttribute('data-bw-stepper-step'), {force: true}) : false;
 };
 
+/** Find and initialise one Sidebar without interpolating its public name into a selector. */
+const sidebarByName = (name) => {
+    const sidebars = Array.from(document.querySelectorAll('[data-bw-sidebar]'));
+    const sidebar = sidebars.find((candidate) => candidate.getAttribute('data-name') === String(name)) || null;
+    if (sidebar && sidebar.dataset.bwInitialised !== 'true') initialiseSidebar(sidebar);
+    return sidebar;
+};
+
+const sidebarHostByName = (attribute, name) => Array.from(document.querySelectorAll(`[${attribute}]`))
+    .find((host) => host.getAttribute(attribute) === String(name)) || null;
+
+const sidebarPresentation = () => window.matchMedia?.('(min-width: 1024px)')?.matches ? 'desktop' : 'mobile';
+
+const sidebarDetail = (sidebar, values = {}) => ({
+    sidebarName: sidebar.getAttribute('data-name'),
+    presentation: sidebarPresentation(),
+    placement: sidebar.getAttribute('data-resolved-placement') || sidebar.getAttribute('data-placement'),
+    triggeringElement: values.triggeringElement || null,
+    source: values.source || 'programmatic',
+    ...values,
+});
+
+const sidebarEvent = (sidebar, name, detail, cancelable = false) => sidebar.dispatchEvent(
+    new CustomEvent(`bladewind:sidebar:${name}`, {bubbles: true, cancelable, detail})
+);
+
+const sidebarStoredState = (sidebar) => {
+    if (sidebar.getAttribute('data-persist') !== 'true' && sidebar.getAttribute('data-persist-groups') !== 'true') return null;
+    try {
+        const parsed = JSON.parse(window.localStorage.getItem(sidebar.getAttribute('data-storage-key')) || 'null');
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
+        if ('collapsed' in parsed && typeof parsed.collapsed !== 'boolean') return null;
+        if ('groups' in parsed && (!parsed.groups || typeof parsed.groups !== 'object' || Array.isArray(parsed.groups))) return null;
+        if (parsed.groups && Object.values(parsed.groups).some((value) => typeof value !== 'boolean')) return null;
+        return parsed;
+    } catch (_) {
+        return null;
+    }
+};
+
+const persistSidebarState = (sidebar) => {
+    if (sidebar.getAttribute('data-persist') !== 'true' && sidebar.getAttribute('data-persist-groups') !== 'true') return false;
+    const state = {};
+    if (sidebar.getAttribute('data-persist') === 'true') state.collapsed = sidebar.getAttribute('data-state') === 'collapsed';
+    if (sidebar.getAttribute('data-persist-groups') === 'true') {
+        state.groups = {};
+        sidebar.querySelectorAll('[data-bw-sidebar-group]').forEach((group) => {
+            state.groups[group.getAttribute('data-group-name')] = group.getAttribute('data-expanded') === 'true';
+        });
+    }
+    try {
+        window.localStorage.setItem(sidebar.getAttribute('data-storage-key'), JSON.stringify(state));
+        return true;
+    } catch (_) {
+        return false;
+    }
+};
+
+const resolveSidebarPlacement = (sidebar) => {
+    const placement = sidebar.getAttribute('data-placement');
+    const rtl = window.getComputedStyle?.(sidebar)?.direction === 'rtl';
+    const resolved = placement === 'start' ? (rtl ? 'right' : 'left')
+        : placement === 'end' ? (rtl ? 'left' : 'right') : placement;
+    sidebar.setAttribute('data-resolved-placement', resolved);
+    const drawer = drawerByName(sidebar.getAttribute('data-drawer-name'));
+    if (drawer) drawer.setAttribute('data-position', resolved);
+};
+
+const setSidebarGroupExpanded = (sidebar, group, expanded, options = {}) => {
+    if (!sidebar || !group || group.getAttribute('data-disabled') === 'true') return false;
+    const previousState = group.getAttribute('data-expanded') === 'true';
+    if (previousState === expanded) return true;
+    const groupName = group.getAttribute('data-group-name');
+    const trigger = group.querySelector(':scope > [data-bw-sidebar-group-trigger]');
+    const panel = group.querySelector(':scope > .bw-sidebar-group-panel');
+    const detail = sidebarDetail(sidebar, {
+        groupName,
+        previousState: previousState ? 'expanded' : 'collapsed',
+        nextState: expanded ? 'expanded' : 'collapsed',
+        triggeringElement: options.triggeringElement || trigger,
+        source: options.source || 'programmatic',
+    });
+    if (options.emit !== false && !sidebarEvent(sidebar, 'group:before-change', detail, true)) return false;
+    if (!expanded && panel?.contains(document.activeElement)) trigger?.focus({preventScroll: true});
+    group.setAttribute('data-expanded', expanded ? 'true' : 'false');
+    trigger?.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    if (panel) {
+        panel.hidden = !expanded;
+        if (expanded) panel.removeAttribute('inert');
+        else panel.setAttribute('inert', '');
+    }
+    if (options.persist !== false) persistSidebarState(sidebar);
+    if (options.emit !== false) sidebarEvent(sidebar, 'group:changed', detail);
+    return true;
+};
+
+const sidebarGroupByName = (sidebar, groupName) => Array.from(sidebar?.querySelectorAll('[data-bw-sidebar-group]') || [])
+    .find((group) => group.getAttribute('data-group-name') === String(groupName)) || null;
+
+const expandSidebarGroup = (sidebarName, groupName) => setSidebarGroupExpanded(
+    sidebarByName(sidebarName), sidebarGroupByName(sidebarByName(sidebarName), groupName), true
+);
+
+const collapseSidebarGroup = (sidebarName, groupName) => setSidebarGroupExpanded(
+    sidebarByName(sidebarName), sidebarGroupByName(sidebarByName(sidebarName), groupName), false
+);
+
+const toggleSidebarGroup = (sidebarName, groupName) => {
+    const sidebar = sidebarByName(sidebarName);
+    const group = sidebarGroupByName(sidebar, groupName);
+    if (!group) return false;
+    return setSidebarGroupExpanded(sidebar, group, group.getAttribute('data-expanded') !== 'true');
+};
+
+const setSidebarCollapsed = (sidebar, collapsed, options = {}) => {
+    if (!sidebar || sidebar.getAttribute('data-collapsible') !== 'true') return false;
+    const previousState = sidebar.getAttribute('data-state');
+    const nextState = collapsed ? 'collapsed' : 'expanded';
+    if (previousState === nextState) return true;
+    const action = collapsed ? 'collapse' : 'expand';
+    const detail = sidebarDetail(sidebar, {
+        previousState,
+        nextState,
+        triggeringElement: options.triggeringElement || null,
+        source: options.source || 'programmatic',
+    });
+    if (options.emit !== false && !sidebarEvent(sidebar, `before-${action}`, detail, true)) return false;
+    sidebar.setAttribute('data-state', nextState);
+    const control = sidebar.querySelector('[data-bw-sidebar-collapse-control]');
+    if (control) {
+        const label = control.getAttribute(collapsed ? 'data-expand-label' : 'data-collapse-label');
+        control.setAttribute('aria-label', label);
+        control.setAttribute('title', label);
+    }
+    if (options.persist !== false) persistSidebarState(sidebar);
+    if (options.emit !== false) sidebarEvent(sidebar, collapsed ? 'collapsed' : 'expanded', detail);
+    return true;
+};
+
+const collapseSidebar = (sidebarName) => setSidebarCollapsed(sidebarByName(sidebarName), true);
+const expandSidebar = (sidebarName) => setSidebarCollapsed(sidebarByName(sidebarName), false);
+
+const moveSidebarToMobile = (sidebar) => {
+    const host = sidebarHostByName('data-bw-sidebar-mobile-host', sidebar.getAttribute('data-name'));
+    if (!host) return false;
+    if (sidebar.parentElement !== host) host.appendChild(sidebar);
+    return true;
+};
+
+const moveSidebarToDesktop = (sidebar) => {
+    const host = sidebarHostByName('data-bw-sidebar-desktop-host', sidebar.getAttribute('data-name'));
+    if (!host) return false;
+    if (sidebar.parentElement !== host) host.appendChild(sidebar);
+    return true;
+};
+
+const openSidebar = (sidebarName, options = {}) => {
+    const sidebar = sidebarByName(sidebarName);
+    if (!sidebar) return false;
+    if (sidebarPresentation() === 'desktop') return expandSidebar(sidebarName);
+    if (sidebar.getAttribute('data-mobile') !== 'drawer') return false;
+    const drawerName = sidebar.getAttribute('data-drawer-name');
+    const drawer = drawerByName(drawerName);
+    if (!drawer || drawer.getAttribute('data-state') === 'open') return false;
+    const detail = sidebarDetail(sidebar, {
+        previousState: 'closed', nextState: 'open',
+        triggeringElement: options.triggeringElement || document.activeElement,
+        source: options.source || 'programmatic',
+    });
+    if (!sidebarEvent(sidebar, 'before-open', detail, true)) return false;
+    resolveSidebarPlacement(sidebar);
+    if (!moveSidebarToMobile(sidebar)) return false;
+    sidebar._bwTransitionDetail = detail;
+    if (!showDrawer(drawerName)) {
+        moveSidebarToDesktop(sidebar);
+        return false;
+    }
+    return true;
+};
+
+const closeSidebar = (sidebarName, options = {}) => {
+    const sidebar = sidebarByName(sidebarName);
+    if (!sidebar) return false;
+    if (sidebarPresentation() === 'desktop') return collapseSidebar(sidebarName);
+    const drawer = drawerByName(sidebar.getAttribute('data-drawer-name'));
+    if (!drawer || drawer.hidden || drawer.getAttribute('data-state') === 'closed') return false;
+    const detail = sidebarDetail(sidebar, {
+        previousState: 'open', nextState: 'closed',
+        triggeringElement: options.triggeringElement || document.activeElement,
+        source: options.source || 'programmatic',
+    });
+    if (!sidebarEvent(sidebar, 'before-close', detail, true)) return false;
+    sidebar._bwTransitionDetail = detail;
+    return hideDrawer(sidebar.getAttribute('data-drawer-name'));
+};
+
+const toggleSidebar = (sidebarName) => {
+    const sidebar = sidebarByName(sidebarName);
+    if (!sidebar) return false;
+    if (sidebarPresentation() === 'desktop') {
+        return setSidebarCollapsed(sidebar, sidebar.getAttribute('data-state') !== 'collapsed');
+    }
+    const drawer = drawerByName(sidebar.getAttribute('data-drawer-name'));
+    return drawer && !drawer.hidden && drawer.getAttribute('data-state') !== 'closed'
+        ? closeSidebar(sidebarName) : openSidebar(sidebarName);
+};
+
+const resolveSidebarActiveItem = (sidebar) => {
+    const items = Array.from(sidebar.querySelectorAll('[data-bw-sidebar-item]'));
+    const enabled = items.filter((item) => item.getAttribute('data-disabled') !== 'true');
+    const canonical = sidebar.getAttribute('data-active');
+    let activeItems = canonical
+        ? enabled.filter((item) => item.getAttribute('data-item-name') === canonical).slice(0, 1)
+        : enabled.filter((item) => item.getAttribute('data-initial-active') === 'true');
+    if (sidebar.getAttribute('data-multiple-active') !== 'true') activeItems = activeItems.slice(0, 1);
+    items.forEach((item) => {
+        const active = activeItems.includes(item);
+        item.setAttribute('data-active', active ? 'true' : 'false');
+        const action = item.querySelector(':scope > .bw-sidebar-item-action');
+        if (active) action?.setAttribute('aria-current', 'page');
+        else action?.removeAttribute('aria-current');
+    });
+    activeItems.forEach((item) => {
+        let group = item.closest('[data-bw-sidebar-group]');
+        while (group) {
+            setSidebarGroupExpanded(sidebar, group, true, {emit: false, persist: false});
+            group = group.parentElement?.closest('[data-bw-sidebar-group]') || null;
+        }
+    });
+};
+
+const initialiseSidebar = (sidebar) => {
+    if (sidebar.dataset.bwInitialised === 'true') return;
+    resolveSidebarPlacement(sidebar);
+    const stored = sidebarStoredState(sidebar);
+    sidebar.querySelectorAll('[data-bw-sidebar-group]').forEach((group) => {
+        const groupName = group.getAttribute('data-group-name');
+        const storedValue = stored?.groups && Object.prototype.hasOwnProperty.call(stored.groups, groupName)
+            ? stored.groups[groupName] : null;
+        const expanded = storedValue === null
+            ? group.getAttribute('data-initial-expanded') === 'true' : storedValue;
+        setSidebarGroupExpanded(sidebar, group, expanded, {emit: false, persist: false});
+    });
+    if (sidebar.getAttribute('data-persist') === 'true' && typeof stored?.collapsed === 'boolean') {
+        setSidebarCollapsed(sidebar, stored.collapsed, {emit: false, persist: false});
+    }
+    resolveSidebarActiveItem(sidebar);
+    sidebar.dataset.bwInitialised = 'true';
+};
+
+const initialiseSidebars = () => document.querySelectorAll('[data-bw-sidebar]').forEach(initialiseSidebar);
+
+const resetSidebar = (sidebarName) => {
+    const sidebar = sidebarByName(sidebarName);
+    if (!sidebar) return false;
+    try { window.localStorage.removeItem(sidebar.getAttribute('data-storage-key')); } catch (_) {}
+    sidebar.querySelectorAll('[data-bw-sidebar-group]').forEach((group) => {
+        setSidebarGroupExpanded(sidebar, group, group.getAttribute('data-initial-expanded') === 'true', {emit: false, persist: false});
+    });
+    setSidebarCollapsed(sidebar, sidebar.getAttribute('data-initial-state') === 'collapsed', {emit: false, persist: false});
+    resolveSidebarActiveItem(sidebar);
+    return true;
+};
+
 /*
  | Delegated bindings for components whose behaviour lives in this file.
  | Replaces inline on* attributes, which a strict CSP blocks. See #608.
@@ -1310,6 +1574,146 @@ document.addEventListener('keydown', (event) => {
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initialiseDrawers);
 else initialiseDrawers();
+
+bwOn('click', '[data-bw-sidebar-group-trigger]', (trigger) => {
+    const sidebar = trigger.closest('[data-bw-sidebar]');
+    const group = trigger.closest('[data-bw-sidebar-group]');
+    if (!sidebar || !group) return;
+    setSidebarGroupExpanded(sidebar, group, group.getAttribute('data-expanded') !== 'true', {
+        triggeringElement: trigger,
+        source: 'pointer',
+    });
+});
+
+bwOn('click', '[data-bw-sidebar-collapse-control]', (control) => {
+    const sidebar = control.closest('[data-bw-sidebar]');
+    if (!sidebar) return;
+    setSidebarCollapsed(sidebar, sidebar.getAttribute('data-state') !== 'collapsed', {
+        triggeringElement: control,
+        source: 'pointer',
+    });
+});
+
+bwOn('click', '[data-bw-sidebar-close]', (control) => {
+    const sidebar = control.closest('[data-bw-sidebar]');
+    if (sidebar) closeSidebar(sidebar.getAttribute('data-name'), {triggeringElement: control, source: 'pointer'});
+});
+
+bwOn('click', '[data-bw-sidebar-item-action]', (action, event) => {
+    const sidebar = action.closest('[data-bw-sidebar]');
+    const item = action.closest('[data-bw-sidebar-item]');
+    if (!sidebar || !item || item.getAttribute('data-disabled') === 'true') return;
+    const isLink = action.tagName === 'A';
+    const detail = sidebarDetail(sidebar, {
+        itemName: item.getAttribute('data-item-name'),
+        href: isLink ? action.getAttribute('href') : null,
+        triggeringElement: action,
+        source: event.detail === 0 ? 'keyboard' : 'pointer',
+    });
+    const eventName = isLink ? 'before-navigate' : 'item-activate';
+    if (!sidebarEvent(sidebar, eventName, detail, true)) {
+        event.preventDefault();
+        return;
+    }
+    if (sidebarPresentation() === 'mobile' && sidebar.getAttribute('data-close-on-navigate') === 'true') {
+        closeSidebar(sidebar.getAttribute('data-name'), {triggeringElement: action, source: 'navigation'});
+    }
+});
+
+bwOn('keydown', '[data-bw-sidebar-focusable]', (current, event) => {
+    const sidebar = current.closest('[data-bw-sidebar]');
+    if (!sidebar) return;
+    const focusable = Array.from(sidebar.querySelectorAll('[data-bw-sidebar-focusable]')).filter((candidate) =>
+        candidate.getAttribute('aria-disabled') !== 'true' && !candidate.closest('[hidden]')
+    );
+    const index = focusable.indexOf(current);
+    if (index < 0) return;
+    let target = null;
+    if (event.key === 'ArrowDown') target = focusable[(index + 1) % focusable.length];
+    else if (event.key === 'ArrowUp') target = focusable[(index - 1 + focusable.length) % focusable.length];
+    else if (event.key === 'Home') target = focusable[0];
+    else if (event.key === 'End') target = focusable[focusable.length - 1];
+
+    const rtl = window.getComputedStyle?.(sidebar)?.direction === 'rtl';
+    const openKey = rtl ? 'ArrowLeft' : 'ArrowRight';
+    const closeKey = rtl ? 'ArrowRight' : 'ArrowLeft';
+    const group = current.closest('[data-bw-sidebar-group]');
+    if (current.hasAttribute('data-bw-sidebar-group-trigger') && (event.key === 'Enter' || event.key === ' ')) {
+        event.preventDefault();
+        setSidebarGroupExpanded(sidebar, group, group?.getAttribute('data-expanded') !== 'true', {
+            triggeringElement: current,
+            source: 'keyboard',
+        });
+        return;
+    }
+    if (current.hasAttribute('data-bw-sidebar-group-trigger') && event.key === openKey) {
+        if (group?.getAttribute('data-expanded') !== 'true') {
+            setSidebarGroupExpanded(sidebar, group, true, {triggeringElement: current, source: 'keyboard'});
+        } else {
+            target = Array.from(group.querySelectorAll('[data-bw-sidebar-focusable]'))
+                .find((candidate) => candidate !== current && !candidate.closest('[hidden]')) || null;
+        }
+    } else if (group && event.key === closeKey) {
+        const groupTrigger = group.querySelector(':scope > [data-bw-sidebar-group-trigger]');
+        if (current === groupTrigger && group.getAttribute('data-expanded') === 'true') {
+            setSidebarGroupExpanded(sidebar, group, false, {triggeringElement: current, source: 'keyboard'});
+        } else {
+            target = groupTrigger;
+        }
+    }
+    if (!target) return;
+    event.preventDefault();
+    target.focus({preventScroll: true});
+});
+
+document.addEventListener('click', (event) => {
+    const backdrop = event.target?.closest?.('[data-bw-drawer-backdrop]');
+    const drawer = backdrop?.closest?.('[data-bw-drawer]');
+    const sidebar = drawer?.querySelector?.('[data-bw-sidebar]');
+    if (!sidebar || drawer.getAttribute('data-backdrop-can-close') !== 'true') return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    closeSidebar(sidebar.getAttribute('data-name'), {triggeringElement: backdrop, source: 'backdrop'});
+}, true);
+
+document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    const drawer = drawerByName(openDrawers[openDrawers.length - 1]);
+    const sidebar = drawer?.querySelector?.('[data-bw-sidebar]');
+    if (!sidebar || drawer.getAttribute('data-escape-can-close') !== 'true') return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    closeSidebar(sidebar.getAttribute('data-name'), {triggeringElement: document.activeElement, source: 'escape'});
+}, true);
+
+document.addEventListener('bladewind:drawer-opened', (event) => {
+    const sidebar = event.target?.querySelector?.('[data-bw-sidebar]');
+    if (!sidebar) return;
+    sidebarEvent(sidebar, 'opened', sidebar._bwTransitionDetail || sidebarDetail(sidebar, {previousState: 'closed', nextState: 'open'}));
+    delete sidebar._bwTransitionDetail;
+});
+
+document.addEventListener('bladewind:drawer-closed', (event) => {
+    const sidebar = event.target?.querySelector?.('[data-bw-sidebar]');
+    if (!sidebar) return;
+    const detail = sidebar._bwTransitionDetail || sidebarDetail(sidebar, {previousState: 'open', nextState: 'closed'});
+    moveSidebarToDesktop(sidebar);
+    sidebarEvent(sidebar, 'closed', detail);
+    delete sidebar._bwTransitionDetail;
+});
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initialiseSidebars);
+else initialiseSidebars();
+
+window.addEventListener('resize', () => {
+    document.querySelectorAll('[data-bw-sidebar]').forEach((sidebar) => {
+        resolveSidebarPlacement(sidebar);
+        if (sidebarPresentation() !== 'desktop') return;
+        const drawer = drawerByName(sidebar.getAttribute('data-drawer-name'));
+        if (drawer && !drawer.hidden) hideDrawer(sidebar.getAttribute('data-drawer-name'));
+        else moveSidebarToDesktop(sidebar);
+    });
+});
 
 // a tab heading either switches tab or navigates, depending on its url prop
 bwOn('click', '[data-bw-tab]', (tab) => {
@@ -1406,6 +1810,15 @@ Object.assign(window, {
     showDrawer,
     hideDrawer,
     toggleDrawer,
+    openSidebar,
+    closeSidebar,
+    toggleSidebar,
+    collapseSidebar,
+    expandSidebar,
+    toggleSidebarGroup,
+    expandSidebarGroup,
+    collapseSidebarGroup,
+    resetSidebar,
     showButtonSpinner,
     hideButtonSpinner,
     showModalActionButtons,
