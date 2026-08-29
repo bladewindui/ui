@@ -13,7 +13,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` complete · `[!]` re
 - [x] **Sidebar navigation** (`bladewind-sidebar`, Navigation): Responsive nested application navigation with sections, icons, active states, badges, collapsible groups, and a mobile drawer mode.
 - [x] **Command palette** (`bladewind-command-palette`, Navigation) — Keyboard-first searchable action launcher with grouped actions, shortcuts, empty states, and asynchronous results.
 - [ ] **Tree view** (`bladewind-tree`, Content) — Expandable hierarchical data with single/multiple selection, checkboxes, lazy-loaded children, and full keyboard navigation.
-- [ ] **Data grid / Table v2** (`bladewind-data-grid`, Content) — A higher-level companion to Table with column sorting, filtering, selection, sticky headers, pagination hooks, and server-driven state.
+- [x] **Data grid / Table v2** (`bladewind-data-grid`, Content) — A higher-level companion to Table with column sorting, filtering, selection, sticky headers, pagination hooks, and server-driven state.
 - [ ] **Calendar** (`bladewind-calendar`, Content) — Inline month/week calendar for displaying and selecting dates or events, distinct from the input-focused Datepicker.
 - [ ] **Context menu** (`bladewind-context-menu`, Navigation) — Pointer and keyboard-triggered action menu with nested items, separators, disabled actions, and viewport-aware placement.
 - [ ] **Segmented control** (`bladewind-segmented-control`, Forms) — Compact mutually exclusive choice control with text/icon options and form-compatible values.
