@@ -1,18 +1,51 @@
+@props([
+    'name' => null,
+    'label' => 'Data grid',
+    'columns' => [],
+    'rows' => null,
+    'rowKey' => 'id',
+    'selectable' => null,
+    'selectionMode' => null,
+    'selected' => [],
+    'sortable' => null,
+    'sortKey' => null,
+    'sortDirection' => null,
+    'clientSort' => null,
+    'searchable' => null,
+    'searchPlaceholder' => null,
+    'searchField' => null,
+    'clientSearch' => null,
+    'paginated' => null,
+    'pageSize' => null,
+    'paginator' => null,
+    'sticky' => null,
+    'loading' => null,
+    'emptyText' => 'No records found.',
+    'striped' => null,
+    'bordered' => null,
+    'dense' => null,
+    'height' => null,
+    'selectAllLabel' => 'Select all rows',
+    'clearSelectionLabel' => 'Clear selection',
+])
 @php
     $name = preg_replace('/[^A-Za-z0-9_-]/', '-', trim((string) $name));
     if ($name === '') $name = defaultBladewindName('bw-data-grid-');
 
-    $selectable = parseBladewindVariable($selectable);
-    $sortable = parseBladewindVariable($sortable);
-    $clientSort = parseBladewindVariable($clientSort);
-    $searchable = parseBladewindVariable($searchable);
-    $clientSearch = parseBladewindVariable($clientSearch);
-    $paginated = parseBladewindVariable($paginated);
-    $sticky = parseBladewindVariable($sticky);
-    $loading = parseBladewindVariable($loading);
-    $striped = parseBladewindVariable($striped);
-    $bordered = parseBladewindVariable($bordered);
-    $dense = parseBladewindVariable($dense);
+    $selectable = parseBladewindVariable($selectable ?? config('bladewind.data_grid.selectable', false));
+    $selectionMode = in_array($selectionMode, ['single', 'multiple'], true) ? $selectionMode : config('bladewind.data_grid.selection_mode', 'multiple');
+    $sortable = parseBladewindVariable($sortable ?? config('bladewind.data_grid.sortable', false));
+    $clientSort = parseBladewindVariable($clientSort ?? config('bladewind.data_grid.client_sort', true));
+    $searchable = parseBladewindVariable($searchable ?? config('bladewind.data_grid.searchable', false));
+    $searchPlaceholder = $searchPlaceholder ?? config('bladewind.data_grid.search_placeholder', 'Search…');
+    $clientSearch = parseBladewindVariable($clientSearch ?? config('bladewind.data_grid.client_search', true));
+    $paginated = parseBladewindVariable($paginated ?? config('bladewind.data_grid.paginated', false));
+    $pageSize = parseBladewindVariable($pageSize ?? config('bladewind.data_grid.page_size', 25), 'int');
+    $sticky = parseBladewindVariable($sticky ?? config('bladewind.data_grid.sticky', true));
+    $loading = parseBladewindVariable($loading ?? false);
+    $striped = parseBladewindVariable($striped ?? config('bladewind.data_grid.striped', false));
+    $bordered = parseBladewindVariable($bordered ?? config('bladewind.data_grid.bordered', false));
+    $dense = parseBladewindVariable($dense ?? config('bladewind.data_grid.dense', false));
 
     $hasColumns = ! empty($columns);
     $hasRows = is_array($rows);

@@ -1,12 +1,32 @@
+@props([
+    'name' => null,
+    'label' => 'Command palette',
+    'placeholder' => null,
+    'searchLabel' => null,
+    'shortcut' => null,
+    'size' => null,
+    'open' => false,
+    'loading' => false,
+    'emptyText' => 'No results found.',
+    'loadingText' => 'Loading…',
+    'closeOnSelect' => null,
+    'backdropCanClose' => null,
+    'escapeCanClose' => null,
+    'closeLabel' => 'Close command palette',
+])
 @php
     $name = preg_replace('/[^A-Za-z0-9_-]/', '-', trim((string) $name));
     if ($name === '') $name = defaultBladewindName('bw-command-palette-');
+    $placeholder ??= 'Search for a command…';
+    $searchLabel ??= $label;
+    $shortcut ??= config('bladewind.command_palette.shortcut', 'mod+k');
+    $size = $size ?? config('bladewind.command_palette.size', 'medium');
     $size = in_array($size, ACCEPTED_BLADEWIND_SIZES, true) ? $size : 'medium';
     $open = parseBladewindVariable($open);
     $loading = parseBladewindVariable($loading);
-    $closeOnSelect = parseBladewindVariable($closeOnSelect);
-    $backdropCanClose = parseBladewindVariable($backdropCanClose);
-    $escapeCanClose = parseBladewindVariable($escapeCanClose);
+    $closeOnSelect = parseBladewindVariable($closeOnSelect ?? config('bladewind.command_palette.close_on_select', true));
+    $backdropCanClose = parseBladewindVariable($backdropCanClose ?? config('bladewind.command_palette.backdrop_can_close', true));
+    $escapeCanClose = parseBladewindVariable($escapeCanClose ?? config('bladewind.command_palette.escape_can_close', true));
     $shortcut = strtolower(trim((string) $shortcut));
     $listId = 'bw-'.$name.'-list';
     $inputId = 'bw-'.$name.'-input';

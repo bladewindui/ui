@@ -192,6 +192,14 @@ return [
         'multiple_active' => false,
     ],
 
+    'command_palette' => [
+        'shortcut' => 'mod+k',
+        'size' => 'medium',
+        'close_on_select' => true,
+        'backdrop_can_close' => true,
+        'escape_can_close' => true,
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Button component
@@ -706,6 +714,22 @@ return [
         'show_total_pages' => false,
         'show_total' => true,
         'total_label' => 'Showing :a to :b of :c records',
+    ],
+
+    'data_grid' => [
+        'searchable' => false,
+        'search_placeholder' => 'Search…',
+        'sortable' => false,
+        'client_sort' => true,
+        'client_search' => true,
+        'selectable' => false,
+        'selection_mode' => 'multiple',
+        'paginated' => false,
+        'page_size' => 25,
+        'sticky' => true,
+        'striped' => false,
+        'bordered' => false,
+        'dense' => false,
     ],
 
     /*

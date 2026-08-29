@@ -69,6 +69,7 @@ Do not add separate components for these without first proving the existing comp
 A component can be marked complete above only when all applicable items below are complete:
 
 - [ ] Public API and accessibility behaviour are written down before implementation.
+- [ ] The component is an anonymous Blade component (`@props([...])` in the view), not a `Illuminate\View\Component` subclass. See "Component architecture" below.
 - [ ] Leaf package, service provider, Composer metadata, config defaults, assets, and Blade views are complete.
 - [ ] The relevant group metapackage and root package dependencies/autoloading are updated.
 - [ ] Light mode, dark mode, responsive layout, RTL, disabled/loading/error states, and reduced motion are handled where relevant.
@@ -81,6 +82,13 @@ A component can be marked complete above only when all applicable items below ar
 ## Notes and decisions
 
 Record rejected ideas, package-boundary decisions, breaking API choices, and links to implementation issues here so they are not rediscovered later.
+
+### Component architecture
+
+- Every component is an anonymous Blade component: props declared with `@props([...])` at the top of the view, defaults resolved (including `config('bladewind.*')` lookups) in `@props` itself or in a following `@php` block. Do not create a `src/Components/*.php` class extending `Illuminate\View\Component`, and do not call `Blade::component()` from the service provider — the provider only needs `mergeConfigFrom`, `loadViewsFrom`, and the `bladewind-components` publish call, matching `packages/table/src/BladewindTableServiceProvider.php` and `packages/drawer/src/BladewindDrawerServiceProvider.php`.
+- This is deliberate, not an oversight: it keeps every component's public API readable in one file, avoids a PHP-class prop list drifting from the Blade view that actually renders, and sidesteps real footguns that only affect class-based components — for example a prop literally named `data` silently loses to the base `Component::data()` method, since anonymous components never go through that class at all.
+- A root component with named child components (`sidebar` + `sidebar.group` + `sidebar.item`, `command-palette` + `.group` + `.item`) still stays anonymous throughout: the root view lives at `components/{name}/index.blade.php` and children at `components/{name}/{child}.blade.php`; Blade resolves `x-bladewind::{name}` and `x-bladewind::{name}.{child}` from that directory without any explicit registration.
+- `Sidebar` predates this rule and is still class-based; it is a known exception, not a template to copy from for new work.
 
 ### Authoring component documentation
 
