@@ -384,4 +384,79 @@ class BuildFixturesTest extends TestCase
 
         $this->assertFileExists(self::OUT.'/stepper.html');
     }
+
+    #[Test]
+    public function it_writes_the_sidebar_fixture(): void
+    {
+        $largeItems = '';
+        foreach (range(1, 28) as $index) {
+            $largeItems .= '<x-bladewind::sidebar.item name="report-'.$index.'" label="Regional operations report '.$index.' with a deliberately long destination label" href="#report-'.$index.'" icon="document-text" />';
+        }
+
+        $primary = $this->render(
+            '<x-bladewind::sidebar name="workspace" label="Workspace navigation" active="orders" collapsible="true" persist="true" persist-groups="true" storage-key="sidebar-e2e" class="e2e-sidebar">'
+            .'<x-slot:header><strong>Acme Workspace</strong></x-slot:header>'
+            .'<x-bladewind::sidebar.group name="workspace" label="Workspace" icon="squares-2x2">'
+            .'<x-bladewind::sidebar.item name="overview" label="Overview" href="#overview" icon="home" active="true" />'
+            .'<x-bladewind::sidebar.item name="orders" label="Orders" href="#orders" icon="shopping-bag" description="Review fulfilment" badge="12" />'
+            .'<x-bladewind::sidebar.group name="customers" label="Customers" icon="users">'
+            .'<x-bladewind::sidebar.group name="segments" label="Segments">'
+            .'<x-bladewind::sidebar.item name="enterprise" label="Enterprise accounts" href="#enterprise" />'
+            .'</x-bladewind::sidebar.group></x-bladewind::sidebar.group>'
+            .'<x-bladewind::sidebar.item name="locked" label="Locked" href="#locked" disabled="true" />'
+            .'<x-bladewind::sidebar.item name="refresh" label="Refresh data" icon="arrow-path" />'
+            .'</x-bladewind::sidebar.group>'
+            .'<x-bladewind::sidebar.group name="reports" label="Reports">'.$largeItems.'</x-bladewind::sidebar.group>'
+            .'<x-slot:footer><span>Ama Mensah</span></x-slot:footer>'
+            .'</x-bladewind::sidebar>'
+        );
+
+        $secondary = $this->render(
+            '<x-bladewind::sidebar name="secondary" label="Secondary navigation" placement="right" collapsible="true" mobile="drawer">'
+            .'<x-slot:header><strong>Secondary</strong></x-slot:header>'
+            .'<x-bladewind::sidebar.group name="workspace" label="Workspace" expanded="true">'
+            .'<x-bladewind::sidebar.item name="overview" label="Secondary overview" href="#secondary" icon="home" />'
+            .'</x-bladewind::sidebar.group></x-bladewind::sidebar>'
+        );
+
+        $rtl = $this->render(
+            '<x-bladewind::sidebar name="rtl-sidebar" label="التنقل" placement="start" collapsible="true" dir="rtl">'
+            .'<x-bladewind::sidebar.group name="account" label="الحساب">'
+            .'<x-bladewind::sidebar.item name="profile" label="الملف الشخصي" href="#profile" icon="user" />'
+            .'</x-bladewind::sidebar.group></x-bladewind::sidebar>'
+        );
+
+        $scripts = <<<'HTML'
+        <script>
+          window.sidebarEvents = [];
+          window.blockGroup = false;
+          window.blockClose = false;
+          const workspace = document.querySelector('[data-bw-sidebar][data-name="workspace"]');
+          ['before-open', 'opened', 'before-close', 'closed', 'before-collapse', 'collapsed', 'before-expand', 'expanded', 'group:before-change', 'group:changed', 'item-activate', 'before-navigate'].forEach((name) => {
+            workspace.addEventListener(`bladewind:sidebar:${name}`, (event) => {
+              window.sidebarEvents.push({type: event.type, sidebarName: event.detail.sidebarName, groupName: event.detail.groupName, itemName: event.detail.itemName, source: event.detail.source});
+              if (window.blockGroup && name === 'group:before-change') event.preventDefault();
+              if (window.blockClose && name === 'before-close') event.preventDefault();
+            });
+          });
+          document.querySelectorAll('[data-open-sidebar]').forEach((button) => button.addEventListener('click', () => openSidebar(button.dataset.openSidebar, {triggeringElement: button, source: 'fixture'})));
+        </script>
+        HTML;
+
+        $body = '<button type="button" id="open-workspace" data-open-sidebar="workspace">Open workspace</button>'
+            .'<button type="button" id="open-secondary" data-open-sidebar="secondary">Open secondary</button>'
+            .'<button type="button" id="open-rtl" data-open-sidebar="rtl-sidebar">Open RTL</button>'
+            .'<main style="display:flex;gap:24px;height:620px;margin-top:16px;min-width:0">'
+            .'<section id="primary-shell" style="height:620px">'.$primary.'</section>'
+            .'<section id="secondary-shell" class="dark" style="height:620px;background:#101114">'.$secondary.'</section>'
+            .'<section id="rtl-shell" style="height:620px" dir="rtl">'.$rtl.'</section>'
+            .'</main>';
+
+        file_put_contents(
+            self::OUT.'/sidebar.html',
+            $this->relative($this->page('Sidebar', $body, $scripts))
+        );
+
+        $this->assertFileExists(self::OUT.'/sidebar.html');
+    }
 }

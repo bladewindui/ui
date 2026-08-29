@@ -158,6 +158,7 @@ composer require mkocansey/bladewind-navigation
 
 # or install any single component
 composer require mkocansey/bladewind-breadcrumbs
+composer require mkocansey/bladewind-sidebar
 composer require mkocansey/bladewind-tab
 composer require mkocansey/bladewind-stepper
 composer require mkocansey/bladewind-pagination
@@ -167,6 +168,7 @@ composer require mkocansey/bladewind-pagination
 | Package                                                            | Composer name                        | Component(s)                            |
 |--------------------------------------------------------------------|--------------------------------------|-----------------------------------------|
 | [Breadcrumbs](https://bladewindui.com/component/breadcrumbs)       | `mkocansey/bladewind-breadcrumbs`    | Breadcrumbs, Breadcrumbs Item           |
+| [Sidebar](https://bladewindui.com/component/sidebar)               | `mkocansey/bladewind-sidebar`        | Sidebar, Sidebar Group, Sidebar Item     |
 | [Stepper](https://bladewindui.com/component/stepper)               | `mkocansey/bladewind-stepper`        | Stepper, Stepper Item, Stepper Content  |
 | [Dropmenu](https://bladewindui.com/component/dropmenu)             | `mkocansey/bladewind-dropmenu`       | Dropmenu, Dropmenu Item                 |
 | [Pagination](https://bladewindui.com/component/pagination)         | `mkocansey/bladewind-pagination`     | Pagination                              |

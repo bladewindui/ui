@@ -37,6 +37,7 @@ class PropAliasLeakTest extends TestCase
             'sortable' => ['<x-bladewind::sortable name="s" has_handle="true"></x-bladewind::sortable>', 'has_handle'],
             'drawer' => ['<x-bladewind::drawer name="d" show_close_button="false">c</x-bladewind::drawer>', 'show_close_button'],
             'stepper' => ['<x-bladewind::stepper name="s" show_numbers="false"><x-bladewind::stepper.item name="one" label="One" /></x-bladewind::stepper>', 'show_numbers'],
+            'sidebar' => ['<x-bladewind::sidebar name="s" close_on_navigate="false"><x-bladewind::sidebar.item name="one" label="One" /></x-bladewind::sidebar>', 'close_on_navigate'],
         ];
     }
 

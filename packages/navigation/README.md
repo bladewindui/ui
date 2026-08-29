@@ -4,7 +4,7 @@
 
 # Navigation Bundle
 
-BladewindUI navigation bundle. It installs Breadcrumbs, Stepper, Tab, Dropmenu, Pagination, and Theme Switcher.
+BladewindUI navigation bundle. It installs Breadcrumbs, Sidebar, Stepper, Tab, Dropmenu, Pagination, and Theme Switcher.
 
 ## Installation
 
@@ -17,6 +17,7 @@ composer require mkocansey/bladewind-navigation
 | Package | Component |
 |---|---|
 | `mkocansey/bladewind-breadcrumbs` | Breadcrumbs, Breadcrumbs Item |
+| `mkocansey/bladewind-sidebar` | Sidebar, Sidebar Group, Sidebar Item |
 | `mkocansey/bladewind-stepper` | Stepper, Stepper Item, Stepper Content |
 | `mkocansey/bladewind-tab` | Tab Group |
 | `mkocansey/bladewind-dropmenu` | Dropdown Menu |
