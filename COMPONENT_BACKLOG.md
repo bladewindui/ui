@@ -71,6 +71,7 @@ A component can be marked complete above only when all applicable items below ar
 - [ ] Public API and accessibility behaviour are written down before implementation.
 - [ ] The component is an anonymous Blade component (`@props([...])` in the view), not a `Illuminate\View\Component` subclass. See "Component architecture" below.
 - [ ] Leaf package, service provider, Composer metadata, config defaults, assets, and Blade views are complete.
+- [ ] Every `config('bladewind.*')` key the component's view reads is also present in `packages/meta/config/bladewind.php`, with a matching default. See "Config surface" below.
 - [ ] The relevant group metapackage and root package dependencies/autoloading are updated.
 - [ ] Light mode, dark mode, responsive layout, RTL, disabled/loading/error states, and reduced motion are handled where relevant.
 - [ ] Keyboard interaction, focus management, semantic markup, ARIA labelling, and screen-reader announcements are verified.
@@ -89,6 +90,11 @@ Record rejected ideas, package-boundary decisions, breaking API choices, and lin
 - This is deliberate, not an oversight: it keeps every component's public API readable in one file, avoids a PHP-class prop list drifting from the Blade view that actually renders, and sidesteps real footguns that only affect class-based components — for example a prop literally named `data` silently loses to the base `Component::data()` method, since anonymous components never go through that class at all.
 - A root component with named child components (`sidebar` + `sidebar.group` + `sidebar.item`, `command-palette` + `.group` + `.item`) still stays anonymous throughout: the root view lives at `components/{name}/index.blade.php` and children at `components/{name}/{child}.blade.php`; Blade resolves `x-bladewind::{name}` and `x-bladewind::{name}.{child}` from that directory without any explicit registration.
 - `Sidebar` predates this rule and is still class-based; it is a known exception, not a template to copy from for new work.
+
+### Config surface
+
+- Every `config('bladewind.{component}.*', $default)` call a component's own package config (`packages/{component}/config/bladewind.php`) defines must be mirrored into the aggregate `packages/meta/config/bladewind.php`, with the same key and the same default — that file is a consumer's one-stop place to discover and override every setting without reading package source.
+- This is enforced by `tests/Core/ConfigSurfaceTest.php`, which greps every `resources/views/components/**/*.blade.php` for `config('bladewind.*')` reads and fails if a key it finds is missing from the aggregate file, or if the two defaults disagree. It only scans Blade files — a `config()` call left in a PHP class (see "Component architecture" above for why there shouldn't be one) will not be caught, so do not rely on the test alone; add the aggregate entry as part of building the component, not after the test fails.
 
 ### Authoring component documentation
 
