@@ -94,7 +94,14 @@
 .bw-command-palette-hint { @variant dark { color: #a7aaad; } }
 @media (max-width: 639px) {
     .bw-command-palette { padding: 4vh .75rem 1.5rem; }
-    .bw-command-palette-panel { max-width: 100% !important; max-height: 85vh; }
+    .bw-command-palette-panel,
+    .bw-command-palette-tiny .bw-command-palette-panel,
+    .bw-command-palette-small .bw-command-palette-panel,
+    .bw-command-palette-medium .bw-command-palette-panel,
+    .bw-command-palette-big .bw-command-palette-panel,
+    .bw-command-palette-large .bw-command-palette-panel,
+    .bw-command-palette-xl .bw-command-palette-panel,
+    .bw-command-palette-omg .bw-command-palette-panel { max-width: 100%; max-height: 85vh; }
 }
 @media (prefers-reduced-motion: reduce) {
     .bw-command-palette-backdrop,.bw-command-palette-panel { transition-duration: .01ms; }
