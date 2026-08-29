@@ -37,11 +37,25 @@ The package installs Bladewind Core and Icon automatically.
 
 ## Events
 
-`events` is an array of `['date' => 'Y-m-d', 'end' => optional, 'label', 'type' => info|success|warning|danger, 'href' => optional]`.
+`events` is an array of `['date' => 'Y-m-d', 'end' => optional, 'label', 'type' => info|success|warning|danger, 'href' => optional, 'description' => optional]`.
 
 An event without a clock time in `date` is all-day: `end` (also date-only) spans it across multiple days, and it shows as a marker in month view and a banner across the days it covers in week and day view's all-day row. Each day shows up to `max-events-per-day` (default 3) markers in month view; the rest sit behind a real, focusable "+N more" button.
 
 An event with a clock time in `date` (e.g. `'2026-09-01 15:00'`) is timed: `end` is also a time on the same day, defaulting to one hour after `date` when omitted. Timed events are positioned in week and day view's hour grid; events that overlap in time are placed in side-by-side columns. In month view, timed events still show as a marker, prefixed with their start time (e.g. "3:00pm Kenya project review"). Cross-midnight timed events are clamped to end at 23:59 the same day.
+
+## Event details drawer
+
+Give an event a `description` and its marker becomes a button that opens a details drawer, contained inside the calendar's own box, showing the event's date/time, label, description, and (if `href` is also set) a "View full details" link. Events without a `description` stay plain links (with `href`) or static text, exactly as before. Nothing needs to be turned on — this is automatic wherever any event in the array has a `description`.
+
+```blade
+<x-bladewind::calendar
+    name="team-calendar"
+    :events="[
+        ['date' => '2026-08-14', 'label' => 'Sprint planning', 'type' => 'info', 'description' => 'Review the roadmap and assign owners for Q3.', 'href' => '/events/sprint-planning'],
+    ]" />
+```
+
+The drawer is a quick peek, not a modal takeover: there's no backdrop, so clicking straight from one event to another swaps its content without closing it first. Escape or its close button dismiss it.
 
 ## Restricting dates
 

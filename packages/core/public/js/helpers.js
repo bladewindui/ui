@@ -388,7 +388,12 @@ const drawerFocusable = (drawer) => Array.from(drawer.querySelectorAll(
 )).filter((element) => !element.hidden && element.getAttribute('aria-hidden') !== 'true');
 
 const syncDrawerScrollLock = () => {
-    const hasModalDrawer = openDrawers.some((name) => drawerByName(name)?.getAttribute('data-modal') === 'true');
+    // a contained drawer stays inside its own component, so the rest of the
+    // page — including the page's own scroll — is unaffected by it
+    const hasModalDrawer = openDrawers.some((name) => {
+        const drawer = drawerByName(name);
+        return drawer?.getAttribute('data-modal') === 'true' && drawer.getAttribute('data-contained') !== 'true';
+    });
     document.body.classList.toggle('overflow-hidden', hasModalDrawer || openModals.length > 0);
 };
 
@@ -2304,7 +2309,11 @@ const bwCalendarRegistry = {};
 
 /** Populates the per-instance registry the client-side renderer reads from. Called inline by the component itself, once per instance, before any interaction is possible. */
 const initBladewindCalendar = ({name, monthNames, dayNames, events}) => {
-    bwCalendarRegistry[name] = {monthNames, dayNames, ...buildCalendarEventIndexes(events)};
+    const eventDetailsByIndex = {};
+    (events || []).forEach((event, eventIndex) => {
+        if (event.description) eventDetailsByIndex[eventIndex] = event;
+    });
+    bwCalendarRegistry[name] = {monthNames, dayNames, eventDetailsByIndex, ...buildCalendarEventIndexes(events)};
 };
 
 /** A timed event carries a clock time in `date`; anything else is all-day. Mirrors the PHP component's own detection so client-side navigation renders identically to the server. */
@@ -2328,6 +2337,52 @@ const calendarFormatHourLabel = (hour) => {
     return `${h} ${ampm}`;
 };
 
+/** e.g. "Tuesday, August 11, 2026" — mirrors the PHP side's Carbon 'l, F j, Y' format. */
+const calendarFormatFullDate = (date, dayNames, monthNames) => `${dayNames[date.getDay()]}, ${monthNames[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+
+/** The event details drawer's date/time line: a single date, a date range, or a date with a start-end time, depending on what kind of event it is. */
+const calendarFormatEventDateTime = (detail, dayNames, monthNames) => {
+    if (isCalendarTimedEvent(detail.date)) {
+        const start = new Date(detail.date.replace(' ', 'T'));
+        const end = detail.end && isCalendarTimedEvent(detail.end) ? new Date(detail.end.replace(' ', 'T')) : calendarAddMinutes(start, 60);
+        return `${calendarFormatFullDate(start, dayNames, monthNames)}, ${calendarFormatHourMinute(start)} to ${calendarFormatHourMinute(end)}`;
+    }
+    const start = new Date(`${detail.date}T00:00:00`);
+    if (detail.end && detail.end !== detail.date) {
+        return `${calendarFormatFullDate(start, dayNames, monthNames)} to ${calendarFormatFullDate(new Date(`${detail.end}T00:00:00`), dayNames, monthNames)}`;
+    }
+    return calendarFormatFullDate(start, dayNames, monthNames);
+};
+
+/** Populates the (single, reused) event details drawer from one event's data and opens it. Content is set via textContent throughout, never innerHTML — description is arbitrary text a consumer supplied, not markup this component trusts. */
+const openCalendarEventDetails = (calendar, eventIndex) => {
+    const name = calendar.getAttribute('data-name');
+    const registry = bwCalendarRegistry[name];
+    const detail = registry?.eventDetailsByIndex?.[eventIndex];
+    const drawer = calendar.querySelector('[data-bw-calendar-event-drawer]');
+    if (!detail || !drawer) return false;
+
+    const dot = drawer.querySelector('[data-bw-calendar-event-drawer-type]');
+    if (dot) dot.className = `bw-calendar-event-drawer-dot bw-calendar-event-${detail.type || 'info'}`;
+
+    const time = drawer.querySelector('[data-bw-calendar-event-drawer-time]');
+    if (time) time.textContent = calendarFormatEventDateTime(detail, registry.dayNames, registry.monthNames);
+
+    const title = drawer.querySelector('[data-bw-calendar-event-drawer-title]');
+    if (title) title.textContent = detail.label || '';
+
+    const description = drawer.querySelector('[data-bw-calendar-event-drawer-description]');
+    if (description) description.textContent = detail.description || '';
+
+    const link = drawer.querySelector('[data-bw-calendar-event-drawer-link]');
+    if (link) {
+        if (detail.href) { link.href = detail.href; link.hidden = false; }
+        else { link.removeAttribute('href'); link.hidden = true; }
+    }
+
+    return showDrawer(drawer.getAttribute('data-name'));
+};
+
 /**
  * Splits raw events into what each view needs:
  *  - monthMarkersIndex: per-date list behind month view's markers — all-day
@@ -2337,14 +2392,16 @@ const calendarFormatHourLabel = (hour) => {
  *  - allDaySpans: all-day events with their original (unexpanded) date range,
  *    for week view's all-day row to clip and span across day columns
  */
+/** An event with a description gets a real button that opens the event details drawer instead of (or as well as) linking out. eventIndex is the event's own position in the events array passed in — the same array a server render numbers its data-bw-calendar-event-index attributes from, so client-side navigation and a fresh page load agree on what each index means. */
 const buildCalendarEventIndexes = (events) => {
     const monthMarkersIndex = {};
     const timedIndex = {};
     const allDaySpans = [];
     const timedByDate = {};
 
-    (events || []).forEach((event) => {
+    (events || []).forEach((event, eventIndex) => {
         if (!event.date) return;
+        const description = event.description || '';
 
         if (isCalendarTimedEvent(event.date)) {
             const start = new Date(event.date.replace(' ', 'T'));
@@ -2355,7 +2412,7 @@ const buildCalendarEventIndexes = (events) => {
 
             const key = calendarISO(start);
             const item = {
-                label: event.label || '', type: event.type || 'info', href: event.href || null,
+                label: event.label || '', type: event.type || 'info', href: event.href || null, description, eventIndex,
                 start, end, startMinutes: start.getHours() * 60 + start.getMinutes(), endMinutes: end.getHours() * 60 + end.getMinutes(),
             };
             (timedIndex[key] ??= []).push(item);
@@ -2365,13 +2422,13 @@ const buildCalendarEventIndexes = (events) => {
 
         const start = new Date(`${event.date}T00:00:00`);
         const end = event.end ? new Date(`${event.end}T00:00:00`) : new Date(start);
-        allDaySpans.push({label: event.label || '', type: event.type || 'info', href: event.href || null, start: new Date(start), end: new Date(end)});
+        allDaySpans.push({label: event.label || '', type: event.type || 'info', href: event.href || null, description, eventIndex, start: new Date(start), end: new Date(end)});
 
         let cursor = new Date(start);
         let guard = 0;
         while (cursor <= end && guard < 366) {
             const key = calendarISO(cursor);
-            (monthMarkersIndex[key] ??= []).push({label: event.label || '', type: event.type || 'info', href: event.href || null});
+            (monthMarkersIndex[key] ??= []).push({label: event.label || '', type: event.type || 'info', href: event.href || null, description, eventIndex});
             cursor = calendarAddDays(cursor, 1);
             guard++;
         }
@@ -2379,7 +2436,7 @@ const buildCalendarEventIndexes = (events) => {
 
     Object.keys(timedByDate).forEach((key) => {
         timedByDate[key].slice().sort((a, b) => a.startMinutes - b.startMinutes).forEach((timed) => {
-            (monthMarkersIndex[key] ??= []).push({label: `${calendarFormatHourMinute(timed.start)} ${timed.label}`, type: timed.type, href: timed.href});
+            (monthMarkersIndex[key] ??= []).push({label: `${calendarFormatHourMinute(timed.start)} ${timed.label}`, type: timed.type, href: timed.href, description: timed.description, eventIndex: timed.eventIndex});
         });
     });
 
@@ -2628,7 +2685,7 @@ const renderCalendarWeekGrid = (calendar, scroll, weekDays, registry, previously
         if (clipStart > gridEnd || clipEnd < gridStart) return;
         const startIndex = Math.round((clipStart - gridStart) / 86400000);
         const endIndex = Math.round((clipEnd - gridStart) / 86400000);
-        rawAllDay.push({label: event.label, type: event.type, href: event.href, startIndex, span: endIndex - startIndex + 1});
+        rawAllDay.push({label: event.label, type: event.type, href: event.href, description: event.description, eventIndex: event.eventIndex, startIndex, span: endIndex - startIndex + 1});
     });
     const banners = packCalendarAllDayBanners(rawAllDay);
 
@@ -2643,8 +2700,14 @@ const renderCalendarWeekGrid = (calendar, scroll, weekDays, registry, previously
         const track = document.createElement('div');
         track.className = 'bw-calendar-week-allday-track';
         banners.forEach((banner) => {
-            const el = document.createElement(banner.href ? 'a' : 'span');
-            if (banner.href) el.href = banner.href;
+            const el = document.createElement(banner.description ? 'button' : (banner.href ? 'a' : 'span'));
+            if (banner.description) {
+                el.type = 'button';
+                el.setAttribute('data-bw-calendar-event-trigger', '');
+                el.setAttribute('data-bw-calendar-event-index', String(banner.eventIndex));
+            } else if (banner.href) {
+                el.href = banner.href;
+            }
             el.className = `bw-calendar-event bw-calendar-week-allday-banner bw-calendar-event-${banner.type}`;
             el.textContent = banner.label;
             el.style.gridColumn = `${banner.startIndex + 1} / span ${banner.span}`;
@@ -2691,8 +2754,14 @@ const renderCalendarWeekGrid = (calendar, scroll, weekDays, registry, previously
             const height = Math.max(1.25, ((event.endMinutes - event.startMinutes) / 60) * CALENDAR_WEEK_HOUR_ROW_REM);
             const widthPct = 100 / event.totalCols;
             const leftPct = widthPct * event.col;
-            const el = document.createElement(event.href ? 'a' : 'span');
-            if (event.href) el.href = event.href;
+            const el = document.createElement(event.description ? 'button' : (event.href ? 'a' : 'span'));
+            if (event.description) {
+                el.type = 'button';
+                el.setAttribute('data-bw-calendar-event-trigger', '');
+                el.setAttribute('data-bw-calendar-event-index', String(event.eventIndex));
+            } else if (event.href) {
+                el.href = event.href;
+            }
             el.className = `bw-calendar-event bw-calendar-week-timed-event bw-calendar-event-${event.type}`;
             el.style.top = `${top}rem`;
             el.style.height = `${height}rem`;
@@ -2809,8 +2878,14 @@ const renderCalendarMonthTable = (calendar, scroll, weeks, registry, previouslyF
                 wrap.className = 'bw-calendar-cell-events';
                 events.forEach((event, index) => {
                     const isOverflow = index >= maxEventsPerDay;
-                    const el = document.createElement(event.href ? 'a' : 'span');
-                    if (event.href) el.href = event.href;
+                    const el = document.createElement(event.description ? 'button' : (event.href ? 'a' : 'span'));
+                    if (event.description) {
+                        el.type = 'button';
+                        el.setAttribute('data-bw-calendar-event-trigger', '');
+                        el.setAttribute('data-bw-calendar-event-index', String(event.eventIndex));
+                    } else if (event.href) {
+                        el.href = event.href;
+                    }
                     el.className = `bw-calendar-event bw-calendar-event-${event.type}`;
                     el.textContent = event.label;
                     el.setAttribute('data-bw-calendar-overflow-event', isOverflow ? 'true' : 'false');
@@ -3094,6 +3169,14 @@ bwOn('click', '[data-bw-calendar-more]', (button) => {
     cell.querySelectorAll('[data-bw-calendar-overflow-event]').forEach((el) => { el.hidden = expanded; });
     button.setAttribute('aria-expanded', expanded ? 'false' : 'true');
     button.textContent = expanded ? button.dataset.moreLabel : 'Show less';
+});
+
+bwOn('click', '[data-bw-calendar-event-trigger]', (button) => {
+    const calendar = button.closest('[data-bw-calendar]');
+    if (!calendar) return;
+    const eventIndex = parseInt(button.getAttribute('data-bw-calendar-event-index'), 10);
+    if (Number.isNaN(eventIndex)) return;
+    openCalendarEventDetails(calendar, eventIndex);
 });
 
 bwOn('click', '[data-bw-calendar-prev]', (button) => {

@@ -1,4 +1,4 @@
-.bw-calendar { display: flex; flex-direction: column; min-width: 0; border: 1px solid rgb(226 232 240); border-radius: .5rem; overflow: hidden; background: white; color: rgb(51 65 85); }
+.bw-calendar { position: relative; display: flex; flex-direction: column; min-width: 0; border: 1px solid rgb(226 232 240); border-radius: .5rem; overflow: hidden; background: white; color: rgb(51 65 85); }
 .bw-calendar { @variant dark { border-color: rgb(74 78 83 / .75); background: #1c1f24; color: #d2d4d7; } }
 .bw-calendar-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; border-bottom: 1px solid rgb(226 232 240); padding: .75rem .875rem; }
 .bw-calendar-header { @variant dark { border-color: rgb(74 78 83 / .75); } }
@@ -44,7 +44,13 @@
 .bw-calendar-cell-outside { @variant dark { color: #6c7075; } }
 .bw-calendar-cell-disabled { cursor: not-allowed; opacity: .55; }
 .bw-calendar-cell-events { display: flex; flex: 1 1 auto; flex-direction: column; gap: .1875rem; margin-top: .25rem; min-height: 0; overflow-y: auto; }
-.bw-calendar-event { display: block; overflow: hidden; border-radius: .25rem; padding: .0625rem .375rem; font-size: .6875rem; line-height: 1.3; text-overflow: ellipsis; white-space: nowrap; }
+/* text-align/width are no-ops for the span/a variants and correctness for
+ * the button variant (an event with a description), which browsers
+ * otherwise center-align and shrink to content by default. cursor:pointer is
+ * scoped to the a/button tags specifically — a plain span marker (no href,
+ * no description) isn't clickable and shouldn't look like it is. */
+.bw-calendar-event { display: block; width: 100%; overflow: hidden; border-radius: .25rem; padding: .0625rem .375rem; font-size: .6875rem; line-height: 1.3; text-align: left; text-overflow: ellipsis; white-space: nowrap; }
+a.bw-calendar-event,button.bw-calendar-event { cursor: pointer; }
 .bw-calendar-event:focus-visible { outline: 2px solid var(--color-primary-500); outline-offset: 1px; }
 .bw-calendar-event-info { background: rgb(219 234 254); color: rgb(30 64 175); }
 .bw-calendar-event-info { @variant dark { background: rgb(30 64 175 / .35); color: #bfdbfe; } }
@@ -93,6 +99,23 @@
 .bw-calendar-week-timed-event { position: absolute; overflow: hidden; display: flex; flex-direction: column; gap: .0625rem; border-radius: .25rem; padding: .125rem .375rem; font-size: .6875rem; line-height: 1.25; white-space: normal; }
 .bw-calendar-week-timed-event-time { font-size: .625rem; opacity: .8; }
 .bw-calendar-week-timed-event-label { overflow: hidden; text-overflow: ellipsis; }
+/* the event details drawer's own content — the drawer chrome itself (panel,
+ * backdrop, close button, open/close animation) is Drawer's, reused as-is
+ * via the contained prop; only what goes in its body is calendar-specific. */
+.bw-calendar-event-drawer-eyebrow { display: flex; align-items: center; gap: .5rem; margin-bottom: .5rem; }
+.bw-calendar-event-drawer-dot { width: .5rem; height: .5rem; border-radius: 9999px; background: var(--color-primary-500); }
+.bw-calendar-event-drawer-dot.bw-calendar-event-info { background: rgb(30 64 175); }
+.bw-calendar-event-drawer-dot.bw-calendar-event-success { background: rgb(22 101 52); }
+.bw-calendar-event-drawer-dot.bw-calendar-event-warning { background: rgb(133 77 14); }
+.bw-calendar-event-drawer-dot.bw-calendar-event-danger { background: rgb(153 27 27); }
+.bw-calendar-event-drawer-time { font-size: .75rem; font-weight: 600; letter-spacing: .01em; color: rgb(100 116 139); }
+.bw-calendar-event-drawer-time { @variant dark { color: #a7aaad; } }
+.bw-calendar-event-drawer-title { font-size: 1.0625rem; font-weight: 600; }
+.bw-calendar-event-drawer-description { margin-top: .75rem; font-size: .875rem; line-height: 1.5; color: rgb(71 85 105); white-space: pre-line; }
+.bw-calendar-event-drawer-description { @variant dark { color: #d2d4d7; } }
+.bw-calendar-event-drawer-description:empty { display: none; }
+.bw-calendar-event-drawer-link { display: inline-flex; align-items: center; margin-top: 1.25rem; font-size: .875rem; font-weight: 600; color: var(--color-primary-600); text-decoration: underline; text-underline-offset: 2px; }
+.bw-calendar-event-drawer-link { @variant dark { color: #d2d4d7; } }
 @media (max-width: 640px) {
     .bw-calendar-cell-inner { height: 3.75rem; }
     .bw-calendar-cell { padding: .25rem; }

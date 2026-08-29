@@ -300,6 +300,71 @@ class CalendarTest extends TestCase
     }
 
     #[Test]
+    public function no_event_details_drawer_renders_when_no_event_has_a_description(): void
+    {
+        $events = [['date' => '2026-08-15', 'label' => 'Sprint planning', 'type' => 'info', 'href' => '/events/1']];
+        $html = $this->calendar('name="team" date="2026-08-15"', $events);
+
+        $this->assertElementCount($html, '//*[@data-bw-calendar-event-drawer]', 0);
+        $this->assertElementCount($html, '//a[@href="/events/1"]', 1);
+        $this->assertElementCount($html, '//*[@data-bw-calendar-event-trigger]', 0);
+    }
+
+    #[Test]
+    public function a_month_view_marker_with_a_description_becomes_a_button_that_opens_the_drawer(): void
+    {
+        $events = [
+            ['date' => '2026-08-14', 'label' => 'Plain link', 'type' => 'info', 'href' => '/events/1'],
+            ['date' => '2026-08-15', 'label' => 'Sprint planning', 'type' => 'success', 'description' => "Room 4B\nBring laptops", 'href' => '/events/2'],
+        ];
+        $html = $this->calendar('name="team" date="2026-08-15"', $events);
+
+        $this->assertElementCount($html, '//*[@data-bw-calendar-event-drawer]', 1);
+        $trigger = '//button[@data-bw-calendar-event-trigger and @data-bw-calendar-event-index="1"]';
+        $this->assertElementCount($html, $trigger, 1);
+        $this->assertStringContainsString('Sprint planning', $html);
+        // the plain event (index 0, no description) is untouched: still a real link, not a button
+        $this->assertElementCount($html, '//a[@href="/events/1"]', 1);
+        $this->assertElementCount($html, '//button[@data-bw-calendar-event-index="0"]', 0);
+    }
+
+    #[Test]
+    public function week_view_timed_events_and_all_day_banners_with_a_description_become_buttons(): void
+    {
+        $events = [
+            ['date' => '2026-08-11 09:00', 'end' => '2026-08-11 10:00', 'label' => 'Standup', 'type' => 'info', 'description' => 'Daily sync'],
+            ['date' => '2026-08-12', 'end' => '2026-08-13', 'label' => 'Offsite', 'type' => 'success', 'description' => 'Bring a jacket'],
+        ];
+        $html = $this->calendar('name="team" view="week" date="2026-08-15"', $events);
+
+        $this->assertElementCount($html, '//*[@data-bw-calendar-event-drawer]', 1);
+        $this->assertElementCount(
+            $html,
+            '//div[contains(concat(" ", normalize-space(@class), " "), " bw-calendar-week-day-column ") and @data-date="2026-08-11"]'
+                .'//button[@data-bw-calendar-event-trigger and @data-bw-calendar-event-index="0"]',
+            1
+        );
+        $this->assertElementCount(
+            $html,
+            '//button[@data-bw-calendar-event-trigger and @data-bw-calendar-event-index="1" and contains(concat(" ", normalize-space(@class), " "), " bw-calendar-week-allday-banner ")]',
+            1
+        );
+    }
+
+    #[Test]
+    public function event_descriptions_never_render_as_raw_html(): void
+    {
+        $events = [['date' => '2026-08-15', 'label' => 'Sprint planning', 'type' => 'info', 'description' => '<img src=x onerror=alert(1)>']];
+        $html = $this->calendar('name="team" date="2026-08-15"', $events);
+
+        // description only ever reaches the page via the script payload,
+        // with JSON_HEX_TAG escaping its angle brackets to < / > —
+        // never as literal, executable markup
+        $this->assertStringNotContainsString('<img src=x', $html);
+        $this->assertStringContainsString('\\u003Cimg src=x onerror=alert(1)\\u003E', $html);
+    }
+
+    #[Test]
     public function labels_and_names_are_escaped(): void
     {
         $html = $this->render(

@@ -11,6 +11,11 @@
     'closeLabel' => 'Close drawer',
     'backdropCanClose' => config('bladewind.drawer.backdrop_can_close', true),
     'escapeCanClose' => config('bladewind.drawer.escape_can_close', true),
+    // pin the drawer to its nearest positioned ancestor instead of the
+    // browser viewport, and skip the page-wide scroll lock — for a drawer
+    // that should stay confined to one component (a calendar, a panel)
+    // rather than cover the whole page
+    'contained' => config('bladewind.drawer.contained', false),
     'icon' => '',
     'iconType' => 'outline',
     'iconDir' => '',
@@ -24,6 +29,7 @@
     $showCloseButton = parseBladewindVariable($showCloseButton);
     $backdropCanClose = parseBladewindVariable($backdropCanClose);
     $escapeCanClose = parseBladewindVariable($escapeCanClose);
+    $contained = parseBladewindVariable($contained);
     $titleId = "bw-{$name}-title";
     $descriptionId = "bw-{$name}-description";
     $hasHeader = isset($header) || $title !== '' || $description !== '' || $icon !== '' || $showCloseButton;
@@ -36,7 +42,7 @@
 {{-- format-ignore-end --}}
 <div {{ $rootAttributes }} data-bw-drawer data-name="{{ $name }}" data-position="{{ $position }}" data-size="{{ $size }}"
      data-modal="{{ $modal ? 'true' : 'false' }}" data-backdrop-can-close="{{ $backdropCanClose ? 'true' : 'false' }}"
-     data-escape-can-close="{{ $escapeCanClose ? 'true' : 'false' }}" data-state="{{ $open ? 'open' : 'closed' }}"
+     data-escape-can-close="{{ $escapeCanClose ? 'true' : 'false' }}" data-contained="{{ $contained ? 'true' : 'false' }}" data-state="{{ $open ? 'open' : 'closed' }}"
      role="{{ $modal ? 'dialog' : 'region' }}" @if($modal) aria-modal="true" @endif aria-hidden="{{ $open ? 'false' : 'true' }}" @if(!$open) hidden @endif>
     @if($modal)<div class="bw-drawer-backdrop" data-bw-drawer-backdrop></div>@endif
     <div class="bw-drawer-panel" tabindex="-1">
