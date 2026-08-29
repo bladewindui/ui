@@ -1256,6 +1256,195 @@ const resetStepper = (stepperName) => {
     return initial ? setStepperCurrent(stepper, initial.getAttribute('data-bw-stepper-step'), {force: true}) : false;
 };
 
+/** Find one Command Palette without interpolating its public name into a selector. */
+const commandPaletteByName = (name) => Array.from(document.querySelectorAll('[data-bw-command-palette]'))
+    .find((candidate) => candidate.getAttribute('data-name') === String(name)) || null;
+
+const commandPaletteDetail = (palette, values = {}) => ({name: palette.getAttribute('data-name'), ...values});
+
+const commandPaletteEvent = (palette, name, detail, cancelable = false) => palette.dispatchEvent(
+    new CustomEvent(`bladewind:command-palette:${name}`, {bubbles: true, cancelable, detail})
+);
+
+const commandPaletteInput = (palette) => palette.querySelector('[data-bw-command-palette-input]');
+
+const commandPaletteItems = (palette) => Array.from(palette.querySelectorAll('[data-bw-command-palette-item]'));
+
+const commandPaletteVisibleItems = (palette) => commandPaletteItems(palette)
+    .filter((item) => !item.hidden && item.getAttribute('aria-disabled') !== 'true');
+
+const highlightedCommandPaletteItem = (palette) => commandPaletteItems(palette)
+    .find((item) => item.getAttribute('data-highlighted') === 'true') || null;
+
+const highlightCommandPaletteItem = (palette, item) => {
+    const input = commandPaletteInput(palette);
+    commandPaletteItems(palette).forEach((candidate) => {
+        const isTarget = candidate === item;
+        candidate.setAttribute('data-highlighted', isTarget ? 'true' : 'false');
+        candidate.setAttribute('aria-selected', isTarget ? 'true' : 'false');
+    });
+    if (input) input.setAttribute('aria-activedescendant', item ? item.id : '');
+    item?.scrollIntoView({block: 'nearest'});
+};
+
+const moveCommandPaletteHighlight = (palette, direction) => {
+    const visible = commandPaletteVisibleItems(palette);
+    if (visible.length === 0) return highlightCommandPaletteItem(palette, null);
+    const current = highlightedCommandPaletteItem(palette);
+    const index = current ? visible.indexOf(current) : -1;
+    let nextIndex = 0;
+    if (direction === 'last') nextIndex = visible.length - 1;
+    else if (direction === 'down') nextIndex = index < 0 ? 0 : (index + 1) % visible.length;
+    else if (direction === 'up') nextIndex = index < 0 ? visible.length - 1 : (index - 1 + visible.length) % visible.length;
+    highlightCommandPaletteItem(palette, visible[nextIndex]);
+};
+
+const filterCommandPalette = (palette, query) => {
+    const normalised = query.trim().toLowerCase();
+    let visibleCount = 0;
+    commandPaletteItems(palette).forEach((item) => {
+        const matches = normalised === '' || (item.getAttribute('data-keywords') || '').includes(normalised);
+        item.hidden = !matches;
+        if (matches) visibleCount++;
+    });
+    palette.querySelectorAll('[data-bw-command-palette-group]').forEach((group) => {
+        group.hidden = !Array.from(group.querySelectorAll('[data-bw-command-palette-item]')).some((item) => !item.hidden);
+    });
+    const empty = palette.querySelector('[data-bw-command-palette-empty]');
+    if (empty) empty.hidden = visibleCount > 0 || palette.getAttribute('data-loading') === 'true';
+    highlightCommandPaletteItem(palette, commandPaletteVisibleItems(palette)[0] || null);
+    commandPaletteEvent(palette, 'search', commandPaletteDetail(palette, {query: query}));
+};
+
+const setCommandPaletteLoading = (name, loading) => {
+    const palette = commandPaletteByName(name);
+    if (!palette) return false;
+    palette.setAttribute('data-loading', loading ? 'true' : 'false');
+    const loadingEl = palette.querySelector('[data-bw-command-palette-loading]');
+    if (loadingEl) loadingEl.hidden = !loading;
+    const empty = palette.querySelector('[data-bw-command-palette-empty]');
+    if (empty && loading) empty.hidden = true;
+    return true;
+};
+
+/** Items carry tabindex="-1": keyboard navigation moves the highlight, not real
+ *  focus, so only the search field and close button take part in the Tab trap. */
+const commandPaletteFocusable = (palette) => Array.from(palette.querySelectorAll(
+    'input:not([disabled]), button:not([disabled]), a[href]'
+)).filter((element) => !element.hidden && element.getAttribute('tabindex') !== '-1');
+
+const focusCommandPalette = (palette) => commandPaletteInput(palette)?.focus({preventScroll: true});
+
+const openCommandPalettes = [];
+const commandPaletteReturnFocus = new Map();
+
+const openCommandPalette = (name, options = {}) => {
+    const palette = commandPaletteByName(name);
+    if (!palette || palette.getAttribute('data-state') === 'open') return false;
+    const detail = commandPaletteDetail(palette, {triggeringElement: options.triggeringElement || null, source: options.source || 'api'});
+    if (!commandPaletteEvent(palette, 'before-open', detail, true)) return false;
+    commandPaletteReturnFocus.set(name, document.activeElement);
+    palette.hidden = false;
+    palette.setAttribute('aria-hidden', 'false');
+    palette.setAttribute('data-state', 'opening');
+    document.body.classList.add('overflow-hidden');
+    openCommandPalettes.push(name);
+    const input = commandPaletteInput(palette);
+    if (input) input.value = '';
+    filterCommandPalette(palette, '');
+    requestAnimationFrame(() => {
+        if (palette.getAttribute('data-state') !== 'opening') return;
+        palette.setAttribute('data-state', 'open');
+        focusCommandPalette(palette);
+        commandPaletteEvent(palette, 'opened', detail);
+    });
+    return true;
+};
+
+const closeCommandPalette = (name, options = {}) => {
+    const palette = commandPaletteByName(name);
+    if (!palette || palette.hidden || palette.getAttribute('data-state') === 'closed') return false;
+    const detail = commandPaletteDetail(palette, {triggeringElement: options.triggeringElement || null, source: options.source || 'api'});
+    if (!commandPaletteEvent(palette, 'before-close', detail, true)) return false;
+    palette.setAttribute('data-state', 'closed');
+    palette.setAttribute('aria-hidden', 'true');
+    palette.hidden = true;
+    const index = openCommandPalettes.lastIndexOf(name);
+    if (index !== -1) openCommandPalettes.splice(index, 1);
+    if (openCommandPalettes.length === 0) document.body.classList.remove('overflow-hidden');
+    const trigger = commandPaletteReturnFocus.get(name);
+    commandPaletteReturnFocus.delete(name);
+    if (trigger?.isConnected) trigger.focus({preventScroll: true});
+    commandPaletteEvent(palette, 'closed', detail);
+    return true;
+};
+
+const toggleCommandPalette = (name, options = {}) => {
+    const palette = commandPaletteByName(name);
+    if (!palette) return false;
+    return (palette.hidden || palette.getAttribute('data-state') !== 'open')
+        ? openCommandPalette(name, options) : closeCommandPalette(name, options);
+};
+
+const resetCommandPalette = (name) => {
+    const palette = commandPaletteByName(name);
+    if (!palette) return false;
+    const input = commandPaletteInput(palette);
+    if (input) input.value = '';
+    filterCommandPalette(palette, '');
+    return true;
+};
+
+const activateCommandPaletteItem = (palette, item, options = {}) => {
+    if (!item || item.getAttribute('aria-disabled') === 'true') return false;
+    const isLink = item.tagName === 'A';
+    const detail = commandPaletteDetail(palette, {
+        itemName: item.getAttribute('data-item-name'),
+        href: isLink ? item.getAttribute('href') : null,
+        triggeringElement: options.triggeringElement || item,
+        source: options.source || 'pointer',
+    });
+    if (!commandPaletteEvent(palette, 'before-select', detail, true)) return false;
+    commandPaletteEvent(palette, 'select', detail);
+    if (palette.getAttribute('data-close-on-select') === 'true') {
+        closeCommandPalette(palette.getAttribute('data-name'), {triggeringElement: item, source: 'select'});
+    }
+    return true;
+};
+
+/**
+ * A shortcut string like "mod+k" against a keydown event. "mod" matches Ctrl
+ * on Windows/Linux and Cmd on macOS, which is the conventional command
+ * palette binding across editors and chat apps.
+ */
+const commandPaletteShortcutMatches = (shortcut, event) => {
+    const tokens = (shortcut || '').split('+').map((token) => token.trim().toLowerCase()).filter(Boolean);
+    if (tokens.length === 0) return false;
+    const key = tokens[tokens.length - 1];
+    if ((event.key || '').toLowerCase() !== key) return false;
+    const modifiers = tokens.slice(0, -1);
+    const wantsMod = modifiers.includes('mod');
+    if (wantsMod && !(event.ctrlKey || event.metaKey)) return false;
+    if (!wantsMod && modifiers.includes('ctrl') !== event.ctrlKey) return false;
+    if (!wantsMod && (modifiers.includes('meta') || modifiers.includes('cmd')) !== event.metaKey) return false;
+    if (modifiers.includes('alt') !== event.altKey) return false;
+    if (modifiers.includes('shift') !== event.shiftKey) return false;
+    return true;
+};
+
+const initialiseCommandPalettes = () => {
+    document.querySelectorAll('[data-bw-command-palette][data-state="open"]').forEach((palette) => {
+        const name = palette.getAttribute('data-name');
+        palette.hidden = false;
+        palette.setAttribute('aria-hidden', 'false');
+        if (!openCommandPalettes.includes(name)) openCommandPalettes.push(name);
+        document.body.classList.add('overflow-hidden');
+        filterCommandPalette(palette, commandPaletteInput(palette)?.value || '');
+    });
+    const activePalette = commandPaletteByName(openCommandPalettes[openCommandPalettes.length - 1]);
+    if (activePalette) focusCommandPalette(activePalette);
+};
+
 /** Find and initialise one Sidebar without interpolating its public name into a selector. */
 const sidebarByName = (name) => {
     const sidebars = Array.from(document.querySelectorAll('[data-bw-sidebar]'));
@@ -1575,6 +1764,86 @@ document.addEventListener('keydown', (event) => {
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initialiseDrawers);
 else initialiseDrawers();
 
+bwOn('click', '[data-bw-command-palette-close]', (el) => closeCommandPalette(
+    el.getAttribute('data-bw-command-palette-close'), {triggeringElement: el, source: 'pointer'}
+));
+
+bwOn('click', '[data-bw-command-palette-backdrop]', (backdrop) => {
+    const palette = backdrop.closest('[data-bw-command-palette]');
+    if (palette?.getAttribute('data-backdrop-can-close') === 'true') {
+        closeCommandPalette(palette.getAttribute('data-name'), {triggeringElement: backdrop, source: 'backdrop'});
+    }
+});
+
+bwOn('click', '[data-bw-command-palette-item]', (item, event) => {
+    const palette = item.closest('[data-bw-command-palette]');
+    if (!palette) return;
+    if (!activateCommandPaletteItem(palette, item, {triggeringElement: item, source: event.detail === 0 ? 'keyboard' : 'pointer'})) {
+        event.preventDefault();
+    }
+});
+
+bwOn('mouseover', '[data-bw-command-palette-item]', (item) => {
+    if (item.hidden || item.getAttribute('aria-disabled') === 'true') return;
+    const palette = item.closest('[data-bw-command-palette]');
+    if (palette) highlightCommandPaletteItem(palette, item);
+});
+
+bwOn('input', '[data-bw-command-palette-input]', (input) => {
+    const palette = input.closest('[data-bw-command-palette]');
+    if (palette) filterCommandPalette(palette, input.value);
+});
+
+document.addEventListener('keydown', (event) => {
+    if (event.defaultPrevented) return;
+    document.querySelectorAll('[data-bw-command-palette]').forEach((palette) => {
+        const shortcut = palette.getAttribute('data-shortcut');
+        if (!shortcut || !commandPaletteShortcutMatches(shortcut, event)) return;
+        event.preventDefault();
+        toggleCommandPalette(palette.getAttribute('data-name'), {triggeringElement: document.activeElement, source: 'shortcut'});
+    });
+});
+
+document.addEventListener('keydown', (event) => {
+    const name = openCommandPalettes[openCommandPalettes.length - 1];
+    const palette = name ? commandPaletteByName(name) : null;
+    if (!palette) return;
+    if (event.key === 'Escape' && palette.getAttribute('data-escape-can-close') === 'true') {
+        event.preventDefault();
+        closeCommandPalette(name, {triggeringElement: document.activeElement, source: 'escape'});
+        return;
+    }
+    if (event.key === 'ArrowDown') { event.preventDefault(); moveCommandPaletteHighlight(palette, 'down'); return; }
+    if (event.key === 'ArrowUp') { event.preventDefault(); moveCommandPaletteHighlight(palette, 'up'); return; }
+    if (event.key === 'Home') { event.preventDefault(); moveCommandPaletteHighlight(palette, 'first'); return; }
+    if (event.key === 'End') { event.preventDefault(); moveCommandPaletteHighlight(palette, 'last'); return; }
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        highlightedCommandPaletteItem(palette)?.click();
+        return;
+    }
+    if (event.key !== 'Tab') return;
+    const focusable = commandPaletteFocusable(palette);
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (!palette.contains(document.activeElement)) {
+        event.preventDefault();
+        first.focus();
+        return;
+    }
+    if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+    }
+});
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initialiseCommandPalettes);
+else initialiseCommandPalettes();
+
 bwOn('click', '[data-bw-sidebar-group-trigger]', (trigger) => {
     const sidebar = trigger.closest('[data-bw-sidebar]');
     const group = trigger.closest('[data-bw-sidebar-group]');
@@ -1819,6 +2088,11 @@ Object.assign(window, {
     expandSidebarGroup,
     collapseSidebarGroup,
     resetSidebar,
+    openCommandPalette,
+    closeCommandPalette,
+    toggleCommandPalette,
+    resetCommandPalette,
+    setCommandPaletteLoading,
     showButtonSpinner,
     hideButtonSpinner,
     showModalActionButtons,
