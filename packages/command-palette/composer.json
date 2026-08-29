@@ -1,21 +1,37 @@
 {
     "name": "bladewindui/command-palette",
     "description": "BladewindUI keyboard-first searchable command palette component",
-    "keywords": ["laravel", "blade", "tailwindcss", "bladewindui", "command-palette", "navigation"],
+    "keywords": [
+        "laravel",
+        "blade",
+        "tailwindcss",
+        "bladewindui",
+        "command-palette",
+        "navigation"
+    ],
     "license": "MIT",
     "type": "library",
-    "authors": [{"name": "Michael K. Ocansey", "email": "mike@bladewindui.com"}],
+    "authors": [
+        {
+            "name": "Michael K. Ocansey",
+            "email": "mike@bladewindui.com"
+        }
+    ],
     "require": {
         "php": ">=8.1",
-        "bladewindui/core": "^4.5",
-        "bladewindui/icon": "^4.5"
+        "bladewindui/core": "^5.0",
+        "bladewindui/icon": "^5.0"
     },
     "autoload": {
-        "psr-4": {"Mkocansey\\Bladewind\\CommandPalette\\": "src/"}
+        "psr-4": {
+            "Mkocansey\\Bladewind\\CommandPalette\\": "src/"
+        }
     },
     "extra": {
         "laravel": {
-            "providers": ["Mkocansey\\Bladewind\\CommandPalette\\BladewindCommandPaletteServiceProvider"]
+            "providers": [
+                "Mkocansey\\Bladewind\\CommandPalette\\BladewindCommandPaletteServiceProvider"
+            ]
         }
     }
 }
