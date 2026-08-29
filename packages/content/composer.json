@@ -1,5 +1,5 @@
 {
-    "name": "mkocansey/bladewind-content",
+    "name": "bladewindui/content",
     "description": "BladewindUI content bundle — installs all content components (Card, Accordion, Avatar, Tag, Timeline, Statistic, Rating, Chart, Progress, Empty State, and more)",
     "keywords": [
         "laravel",
@@ -17,23 +17,23 @@
         }
     ],
     "require": {
-        "mkocansey/bladewind-card": "^4.4",
-        "mkocansey/bladewind-contact-card": "^4.4",
-        "mkocansey/bladewind-avatar": "^4.4",
-        "mkocansey/bladewind-accordion": "^4.4",
-        "mkocansey/bladewind-tag": "^4.4",
-        "mkocansey/bladewind-timeline": "^4.4",
-        "mkocansey/bladewind-statistic": "^4.4",
-        "mkocansey/bladewind-rating": "^4.4",
-        "mkocansey/bladewind-horizontal-line-graph": "^4.4",
-        "mkocansey/bladewind-empty-state": "^4.4",
-        "mkocansey/bladewind-centered-content": "^4.4",
-        "mkocansey/bladewind-chart": "^4.4",
-        "mkocansey/bladewind-progress": "^4.4",
-        "mkocansey/bladewind-listview": "^4.4",
-        "mkocansey/bladewind-tooltip": "^4.4",
-        "mkocansey/bladewind-popover": "^4.4",
-        "mkocansey/bladewind-sortable": "^4.4",
-        "mkocansey/bladewind-drawer": "^4.4"
+        "bladewindui/card": "^4.4",
+        "bladewindui/contact-card": "^4.4",
+        "bladewindui/avatar": "^4.4",
+        "bladewindui/accordion": "^4.4",
+        "bladewindui/tag": "^4.4",
+        "bladewindui/timeline": "^4.4",
+        "bladewindui/statistic": "^4.4",
+        "bladewindui/rating": "^4.4",
+        "bladewindui/horizontal-line-graph": "^4.4",
+        "bladewindui/empty-state": "^4.4",
+        "bladewindui/centered-content": "^4.4",
+        "bladewindui/chart": "^4.4",
+        "bladewindui/progress": "^4.4",
+        "bladewindui/listview": "^4.4",
+        "bladewindui/tooltip": "^4.4",
+        "bladewindui/popover": "^4.4",
+        "bladewindui/sortable": "^4.4",
+        "bladewindui/drawer": "^4.4"
     }
 }

@@ -1,5 +1,5 @@
 {
-    "name": "mkocansey/bladewind-sidebar",
+    "name": "bladewindui/sidebar",
     "description": "BladewindUI accessible responsive Sidebar navigation component",
     "keywords": ["laravel", "blade", "tailwindcss", "bladewindui", "sidebar", "navigation"],
     "license": "MIT",
@@ -7,9 +7,9 @@
     "authors": [{"name": "Michael K. Ocansey", "email": "mike@bladewindui.com"}],
     "require": {
         "php": ">=8.1",
-        "mkocansey/bladewind-core": "^4.4",
-        "mkocansey/bladewind-icon": "^4.4",
-        "mkocansey/bladewind-drawer": "^4.4"
+        "bladewindui/core": "^4.4",
+        "bladewindui/icon": "^4.4",
+        "bladewindui/drawer": "^4.4"
     },
     "autoload": {
         "psr-4": {"Mkocansey\\Bladewind\\Sidebar\\": "src/"}

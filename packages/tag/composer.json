@@ -1,5 +1,5 @@
 {
-    "name": "mkocansey/bladewind-tag",
+    "name": "bladewindui/tag",
     "description": "BladewindUI — Tag and Tags components",
     "keywords": [
         "laravel",
@@ -18,8 +18,8 @@
     ],
     "require": {
         "php": ">=8.1",
-        "mkocansey/bladewind-core": "^4.4",
-        "mkocansey/bladewind-icon": "^4.4"
+        "bladewindui/core": "^4.4",
+        "bladewindui/icon": "^4.4"
     },
     "autoload": {
         "psr-4": {

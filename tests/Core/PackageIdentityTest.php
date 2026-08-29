@@ -7,9 +7,10 @@ use Mkocansey\Bladewind\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
 /**
- * The move to bladewindui/bladewindui renames the Composer package and nothing
- * else. These pin the identifiers that consuming applications actually depend
- * on, so a later tidy-up cannot quietly break every install.
+ * The moves to bladewindui/bladewindui and then bladewindui/ui rename the
+ * Composer package and nothing else. These pin the identifiers that consuming
+ * applications actually depend on, so a later tidy-up cannot quietly break
+ * every install.
  *
  * The Blade namespace is the one that matters most: renaming it would rewrite
  * every component tag in every consuming app. One audited application alone has
@@ -25,27 +26,29 @@ class PackageIdentityTest extends TestCase
     }
 
     #[Test]
-    public function the_package_is_named_for_the_new_org(): void
+    public function the_package_is_named_bladewindui_ui(): void
     {
-        $this->assertSame('bladewindui/bladewindui', $this->rootComposer()['name']);
+        $this->assertSame('bladewindui/ui', $this->rootComposer()['name']);
     }
 
     /**
-     * Anything still depending on the old name — an application, or a third-party
-     * package — has to be satisfied by installing this one.
+     * Anything still depending on either former name — an application, or a
+     * third-party package — has to be satisfied by installing this one.
      */
     #[Test]
-    public function the_former_package_name_is_replaced(): void
+    public function the_former_package_names_are_replaced(): void
     {
         $replace = $this->rootComposer()['replace'];
 
         // monorepo-builder rewrites every "self.version" placeholder to the literal
-        // released version at release time, so this only pins that the former name
+        // released version at release time, so this only pins that each former name
         // tracks the same marker as everything else in the block - not a literal
         // string, which flips between "self.version" and a version number depending
         // on whether a release has run since the branch was last touched.
-        $this->assertArrayHasKey('mkocansey/bladewind', $replace);
-        $this->assertSame(reset($replace), $replace['mkocansey/bladewind']);
+        foreach (['mkocansey/bladewind', 'bladewindui/bladewindui'] as $formerName) {
+            $this->assertArrayHasKey($formerName, $replace);
+            $this->assertSame(reset($replace), $replace[$formerName]);
+        }
     }
 
     #[Test]
@@ -117,13 +120,20 @@ class PackageIdentityTest extends TestCase
 
         $this->assertNotEmpty($org, 'split-packages.yml declares no organization');
 
-        $forbidden = $org[1] === 'bladewindui' ? 'bladewindui' : 'bladewind';
+        // 'bladewindui' is this monorepo's current repo name; 'ui' is where the
+        // pending rename in RELEASING.md is headed. Both are forbidden once the
+        // org is 'bladewindui' - only the historical 'bladewind' name matters
+        // for any other org value.
+        $forbidden = $org[1] === 'bladewindui' ? ['bladewindui', 'ui'] : ['bladewind'];
 
-        $this->assertNotContains(
-            $forbidden,
-            $repos[1],
-            "A split entry targets {$org[1]}/{$forbidden}, which is this monorepo's own remote. "
-            .'Splitting into it force-pushes filtered history over main — this wiped main on 2026-06-08.'
-        );
+        foreach ($forbidden as $name) {
+            $this->assertNotContains(
+                $name,
+                $repos[1],
+                "A split entry targets {$org[1]}/{$name}, which resolves to this monorepo's own remote "
+                .'once that rename lands. Splitting into it force-pushes filtered history over main — '
+                .'this wiped main on 2026-06-08.'
+            );
+        }
     }
 }

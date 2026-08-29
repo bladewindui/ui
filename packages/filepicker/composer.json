@@ -1,5 +1,5 @@
 {
-    "name": "mkocansey/bladewind-filepicker",
+    "name": "bladewindui/filepicker",
     "description": "BladewindUI — File picker component (powered by FilePond)",
     "keywords": [
         "laravel",
@@ -18,8 +18,8 @@
     ],
     "require": {
         "php": ">=8.1",
-        "mkocansey/bladewind-core": "^4.4",
-        "mkocansey/bladewind-script": "^4.4"
+        "bladewindui/core": "^4.4",
+        "bladewindui/script": "^4.4"
     },
     "autoload": {
         "psr-4": {

@@ -1,5 +1,5 @@
 {
-    "name": "mkocansey/bladewind-pagination",
+    "name": "bladewindui/pagination",
     "description": "BladewindUI — Pagination component",
     "keywords": [
         "laravel",
@@ -18,11 +18,11 @@
     ],
     "require": {
         "php": ">=8.1",
-        "mkocansey/bladewind-core": "^4.4",
-        "mkocansey/bladewind-icon": "^4.4",
-        "mkocansey/bladewind-script": "^4.4",
-        "mkocansey/bladewind-button": "^4.4",
-        "mkocansey/bladewind-select": "^4.4"
+        "bladewindui/core": "^4.4",
+        "bladewindui/icon": "^4.4",
+        "bladewindui/script": "^4.4",
+        "bladewindui/button": "^4.4",
+        "bladewindui/select": "^4.4"
     },
     "autoload": {
         "psr-4": {
