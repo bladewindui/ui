@@ -29,6 +29,7 @@ jobs:
           - { local_path: 'packages/modal',   split_repository: 'modal'   }
           - { local_path: 'packages/drawer',  split_repository: 'drawer'  }
           - { local_path: 'packages/table',   split_repository: 'table'   }
+          - { local_path: 'packages/data-grid', split_repository: 'data-grid' }
 
           # ── Form leaf packages ────────────────────────────────────────────────
           - { local_path: 'packages/input',       split_repository: 'input'       }

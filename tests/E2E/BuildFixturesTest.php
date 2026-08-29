@@ -514,4 +514,75 @@ class BuildFixturesTest extends TestCase
 
         $this->assertFileExists(self::OUT.'/command-palette.html');
     }
+
+    #[Test]
+    public function it_writes_the_data_grid_fixture(): void
+    {
+        $orders = [];
+        foreach (range(1, 7) as $index) {
+            $orders[] = [
+                'id' => $index,
+                'reference' => sprintf('ORD-%03d', $index),
+                'customer' => ['Ama Mensah', 'Kofi Addo', 'Akosua Owusu'][$index % 3],
+                'total' => $index * 1500,
+            ];
+        }
+
+        $columns = [
+            ['key' => 'reference', 'label' => 'Reference', 'sortable' => true],
+            ['key' => 'customer', 'label' => 'Customer', 'sortable' => true],
+            ['key' => 'total', 'label' => 'Total', 'align' => 'right', 'sortable' => true, 'format' => fn ($value) => '$'.number_format($value / 100, 2)],
+        ];
+
+        $primary = $this->render(
+            '<x-bladewind::data-grid name="orders" label="Orders" searchable="true" selectable="true"'
+            .' paginated="true" page-size="3" :columns="$columns" :rows="$rows" class="e2e-data-grid" />',
+            ['columns' => $columns, 'rows' => $orders]
+        );
+
+        $single = $this->render(
+            '<x-bladewind::data-grid name="assignee" label="Assign to" selectable="true" selection-mode="single"'
+            .' :columns="$columns" :rows="$rows" />',
+            [
+                'columns' => [['key' => 'name', 'label' => 'Name']],
+                'rows' => [['id' => 'ama', 'name' => 'Ama Mensah'], ['id' => 'kofi', 'name' => 'Kofi Addo']],
+            ]
+        );
+
+        $paginator = new \Illuminate\Pagination\LengthAwarePaginator(
+            array_slice($orders, 0, 3), count($orders), 3, 1,
+            ['path' => '/data-grid.html', 'pageName' => 'page']
+        );
+        $server = $this->render(
+            '<x-bladewind::data-grid name="server-orders" label="Server orders" :columns="$columns" :rows="$rows" :paginator="$paginator" />',
+            ['columns' => $columns, 'rows' => $paginator->items(), 'paginator' => $paginator]
+        );
+
+        $scripts = <<<'HTML'
+        <script>
+          window.dataGridEvents = [];
+          window.blockSort = false;
+          window.blockSelect = false;
+          const grid = document.querySelector('[data-bw-data-grid][data-name="orders"]');
+          ['before-sort-change', 'sort-change', 'before-select-change', 'select-change', 'before-page-change', 'page-change', 'search'].forEach((name) => {
+            grid.addEventListener(`bladewind:data-grid:${name}`, (event) => {
+              window.dataGridEvents.push({type: event.type, key: event.detail.key, direction: event.detail.direction, page: event.detail.page, selected: event.detail.selected, query: event.detail.query});
+              if (window.blockSort && name === 'before-sort-change') event.preventDefault();
+              if (window.blockSelect && name === 'before-select-change') event.preventDefault();
+            });
+          });
+        </script>
+        HTML;
+
+        $body = '<main style="display:flex;flex-direction:column;gap:24px;padding:16px;max-width:900px">'
+            .$primary.$single.$server
+            .'</main>';
+
+        file_put_contents(
+            self::OUT.'/data-grid.html',
+            $this->relative($this->page('Data Grid', $body, $scripts))
+        );
+
+        $this->assertFileExists(self::OUT.'/data-grid.html');
+    }
 }
