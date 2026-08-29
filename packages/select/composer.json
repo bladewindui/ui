@@ -18,10 +18,10 @@
     ],
     "require": {
         "php": ">=8.1",
-        "bladewindui/core": "^4.4",
-        "bladewindui/icon": "^4.4",
-        "bladewindui/script": "^4.4",
-        "bladewindui/spinner": "^4.4"
+        "bladewindui/core": "^4.5",
+        "bladewindui/icon": "^4.5",
+        "bladewindui/script": "^4.5",
+        "bladewindui/spinner": "^4.5"
     },
     "autoload": {
         "psr-4": {

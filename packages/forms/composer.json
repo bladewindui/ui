@@ -17,19 +17,19 @@
         }
     ],
     "require": {
-        "bladewindui/input": "^4.4",
-        "bladewindui/textarea": "^4.4",
-        "bladewindui/select": "^4.4",
-        "bladewindui/checkbox": "^4.4",
-        "bladewindui/radio": "^4.4",
-        "bladewindui/toggle": "^4.4",
-        "bladewindui/datepicker": "^4.4",
-        "bladewindui/timepicker": "^4.4",
-        "bladewindui/colorpicker": "^4.4",
-        "bladewindui/filepicker": "^4.4",
-        "bladewindui/slider": "^4.4",
-        "bladewindui/checkcards": "^4.4",
-        "bladewindui/number": "^4.4",
-        "bladewindui/code": "^4.4"
+        "bladewindui/input": "^4.5",
+        "bladewindui/textarea": "^4.5",
+        "bladewindui/select": "^4.5",
+        "bladewindui/checkbox": "^4.5",
+        "bladewindui/radio": "^4.5",
+        "bladewindui/toggle": "^4.5",
+        "bladewindui/datepicker": "^4.5",
+        "bladewindui/timepicker": "^4.5",
+        "bladewindui/colorpicker": "^4.5",
+        "bladewindui/filepicker": "^4.5",
+        "bladewindui/slider": "^4.5",
+        "bladewindui/checkcards": "^4.5",
+        "bladewindui/number": "^4.5",
+        "bladewindui/code": "^4.5"
     }
 }

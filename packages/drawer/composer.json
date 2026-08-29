@@ -1,15 +1,37 @@
 {
     "name": "bladewindui/drawer",
     "description": "BladewindUI Drawer component",
-    "keywords": ["laravel", "blade", "tailwindcss", "bladewindui", "drawer", "sheet"],
+    "keywords": [
+        "laravel",
+        "blade",
+        "tailwindcss",
+        "bladewindui",
+        "drawer",
+        "sheet"
+    ],
     "license": "MIT",
     "type": "library",
-    "authors": [{"name": "Michael K. Ocansey", "email": "mike@bladewindui.com"}],
+    "authors": [
+        {
+            "name": "Michael K. Ocansey",
+            "email": "mike@bladewindui.com"
+        }
+    ],
     "require": {
         "php": ">=8.1",
-        "bladewindui/core": "^4.4",
-        "bladewindui/icon": "^4.4"
+        "bladewindui/core": "^4.5",
+        "bladewindui/icon": "^4.5"
     },
-    "autoload": {"psr-4": {"Mkocansey\\Bladewind\\Drawer\\": "src/"}},
-    "extra": {"laravel": {"providers": ["Mkocansey\\Bladewind\\Drawer\\BladewindDrawerServiceProvider"]}}
+    "autoload": {
+        "psr-4": {
+            "Mkocansey\\Bladewind\\Drawer\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Mkocansey\\Bladewind\\Drawer\\BladewindDrawerServiceProvider"
+            ]
+        }
+    }
 }

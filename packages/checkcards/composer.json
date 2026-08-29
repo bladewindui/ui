@@ -18,13 +18,13 @@
     ],
     "require": {
         "php": ">=8.1",
-        "bladewindui/core": "^4.4",
-        "bladewindui/icon": "^4.4",
-        "bladewindui/script": "^4.4",
-        "bladewindui/input": "^4.4",
-        "bladewindui/checkbox": "^4.4",
-        "bladewindui/avatar": "^4.4",
-        "bladewindui/button": "^4.4"
+        "bladewindui/core": "^4.5",
+        "bladewindui/icon": "^4.5",
+        "bladewindui/script": "^4.5",
+        "bladewindui/input": "^4.5",
+        "bladewindui/checkbox": "^4.5",
+        "bladewindui/avatar": "^4.5",
+        "bladewindui/button": "^4.5"
     },
     "autoload": {
         "psr-4": {
