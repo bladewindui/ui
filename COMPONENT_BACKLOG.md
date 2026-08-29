@@ -14,7 +14,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` complete · `[!]` re
 - [x] **Command palette** (`bladewind-command-palette`, Navigation) — Keyboard-first searchable action launcher with grouped actions, shortcuts, empty states, and asynchronous results.
 - [ ] **Tree view** (`bladewind-tree`, Content) — Expandable hierarchical data with single/multiple selection, checkboxes, lazy-loaded children, and full keyboard navigation.
 - [x] **Data grid / Table v2** (`bladewind-data-grid`, Content) — A higher-level companion to Table with column sorting, filtering, selection, sticky headers, pagination hooks, and server-driven state.
-- [ ] **Calendar** (`bladewind-calendar`, Content) — Inline month/week calendar for displaying and selecting dates or events, distinct from the input-focused Datepicker.
+- [x] **Calendar** (`bladewind-calendar`, Content) — Inline month/week calendar for displaying and selecting dates or events, distinct from the input-focused Datepicker.
 - [ ] **Context menu** (`bladewind-context-menu`, Navigation) — Pointer and keyboard-triggered action menu with nested items, separators, disabled actions, and viewport-aware placement.
 - [ ] **Segmented control** (`bladewind-segmented-control`, Forms) — Compact mutually exclusive choice control with text/icon options and form-compatible values.
 
@@ -95,6 +95,11 @@ Record rejected ideas, package-boundary decisions, breaking API choices, and lin
 
 - Every `config('bladewind.{component}.*', $default)` call a component's own package config (`packages/{component}/config/bladewind.php`) defines must be mirrored into the aggregate `packages/meta/config/bladewind.php`, with the same key and the same default — that file is a consumer's one-stop place to discover and override every setting without reading package source.
 - This is enforced by `tests/Core/ConfigSurfaceTest.php`, which greps every `resources/views/components/**/*.blade.php` for `config('bladewind.*')` reads and fails if a key it finds is missing from the aggregate file, or if the two defaults disagree. It only scans Blade files — a `config()` call left in a PHP class (see "Component architecture" above for why there shouldn't be one) will not be caught, so do not rely on the test alone; add the aggregate entry as part of building the component, not after the test fails.
+
+### Calendar vs Datepicker
+
+- Calendar owns the always-visible, non-form-field surface: month/week grids, event markers, and `none`/`single`/`multiple` (non-contiguous) date selection. It deliberately has no `range` selection mode — Datepicker's `range` option already owns form-bound date-range input, per "Deliberate non-duplicates" above. An app that needs a range picker uses Datepicker; Calendar is for displaying a month or week, optionally with events, optionally letting the user pick one or several individual days.
+- Calendar's month/week navigation is client-side date math (mirroring how `datepicker.js` computes its own grid), with `events` passed in as a bounded JSON payload rather than fetched per navigation — the same reasoning Data Grid used to justify client-side sort/search. `client-navigation="false"` opts a calendar out of this and back to a fully server-driven `before-navigate`/`navigate` pair, the same escape hatch Data Grid gives `client-sort`/`client-search`.
 
 ### Authoring component documentation
 

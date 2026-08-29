@@ -2288,6 +2288,466 @@ bwOn('click', '[data-bw-data-grid-page]', (button) => {
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initialiseDataGrids);
 else initialiseDataGrids();
 
+/**
+ * Calendar
+ *
+ * The server renders the requested month/week in full, including events, so
+ * the calendar works with no JS at all. Navigating (prev/next/today/PageUp,
+ * PageDown, or crossing a month boundary with the arrow keys) rebuilds the
+ * grid in the browser instead of round-tripping to the server, using pure
+ * date math plus the `events` the page already passed in — see
+ * initBladewindCalendar. Set `client-navigation="false"` on the component for
+ * a server-driven calendar instead: navigation then only fires
+ * before-navigate/navigate and the application re-renders.
+ */
+const bwCalendarRegistry = {};
+
+/** Populates the per-instance registry the client-side renderer reads from. Called inline by the component itself, once per instance, before any interaction is possible. */
+const initBladewindCalendar = ({name, monthNames, dayNames, events}) => {
+    bwCalendarRegistry[name] = {monthNames, dayNames, eventsIndex: buildCalendarEventsIndex(events)};
+};
+
+const buildCalendarEventsIndex = (events) => {
+    const index = {};
+    (events || []).forEach((event) => {
+        if (!event.date) return;
+        const start = new Date(`${event.date}T00:00:00`);
+        const end = event.end ? new Date(`${event.end}T00:00:00`) : new Date(start);
+        let cursor = new Date(start);
+        let guard = 0;
+        while (cursor <= end && guard < 366) {
+            const key = calendarISO(cursor);
+            (index[key] ??= []).push({label: event.label || '', type: event.type || 'info', href: event.href || null});
+            cursor = calendarAddDays(cursor, 1);
+            guard++;
+        }
+    });
+    return index;
+};
+
+const calendarISO = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+const calendarAddDays = (date, days) => { const d = new Date(date); d.setDate(d.getDate() + days); return d; };
+const calendarSameMonth = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth();
+const calendarSameDay = (a, b) => calendarISO(a) === calendarISO(b);
+
+const calendarStartOfWeek = (date, weekStarts) => {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    const offset = weekStarts === 'monday' ? 1 : 0;
+    d.setDate(d.getDate() - ((d.getDay() - offset + 7) % 7));
+    return d;
+};
+
+/** ISO-8601 week number. */
+const calendarWeekOfYear = (date) => {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+};
+
+const computeCalendarGrid = (anchor, view, weekStarts) => {
+    let gridStart, gridEnd, periodMonth;
+    if (view === 'week') {
+        gridStart = calendarStartOfWeek(anchor, weekStarts);
+        gridEnd = calendarAddDays(gridStart, 6);
+        periodMonth = anchor.getMonth();
+    } else {
+        const monthStart = new Date(anchor.getFullYear(), anchor.getMonth(), 1);
+        const monthEnd = new Date(anchor.getFullYear(), anchor.getMonth() + 1, 0);
+        gridStart = calendarStartOfWeek(monthStart, weekStarts);
+        gridEnd = calendarAddDays(calendarStartOfWeek(monthEnd, weekStarts), 6);
+        periodMonth = anchor.getMonth();
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const days = [];
+    let cursor = new Date(gridStart);
+    while (cursor <= gridEnd) {
+        days.push({
+            date: new Date(cursor),
+            iso: calendarISO(cursor),
+            day: cursor.getDate(),
+            inPeriod: view === 'week' || cursor.getMonth() === periodMonth,
+            isToday: calendarSameDay(cursor, today),
+            weekNumber: calendarWeekOfYear(cursor),
+        });
+        cursor = calendarAddDays(cursor, 1);
+    }
+
+    const weeks = [];
+    for (let i = 0; i < days.length; i += 7) weeks.push(days.slice(i, i + 7));
+    return weeks;
+};
+
+const calendarPeriodLabel = (anchor, view, weekStarts, monthNames) => {
+    if (view === 'week') {
+        const start = calendarStartOfWeek(anchor, weekStarts);
+        const end = calendarAddDays(start, 6);
+        const short = (d) => `${monthNames[d.getMonth()].slice(0, 3)} ${d.getDate()}`;
+        return calendarSameMonth(start, end)
+            ? `${short(start)} – ${end.getDate()}, ${end.getFullYear()}`
+            : `${short(start)} – ${short(end)}, ${end.getFullYear()}`;
+    }
+    return `${monthNames[anchor.getMonth()]} ${anchor.getFullYear()}`;
+};
+
+const calendarByName = (name) => Array.from(document.querySelectorAll('[data-bw-calendar]'))
+    .find((candidate) => candidate.getAttribute('data-name') === String(name)) || null;
+
+const calendarDetail = (calendar, values = {}) => ({name: calendar.getAttribute('data-name'), ...values});
+
+const calendarEvent = (calendar, name, detail, cancelable = false) => calendar.dispatchEvent(
+    new CustomEvent(`bladewind:calendar:${name}`, {bubbles: true, cancelable, detail})
+);
+
+const calendarAnchorDate = (calendar) => new Date(`${calendar.getAttribute('data-anchor')}T00:00:00`);
+
+const calendarConstraints = (calendar) => ({
+    min: calendar.dataset.minDate ? new Date(`${calendar.dataset.minDate}T00:00:00`) : null,
+    max: calendar.dataset.maxDate ? new Date(`${calendar.dataset.maxDate}T00:00:00`) : null,
+    disabled: new Set((calendar.dataset.disabledDates || '').split(',').filter(Boolean)),
+});
+
+const calendarDayCell = (calendar, iso) => calendar.querySelector(`[data-bw-calendar-day][data-date="${iso}"]`);
+
+const calendarSelectedDates = (name) => {
+    const calendar = calendarByName(name);
+    if (!calendar) return [];
+    return Array.from(calendar.querySelectorAll('[data-bw-calendar-input]')).map((input) => input.value);
+};
+
+const buildCalendarCellLabel = (date, dayNames, monthNames) => `${dayNames[date.getDay()]}, ${monthNames[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+
+/** Rebuilds the header title and every day cell for `anchor`, then re-derives the roving tabindex target. Used only when client navigation is enabled. */
+const renderCalendarGrid = (calendar, anchor) => {
+    const name = calendar.getAttribute('data-name');
+    const registry = bwCalendarRegistry[name] || {monthNames: [], dayNames: [], eventsIndex: {}};
+    const view = calendar.getAttribute('data-view');
+    const weekStarts = calendar.getAttribute('data-week-starts');
+    const selectable = calendar.getAttribute('data-selectable');
+    const maxEventsPerDay = parseInt(calendar.getAttribute('data-max-events-per-day'), 10) || 0;
+    const showOtherMonthDays = calendar.getAttribute('data-show-other-month-days') === 'true';
+    const showWeekNumbers = calendar.getAttribute('data-show-week-numbers') === 'true';
+    const {min, max, disabled} = calendarConstraints(calendar);
+    const selected = new Set(calendarSelectedDates(name));
+    const previouslyFocused = calendar.querySelector('[data-bw-calendar-day][tabindex="0"]')?.getAttribute('data-date');
+
+    const weeks = computeCalendarGrid(anchor, view, weekStarts);
+    const body = calendar.querySelector('[data-bw-calendar-body]');
+    if (!body) return;
+    body.innerHTML = '';
+
+    let focusIso = null;
+    weeks.forEach((week) => {
+        const row = document.createElement('tr');
+        row.setAttribute('role', 'row');
+        if (showWeekNumbers) {
+            const weekCell = document.createElement('td');
+            weekCell.className = 'bw-calendar-week-number';
+            weekCell.textContent = String(week[0].weekNumber);
+            row.appendChild(weekCell);
+        }
+
+        week.forEach((day) => {
+            const isDisabled = !day.inPeriod || (min && day.date < min) || (max && day.date > max) || disabled.has(day.iso);
+            const isSelected = selected.has(day.iso);
+            const cell = document.createElement('td');
+            cell.setAttribute('role', 'gridcell');
+            cell.setAttribute('data-bw-calendar-day', '');
+            cell.setAttribute('data-date', day.iso);
+            cell.tabIndex = -1;
+            cell.setAttribute('aria-label', buildCalendarCellLabel(day.date, registry.dayNames, registry.monthNames));
+            if (selectable !== 'none') cell.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+            if (day.isToday) cell.setAttribute('aria-current', 'date');
+            if (isDisabled) cell.setAttribute('aria-disabled', 'true');
+            cell.className = 'bw-calendar-cell'
+                + (!day.inPeriod ? ' bw-calendar-cell-outside' : '')
+                + (day.isToday ? ' bw-calendar-cell-today' : '')
+                + (isSelected ? ' bw-calendar-cell-selected' : '')
+                + (isDisabled ? ' bw-calendar-cell-disabled' : '');
+            if (!day.inPeriod && !showOtherMonthDays) cell.hidden = true;
+
+            const dateSpan = document.createElement('span');
+            dateSpan.className = 'bw-calendar-cell-date';
+            dateSpan.textContent = String(day.day);
+            cell.appendChild(dateSpan);
+
+            const events = registry.eventsIndex[day.iso] || [];
+            if (events.length) {
+                const wrap = document.createElement('div');
+                wrap.className = 'bw-calendar-cell-events';
+                events.forEach((event, index) => {
+                    const isOverflow = index >= maxEventsPerDay;
+                    const el = document.createElement(event.href ? 'a' : 'span');
+                    if (event.href) el.href = event.href;
+                    el.className = `bw-calendar-event bw-calendar-event-${event.type}`;
+                    el.textContent = event.label;
+                    el.setAttribute('data-bw-calendar-overflow-event', isOverflow ? 'true' : 'false');
+                    if (isOverflow) el.hidden = true;
+                    wrap.appendChild(el);
+                });
+                const overflowCount = Math.max(0, events.length - maxEventsPerDay);
+                if (overflowCount > 0) {
+                    const more = document.createElement('button');
+                    more.type = 'button';
+                    more.className = 'bw-calendar-event-more';
+                    more.setAttribute('data-bw-calendar-more', '');
+                    more.setAttribute('aria-expanded', 'false');
+                    more.textContent = `+${overflowCount} more`;
+                    wrap.appendChild(more);
+                }
+                cell.appendChild(wrap);
+            }
+
+            row.appendChild(cell);
+
+            if (!focusIso && day.iso === previouslyFocused) focusIso = day.iso;
+        });
+        body.appendChild(row);
+    });
+
+    if (!focusIso) {
+        const flat = weeks.flat();
+        const pick = flat.find((d) => selected.has(d.iso)) || flat.find((d) => d.isToday) || flat.find((d) => d.inPeriod) || flat[0];
+        focusIso = pick.iso;
+    }
+    const focusCell = body.querySelector(`[data-date="${focusIso}"]`);
+    if (focusCell) focusCell.tabIndex = 0;
+
+    const title = calendar.querySelector('[data-bw-calendar-title]');
+    if (title) title.textContent = calendarPeriodLabel(anchor, view, weekStarts, registry.monthNames);
+
+    calendar.setAttribute('data-anchor', calendarISO(anchor));
+    calendar.querySelectorAll('[data-bw-calendar-view]').forEach((button) => {
+        button.setAttribute('aria-pressed', button.getAttribute('data-bw-calendar-view') === view ? 'true' : 'false');
+    });
+};
+
+const applyCalendarNavigation = (calendar, target, options = {}) => {
+    if (calendar.getAttribute('data-client-navigation') !== 'true') return;
+    renderCalendarGrid(calendar, target);
+    if (options.focus === false) return;
+    const focusCell = calendar.querySelector('[data-bw-calendar-day][tabindex="0"]');
+    if (focusCell) focusCell.focus({preventScroll: true});
+};
+
+const navigateCalendarTo = (calendar, target, options = {}) => {
+    const detail = calendarDetail(calendar, {view: calendar.getAttribute('data-view'), anchor: calendarISO(target), source: options.source || 'api'});
+    if (!calendarEvent(calendar, 'before-navigate', detail, true)) return false;
+    applyCalendarNavigation(calendar, target, options);
+    calendarEvent(calendar, 'navigate', detail);
+    return true;
+};
+
+const navigateCalendar = (name, delta, options = {}) => {
+    const calendar = calendarByName(name);
+    if (!calendar) return false;
+    const target = new Date(calendarAnchorDate(calendar));
+    if (delta.years) target.setFullYear(target.getFullYear() + delta.years);
+    if (delta.months) target.setMonth(target.getMonth() + delta.months);
+    if (delta.weeks) target.setDate(target.getDate() + delta.weeks * 7);
+    return navigateCalendarTo(calendar, target, options);
+};
+
+const nextCalendarPeriod = (name, options = {}) => {
+    const calendar = calendarByName(name);
+    if (!calendar) return false;
+    return navigateCalendar(name, calendar.getAttribute('data-view') === 'week' ? {weeks: 1} : {months: 1}, options);
+};
+
+const previousCalendarPeriod = (name, options = {}) => {
+    const calendar = calendarByName(name);
+    if (!calendar) return false;
+    return navigateCalendar(name, calendar.getAttribute('data-view') === 'week' ? {weeks: -1} : {months: -1}, options);
+};
+
+const goToCalendarToday = (name, options = {}) => {
+    const calendar = calendarByName(name);
+    if (!calendar) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return navigateCalendarTo(calendar, today, options);
+};
+
+const goToCalendarMonth = (name, year, month, options = {}) => {
+    const calendar = calendarByName(name);
+    if (!calendar) return false;
+    const anchor = calendarAnchorDate(calendar);
+    return navigateCalendarTo(calendar, new Date(year, month - 1, Math.min(anchor.getDate(), 28)), options);
+};
+
+const setCalendarView = (name, view, options = {}) => {
+    const calendar = calendarByName(name);
+    if (!calendar || !['month', 'week'].includes(view)) return false;
+    if (calendar.getAttribute('data-view') === view) return true;
+    const detail = calendarDetail(calendar, {view, source: options.source || 'api'});
+    if (!calendarEvent(calendar, 'before-view-change', detail, true)) return false;
+    calendar.setAttribute('data-view', view);
+    applyCalendarNavigation(calendar, calendarAnchorDate(calendar), options);
+    calendarEvent(calendar, 'view-change', detail);
+    return true;
+};
+
+const focusCalendarDay = (calendar, cell) => {
+    calendar.querySelectorAll('[data-bw-calendar-day]').forEach((el) => { el.tabIndex = -1; });
+    cell.tabIndex = 0;
+    cell.focus({preventScroll: true});
+};
+
+/** Moves the roving tabindex to `targetDate`. If it isn't in the rendered grid (or is a hidden padding day), navigates there first — overriding renderCalendarGrid's own generic focus pick, which has no way to know this is the date the arrow key actually asked for. */
+const moveCalendarFocusTo = (calendar, targetDate) => {
+    const iso = calendarISO(targetDate);
+    const existing = calendarDayCell(calendar, iso);
+    if (existing && !existing.hidden) {
+        focusCalendarDay(calendar, existing);
+        return;
+    }
+    if (navigateCalendarTo(calendar, targetDate, {source: 'keyboard', focus: false})) {
+        const cell = calendarDayCell(calendar, iso);
+        if (cell) focusCalendarDay(calendar, cell);
+    }
+};
+
+const syncCalendarInputs = (calendar, selected) => {
+    const name = calendar.getAttribute('data-name');
+    const selectable = calendar.getAttribute('data-selectable');
+    const container = calendar.querySelector('[data-bw-calendar-inputs]');
+    if (!container) return;
+    container.innerHTML = '';
+    selected.forEach((iso) => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = selectable === 'multiple' ? `${name}[]` : name;
+        input.value = iso;
+        input.setAttribute('data-bw-calendar-input', iso);
+        container.appendChild(input);
+    });
+};
+
+const selectCalendarDate = (name, iso, options = {}) => {
+    const calendar = calendarByName(name);
+    if (!calendar) return false;
+    const selectable = calendar.getAttribute('data-selectable');
+    if (selectable === 'none') return false;
+    const cell = calendarDayCell(calendar, iso);
+    if (cell && cell.getAttribute('aria-disabled') === 'true') return false;
+
+    const current = new Set(calendarSelectedDates(name));
+    const wasSelected = current.has(iso);
+    const next = selectable === 'single'
+        ? (wasSelected ? new Set() : new Set([iso]))
+        : new Set(current);
+    if (selectable === 'multiple') { if (wasSelected) next.delete(iso); else next.add(iso); }
+
+    const detail = calendarDetail(calendar, {date: iso, selected: Array.from(next), source: options.source || 'api'});
+    if (!calendarEvent(calendar, 'before-select', detail, true)) return false;
+
+    calendar.querySelectorAll('[data-bw-calendar-day]').forEach((el) => {
+        const isSelected = next.has(el.getAttribute('data-date'));
+        el.classList.toggle('bw-calendar-cell-selected', isSelected);
+        el.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+    });
+    syncCalendarInputs(calendar, next);
+
+    calendarEvent(calendar, 'select', detail);
+    return true;
+};
+
+const clearCalendarSelection = (name, options = {}) => {
+    const calendar = calendarByName(name);
+    if (!calendar) return false;
+    calendar.querySelectorAll('[data-bw-calendar-day]').forEach((el) => {
+        el.classList.remove('bw-calendar-cell-selected');
+        if (calendar.getAttribute('data-selectable') !== 'none') el.setAttribute('aria-selected', 'false');
+    });
+    syncCalendarInputs(calendar, new Set());
+    calendarEvent(calendar, 'select', calendarDetail(calendar, {selected: [], source: options.source || 'api'}));
+    return true;
+};
+
+bwOn('click', '[data-bw-calendar-day]', (cell, event) => {
+    if (event.target.closest('a,button')) return;
+    const calendar = cell.closest('[data-bw-calendar]');
+    if (!calendar || cell.getAttribute('aria-disabled') === 'true') return;
+    focusCalendarDay(calendar, cell);
+    if (calendar.getAttribute('data-selectable') !== 'none') {
+        selectCalendarDate(calendar.getAttribute('data-name'), cell.getAttribute('data-date'), {source: 'pointer'});
+    }
+});
+
+bwOn('keydown', '[data-bw-calendar-day]', (cell, event) => {
+    if (event.target !== cell) return; // let a focused event link/more-button handle its own keys
+    const calendar = cell.closest('[data-bw-calendar]');
+    if (!calendar) return;
+    const name = calendar.getAttribute('data-name');
+
+    if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        if (cell.getAttribute('aria-disabled') === 'true') return;
+        if (calendar.getAttribute('data-selectable') !== 'none') {
+            selectCalendarDate(name, cell.getAttribute('data-date'), {source: 'keyboard'});
+        }
+        return;
+    }
+
+    const dayDeltas = {ArrowRight: 1, ArrowLeft: -1, ArrowDown: 7, ArrowUp: -7};
+    if (event.key in dayDeltas) {
+        event.preventDefault();
+        moveCalendarFocusTo(calendar, calendarAddDays(new Date(`${cell.getAttribute('data-date')}T00:00:00`), dayDeltas[event.key]));
+        return;
+    }
+
+    if (event.key === 'Home' || event.key === 'End') {
+        event.preventDefault();
+        const cells = Array.from(cell.closest('tr')?.querySelectorAll('[data-bw-calendar-day]') || []);
+        const target = event.key === 'Home' ? cells[0] : cells[cells.length - 1];
+        if (target) focusCalendarDay(calendar, target);
+        return;
+    }
+
+    if (event.key === 'PageUp' || event.key === 'PageDown') {
+        event.preventDefault();
+        const direction = event.key === 'PageUp' ? -1 : 1;
+        const view = calendar.getAttribute('data-view');
+        const delta = event.shiftKey
+            ? (view === 'week' ? {months: direction} : {years: direction})
+            : (view === 'week' ? {weeks: direction} : {months: direction});
+        navigateCalendar(name, delta, {source: 'keyboard'});
+    }
+});
+
+bwOn('click', '[data-bw-calendar-more]', (button) => {
+    const cell = button.closest('[data-bw-calendar-day]');
+    if (!cell) return;
+    const expanded = button.getAttribute('aria-expanded') === 'true';
+    if (!button.dataset.moreLabel) button.dataset.moreLabel = button.textContent;
+    cell.querySelectorAll('[data-bw-calendar-overflow-event]').forEach((el) => { el.hidden = expanded; });
+    button.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+    button.textContent = expanded ? button.dataset.moreLabel : 'Show less';
+});
+
+bwOn('click', '[data-bw-calendar-prev]', (button) => {
+    const calendar = button.closest('[data-bw-calendar]');
+    if (calendar) previousCalendarPeriod(calendar.getAttribute('data-name'), {source: 'pointer'});
+});
+
+bwOn('click', '[data-bw-calendar-next]', (button) => {
+    const calendar = button.closest('[data-bw-calendar]');
+    if (calendar) nextCalendarPeriod(calendar.getAttribute('data-name'), {source: 'pointer'});
+});
+
+bwOn('click', '[data-bw-calendar-today]', (button) => {
+    const calendar = button.closest('[data-bw-calendar]');
+    if (calendar) goToCalendarToday(calendar.getAttribute('data-name'), {source: 'pointer'});
+});
+
+bwOn('click', '[data-bw-calendar-view]', (button) => {
+    const calendar = button.closest('[data-bw-calendar]');
+    if (calendar) setCalendarView(calendar.getAttribute('data-name'), button.getAttribute('data-bw-calendar-view'), {source: 'pointer'});
+});
+
 // a tab heading either switches tab or navigates, depending on its url prop
 bwOn('click', '[data-bw-tab]', (tab) => {
     goToTab(
@@ -2404,6 +2864,16 @@ Object.assign(window, {
     dataGridSelectedKeys,
     setDataGridLoading,
     resetDataGrid,
+    initBladewindCalendar,
+    navigateCalendar,
+    nextCalendarPeriod,
+    previousCalendarPeriod,
+    goToCalendarToday,
+    goToCalendarMonth,
+    setCalendarView,
+    selectCalendarDate,
+    clearCalendarSelection,
+    calendarSelectedDates,
     showButtonSpinner,
     hideButtonSpinner,
     showModalActionButtons,

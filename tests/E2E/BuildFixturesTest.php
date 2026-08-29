@@ -585,4 +585,62 @@ class BuildFixturesTest extends TestCase
 
         $this->assertFileExists(self::OUT.'/data-grid.html');
     }
+
+    #[Test]
+    public function it_writes_the_calendar_fixture(): void
+    {
+        $events = [
+            ['date' => '2026-08-05', 'label' => 'Standup', 'type' => 'info'],
+            ['date' => '2026-08-05', 'label' => 'Design review', 'type' => 'success'],
+            ['date' => '2026-08-05', 'label' => 'Retro', 'type' => 'warning'],
+            ['date' => '2026-08-05', 'label' => 'Overflow item', 'type' => 'danger'],
+            ['date' => '2026-08-18', 'end' => '2026-08-20', 'label' => 'Conference', 'type' => 'success'],
+        ];
+
+        $primary = $this->render(
+            '<x-bladewind::calendar name="team" label="Team calendar" date="2026-08-15" selectable="multiple"'
+            .' selected="2026-08-10" class="e2e-calendar" :events="$events" />',
+            ['events' => $events]
+        );
+
+        $restricted = $this->render(
+            '<x-bladewind::calendar name="booking" label="Booking calendar" date="2026-08-15" selectable="single"'
+            .' min-date="2026-08-10" max-date="2026-08-20" disabled-dates="2026-08-14" />'
+        );
+
+        $serverDriven = $this->render(
+            '<x-bladewind::calendar name="remote" label="Server-driven calendar" date="2026-08-15" client-navigation="false" />'
+        );
+
+        $scripts = <<<'HTML'
+        <script>
+          window.calendarEvents = [];
+          window.blockSelect = false;
+          window.blockNavigate = false;
+          const team = document.querySelector('[data-bw-calendar][data-name="team"]');
+          ['before-navigate', 'navigate', 'before-view-change', 'view-change', 'before-select', 'select'].forEach((name) => {
+            team.addEventListener(`bladewind:calendar:${name}`, (event) => {
+              window.calendarEvents.push({type: event.type, date: event.detail.date, selected: event.detail.selected, anchor: event.detail.anchor, view: event.detail.view});
+              if (window.blockSelect && name === 'before-select') event.preventDefault();
+              if (window.blockNavigate && name === 'before-navigate') event.preventDefault();
+            });
+          });
+          window.remoteCalendarEvents = [];
+          document.querySelector('[data-bw-calendar][data-name="remote"]').addEventListener('bladewind:calendar:navigate', (event) => {
+            window.remoteCalendarEvents.push({anchor: event.detail.anchor});
+          });
+        </script>
+        HTML;
+
+        $body = '<main style="display:flex;flex-direction:column;gap:24px;padding:16px;max-width:700px">'
+            .$primary.$restricted.$serverDriven
+            .'</main>';
+
+        file_put_contents(
+            self::OUT.'/calendar.html',
+            $this->relative($this->page('Calendar', $body, $scripts))
+        );
+
+        $this->assertFileExists(self::OUT.'/calendar.html');
+    }
 }

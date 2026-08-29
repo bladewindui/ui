@@ -1,0 +1,21 @@
+{
+    "name": "bladewindui/calendar",
+    "description": "BladewindUI accessible calendar — an inline month/week calendar for displaying and selecting dates or events, distinct from the input-focused Datepicker",
+    "keywords": ["laravel", "blade", "tailwindcss", "bladewindui", "calendar", "events", "content"],
+    "license": "MIT",
+    "type": "library",
+    "authors": [{"name": "Michael K. Ocansey", "email": "mike@bladewindui.com"}],
+    "require": {
+        "php": ">=8.1",
+        "bladewindui/core": "^4.4",
+        "bladewindui/icon": "^4.4"
+    },
+    "autoload": {
+        "psr-4": {"Mkocansey\\Bladewind\\Calendar\\": "src/"}
+    },
+    "extra": {
+        "laravel": {
+            "providers": ["Mkocansey\\Bladewind\\Calendar\\BladewindCalendarServiceProvider"]
+        }
+    }
+}
