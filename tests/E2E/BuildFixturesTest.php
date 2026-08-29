@@ -459,4 +459,59 @@ class BuildFixturesTest extends TestCase
 
         $this->assertFileExists(self::OUT.'/sidebar.html');
     }
+
+    #[Test]
+    public function it_writes_the_command_palette_fixture(): void
+    {
+        $primary = $this->render(
+            '<x-bladewind::command-palette name="app-commands" label="Command palette" placeholder="Search for a command or page…" class="e2e-command-palette">'
+            .'<x-bladewind::command-palette.group name="navigate" label="Navigate">'
+            .'<x-bladewind::command-palette.item name="dashboard" label="Dashboard" description="Overview of your workspace" href="#dashboard" icon="home" />'
+            .'<x-bladewind::command-palette.item name="orders" label="Orders" description="Review recent orders" href="#orders" icon="shopping-bag" />'
+            .'<x-bladewind::command-palette.item name="locked" label="Locked report" href="#locked" disabled="true" />'
+            .'</x-bladewind::command-palette.group>'
+            .'<x-bladewind::command-palette.group name="actions" label="Actions">'
+            .'<x-bladewind::command-palette.item name="new-order" label="Create order" icon="plus" shortcut="Ctrl+N" keywords="add new" />'
+            .'<x-bladewind::command-palette.item name="docs" label="Documentation" href="https://example.com" external="true" />'
+            .'</x-bladewind::command-palette.group>'
+            .'</x-bladewind::command-palette>'
+        );
+
+        $secondary = $this->render(
+            '<x-bladewind::command-palette name="secondary" label="Secondary palette" shortcut="mod+p">'
+            .'<x-bladewind::command-palette.item name="secondary-item" label="Secondary action" />'
+            .'</x-bladewind::command-palette>'
+        );
+
+        $scripts = <<<'HTML'
+        <script>
+          window.commandPaletteEvents = [];
+          window.blockOpen = false;
+          window.blockClose = false;
+          window.blockSelect = false;
+          const app = document.querySelector('[data-bw-command-palette][data-name="app-commands"]');
+          ['before-open', 'opened', 'before-close', 'closed', 'before-select', 'select', 'search'].forEach((name) => {
+            app.addEventListener(`bladewind:command-palette:${name}`, (event) => {
+              window.commandPaletteEvents.push({type: event.type, itemName: event.detail.itemName, source: event.detail.source, query: event.detail.query});
+              if (window.blockOpen && name === 'before-open') event.preventDefault();
+              if (window.blockClose && name === 'before-close') event.preventDefault();
+              if (window.blockSelect && name === 'before-select') event.preventDefault();
+            });
+          });
+          document.querySelectorAll('[data-open-command-palette]').forEach((button) => button.addEventListener('click', () => openCommandPalette(button.dataset.openCommandPalette, {triggeringElement: button, source: 'fixture'})));
+        </script>
+        HTML;
+
+        $body = '<button type="button" id="open-app" data-open-command-palette="app-commands">Open command palette</button>'
+            .'<button type="button" id="open-secondary" data-open-command-palette="secondary">Open secondary</button>'
+            .'<button type="button" id="after-palette">After</button>'
+            .$primary.$secondary;
+
+        file_put_contents(
+            self::OUT.'/command-palette.html',
+            $this->relative($this->page('Command Palette', $body, $scripts))
+        );
+
+        $this->assertFileExists(self::OUT.'/command-palette.html');
+    }
 }

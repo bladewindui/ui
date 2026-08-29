@@ -1,0 +1,101 @@
+.bw-command-palette { position: fixed; inset: 0; z-index: 60; display: flex; justify-content: center; align-items: flex-start; padding: 10vh 1rem 2rem; pointer-events: none; }
+.bw-command-palette[hidden] { display: none; }
+.bw-command-palette-backdrop { position: absolute; inset: 0; background: rgb(0 0 0 / .5); opacity: 0; transition: opacity .2s ease; pointer-events: auto; }
+.bw-command-palette[data-state="open"] .bw-command-palette-backdrop { opacity: 1; }
+.bw-command-palette-panel {
+    position: relative;
+    display: flex;
+    width: 100%;
+    max-width: 34rem;
+    max-height: 70vh;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: .75rem;
+    background: white;
+    color: rgb(31 41 55);
+    box-shadow: 0 25px 50px -12px rgb(0 0 0 / .35);
+    opacity: 0;
+    transform: translateY(-.5rem) scale(.98);
+    transition: opacity .18s ease, transform .18s ease;
+    pointer-events: auto;
+}
+.bw-command-palette-panel { @variant dark { background: #1c1f24; color: #d2d4d7; } }
+.bw-command-palette[data-state="open"] .bw-command-palette-panel { opacity: 1; transform: translateY(0) scale(1); }
+.bw-command-palette-tiny .bw-command-palette-panel { max-width: 24rem; }
+.bw-command-palette-small .bw-command-palette-panel { max-width: 28rem; }
+.bw-command-palette-medium .bw-command-palette-panel { max-width: 34rem; }
+.bw-command-palette-big .bw-command-palette-panel { max-width: 40rem; }
+.bw-command-palette-large .bw-command-palette-panel { max-width: 48rem; }
+.bw-command-palette-xl .bw-command-palette-panel { max-width: 56rem; }
+.bw-command-palette-omg .bw-command-palette-panel { max-width: calc(100% - 2rem); }
+.bw-command-palette-search { display: flex; flex: none; align-items: center; gap: .625rem; border-bottom: 1px solid rgb(226 232 240); padding: .875rem 1rem; }
+.bw-command-palette-search { @variant dark { border-color: rgb(74 78 83 / .75); } }
+.bw-command-palette-search-icon { flex: none; color: rgb(148 163 184); }
+.bw-command-palette-input { flex: 1; min-width: 0; border: 0; background: transparent; color: inherit; font-size: 1rem; line-height: 1.5rem; outline: none; }
+.bw-command-palette-input::placeholder { color: rgb(148 163 184); }
+.bw-command-palette-close { flex: none; display: grid; width: 1.75rem; height: 1.75rem; place-items: center; border-radius: 9999px; color: rgb(100 116 139); }
+.bw-command-palette-close:hover { background: rgb(241 245 249); color: rgb(15 23 42); }
+.bw-command-palette-close:hover { @variant dark { background: #33373c; color: #f0f1f2; } }
+.bw-command-palette-close:focus-visible,.bw-command-palette-item:focus-visible { outline: 2px solid var(--color-primary-500); outline-offset: 2px; }
+.bw-command-palette-results { min-height: 0; flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: .5rem; scrollbar-gutter: stable; }
+.bw-command-palette-group + .bw-command-palette-group { margin-top: .5rem; }
+.bw-command-palette-group[hidden] { display: none; }
+.bw-command-palette-group-label { padding: .5rem .625rem .25rem; color: rgb(100 116 139); font-size: .6875rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.bw-command-palette-group-label { @variant dark { color: #a7aaad; } }
+.bw-command-palette-group-items { display: flex; flex-direction: column; gap: .125rem; }
+.bw-command-palette-item {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    align-items: center;
+    gap: .75rem;
+    border-radius: .5rem;
+    padding: .625rem .75rem;
+    color: rgb(51 65 85);
+    text-align: start;
+    text-decoration: none;
+    cursor: pointer;
+}
+.bw-command-palette-item { @variant dark { color: #d2d4d7; } }
+.bw-command-palette-item[hidden] { display: none; }
+.bw-command-palette-item[data-highlighted="true"] { background: var(--color-primary-50); color: var(--color-primary-700); }
+.bw-command-palette-item[data-highlighted="true"] { @variant dark { background: rgb(71 85 105 / .55); color: #f0f1f2; } }
+.bw-command-palette-item[aria-disabled="true"] { cursor: not-allowed; opacity: .5; }
+.bw-command-palette-item-icon { display: grid; width: 1.25rem; height: 1.25rem; flex: none; place-items: center; color: rgb(100 116 139); }
+.bw-command-palette-item[data-highlighted="true"] .bw-command-palette-item-icon { color: inherit; }
+.bw-command-palette-item-icon-dot { width: .375rem; height: .375rem; border-radius: 9999px; background: currentColor; opacity: .6; }
+.bw-command-palette-item-copy { min-width: 0; flex: 1; overflow-wrap: anywhere; }
+.bw-command-palette-item-label,.bw-command-palette-item-description { display: block; }
+.bw-command-palette-item-description { margin-top: .125rem; color: rgb(100 116 139); font-size: .75rem; line-height: 1.25rem; }
+.bw-command-palette-item-description { @variant dark { color: #a7aaad; } }
+.bw-command-palette-item-shortcut { display: flex; flex: none; gap: .25rem; }
+.bw-command-palette-item-shortcut kbd,.bw-command-palette-hint kbd {
+    display: inline-flex;
+    min-width: 1.25rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: .3125rem;
+    border: 1px solid rgb(226 232 240);
+    background: rgb(248 250 252);
+    padding: .0625rem .375rem;
+    color: rgb(100 116 139);
+    font-family: inherit;
+    font-size: .6875rem;
+}
+.bw-command-palette-item-shortcut kbd,.bw-command-palette-hint kbd { @variant dark { border-color: rgb(74 78 83 / .75); background: #262a2f; color: #d2d4d7; } }
+.bw-command-palette-item-external { flex: none; opacity: .65; }
+.bw-command-palette-empty,.bw-command-palette-loading { margin: 0; padding: 1.5rem 1rem; color: rgb(100 116 139); font-size: .875rem; text-align: center; }
+.bw-command-palette-empty { @variant dark { color: #a7aaad; } }
+.bw-command-palette-loading { @variant dark { color: #a7aaad; } }
+.bw-command-palette-footer { display: flex; flex: none; align-items: center; justify-content: space-between; gap: .75rem; border-top: 1px solid rgb(226 232 240); padding: .625rem 1rem; }
+.bw-command-palette-footer { @variant dark { border-color: rgb(74 78 83 / .75); } }
+.bw-command-palette-hints { display: flex; flex-wrap: wrap; gap: .875rem; }
+.bw-command-palette-hint { display: inline-flex; align-items: center; gap: .25rem; color: rgb(100 116 139); font-size: .75rem; }
+.bw-command-palette-hint { @variant dark { color: #a7aaad; } }
+@media (max-width: 639px) {
+    .bw-command-palette { padding: 4vh .75rem 1.5rem; }
+    .bw-command-palette-panel { max-width: 100% !important; max-height: 85vh; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .bw-command-palette-backdrop,.bw-command-palette-panel { transition-duration: .01ms; }
+}

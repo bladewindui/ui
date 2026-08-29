@@ -74,6 +74,7 @@ jobs:
           # ── Navigation leaf packages ──────────────────────────────────────────
           - { local_path: 'packages/breadcrumbs',   split_repository: 'breadcrumbs'   }
           - { local_path: 'packages/sidebar',       split_repository: 'sidebar'       }
+          - { local_path: 'packages/command-palette',split_repository: 'command-palette'}
           - { local_path: 'packages/stepper',       split_repository: 'stepper'       }
           - { local_path: 'packages/tab',           split_repository: 'tab'           }
           - { local_path: 'packages/dropmenu',      split_repository: 'dropmenu'      }
