@@ -11,7 +11,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` complete · `[!]` re
 - [x] **Drawer / sheet** (`bladewind-drawer`, Content) — Edge-mounted overlay for mobile navigation, filters, forms, and detail panels; support all four edges and modal/non-modal modes.
 - [x] **Stepper / wizard** (`bladewind-stepper`, Navigation) — Horizontal and vertical steps with complete, current, error, and disabled states; allow clickable and linear workflows.
 - [x] **Sidebar navigation** (`bladewind-sidebar`, Navigation): Responsive nested application navigation with sections, icons, active states, badges, collapsible groups, and a mobile drawer mode.
-- [ ] **Command palette** (`bladewind-command-palette`, Navigation) — Keyboard-first searchable action launcher with grouped actions, shortcuts, empty states, and asynchronous results.
+- [x] **Command palette** (`bladewind-command-palette`, Navigation) — Keyboard-first searchable action launcher with grouped actions, shortcuts, empty states, and asynchronous results.
 - [ ] **Tree view** (`bladewind-tree`, Content) — Expandable hierarchical data with single/multiple selection, checkboxes, lazy-loaded children, and full keyboard navigation.
 - [ ] **Data grid / Table v2** (`bladewind-data-grid`, Content) — A higher-level companion to Table with column sorting, filtering, selection, sticky headers, pagination hooks, and server-driven state.
 - [ ] **Calendar** (`bladewind-calendar`, Content) — Inline month/week calendar for displaying and selecting dates or events, distinct from the input-focused Datepicker.
