@@ -62,9 +62,9 @@
     </div>
 </div>
 
-<x-bladewind::script :nonce="$nonce">
-    @php include_once(public_path('vendor/bladewind/js/popover.js')); @endphp
-</x-bladewind::script>
+@once
+    <x-bladewind::script :nonce="$nonce" src="{{ asset('vendor/bladewind/js/popover.js') }}"></x-bladewind::script>
+@endonce
 <x-bladewind::script :nonce="$nonce" :modular="$modular">
     const {{ $name }} = new BladewindPopover('{{ $name }}', {
     triggerOn: '{{ $triggerOn }}',
