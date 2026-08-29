@@ -140,13 +140,18 @@ class CalendarTest extends TestCase
     }
 
     #[Test]
-    public function a_height_caps_the_scroll_wrapper_so_the_calendar_does_not_change_size_across_views(): void
+    public function height_fixes_the_scroll_wrapper_so_the_calendar_does_not_change_size_across_views(): void
     {
-        $withHeight = $this->calendar('name="team" date="2026-08-15" height="28rem"');
-        $this->assertAttribute($withHeight, '//*[@data-bw-calendar-scroll]', 'style', 'max-height: 28rem');
+        $customHeight = $this->calendar('name="team" date="2026-08-15" height="28rem"');
+        $this->assertAttribute($customHeight, '//*[@data-bw-calendar-scroll]', 'style', 'height: 28rem');
 
-        $withoutHeight = $this->calendar('name="team" date="2026-08-15"');
-        $this->assertAttribute($withoutHeight, '//*[@data-bw-calendar-scroll]', 'style', null);
+        // fixed height is on by default, sized for a 6-week month
+        $defaultHeight = $this->calendar('name="team" date="2026-08-15"');
+        $this->assertAttribute($defaultHeight, '//*[@data-bw-calendar-scroll]', 'style', 'height: 40rem');
+
+        // an explicit empty value opts back out to natural, content-driven sizing
+        $natural = $this->calendar('name="team" date="2026-08-15" height=""');
+        $this->assertAttribute($natural, '//*[@data-bw-calendar-scroll]', 'style', null);
     }
 
     #[Test]
@@ -165,7 +170,7 @@ class CalendarTest extends TestCase
 
         $this->assertAttribute($html, '//*[@data-bw-calendar]', 'data-selectable', 'single');
         $this->assertAttribute($html, '//*[@data-bw-calendar]', 'data-week-starts', 'monday');
-        $this->assertAttribute($html, '//*[@data-bw-calendar-scroll]', 'style', 'max-height: 30rem');
+        $this->assertAttribute($html, '//*[@data-bw-calendar-scroll]', 'style', 'height: 30rem');
         $this->assertStringContainsString('+1 more', $html);
     }
 

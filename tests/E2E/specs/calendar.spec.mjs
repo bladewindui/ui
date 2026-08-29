@@ -224,3 +224,17 @@ test('a fixed height keeps the calendar the same size across months and views wi
   const week = await heightFor()
   expect(Math.abs(august - week)).toBeLessThan(2)
 })
+
+test('a calendar with no height prop still does not jump across months and views, by default', async ({ page }) => {
+  const calendar = page.locator('[data-bw-calendar][data-name="team"]')
+  const heightFor = async () => (await calendar.boundingBox()).height
+
+  const august = await heightFor() // August 2026 is a 6-row month
+  await calendar.locator('[data-bw-calendar-next]').click() // September 2026 has fewer weeks
+  const september = await heightFor()
+  expect(Math.abs(august - september)).toBeLessThan(2)
+
+  await calendar.locator('[data-bw-calendar-view="week"]').click()
+  const week = await heightFor()
+  expect(Math.abs(august - week)).toBeLessThan(2)
+})

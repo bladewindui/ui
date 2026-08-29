@@ -40,9 +40,11 @@
 
     'showWeekNumbers' => null,
 
-    // caps the grid at a fixed height (e.g. '28rem') with an internal scrollbar,
+    // fixes the grid at this height (e.g. '28rem') with an internal scrollbar,
     // so switching between months with different week counts, or between month
-    // and week view, doesn't change the calendar's overall height
+    // and week view, never changes the calendar's overall height. Defaults to
+    // room for a 6-week month, the tallest a month view ever renders. Pass an
+    // empty string to fall back to natural, content-driven sizing instead.
     'height' => null,
 
     // rebuild the grid in the browser on navigation using the events already
@@ -66,7 +68,7 @@
     $maxEventsPerDay = max(0, (int) parseBladewindVariable($maxEventsPerDay ?? config('bladewind.calendar.max_events_per_day', 3), 'int'));
     $showOtherMonthDays = parseBladewindVariable($showOtherMonthDays ?? config('bladewind.calendar.show_other_month_days', true));
     $showWeekNumbers = parseBladewindVariable($showWeekNumbers ?? config('bladewind.calendar.show_week_numbers', false));
-    $height = $height ?? config('bladewind.calendar.height', null);
+    $height = $height ?? config('bladewind.calendar.height', '40rem');
     $clientNavigation = parseBladewindVariable($clientNavigation ?? config('bladewind.calendar.client_navigation', true));
     $todayLabel = $todayLabel ?? config('bladewind.calendar.today_label', 'Today');
     $previousLabel = $previousLabel ?? config('bladewind.calendar.previous_label', 'Previous');
@@ -220,7 +222,7 @@
         </div>
     </div>
 
-    <div class="bw-calendar-scroll" data-bw-calendar-scroll @if($height) style="max-height: {{ $height }}" @endif>
+    <div class="bw-calendar-scroll" data-bw-calendar-scroll @if($height) style="height: {{ $height }}" @endif>
     <table class="bw-calendar-grid" data-bw-calendar-table role="grid" aria-labelledby="{{ $titleId }}">
         <thead>
             <tr role="row">

@@ -45,7 +45,7 @@ The package installs Bladewind Core and Icon automatically.
 
 ## Fixed height
 
-Without `height`, the calendar's overall size follows its content: a month can render 4, 5, or 6 weeks depending on where it starts, and week view is naturally much shorter than month view. Set `height` (e.g. `28rem`) to cap the grid at a fixed size with an internal scrollbar instead — useful when the calendar sits in a layout that shouldn't jump around as the user navigates or switches views. Each day cell itself already has a fixed height regardless of how many events it holds; a day with more events than `max-events-per-day` gets its own small internal scrollbar once "+N more" is expanded, rather than growing the row.
+The grid has a fixed height by default (`40rem`, room for a 6-week month — the tallest a month view ever renders), with an internal scrollbar — so the calendar never changes size navigating between months or switching between month and week view. A month with fewer weeks, or week view, just leaves empty space at the bottom of the grid rather than shrinking. Pass `height` with your own value (e.g. `28rem`) to use a different fixed size, or an empty string (`height=""`) to fall back to natural, content-driven sizing instead. Each day cell itself already has a fixed height regardless of how many events it holds; a day with more events than `max-events-per-day` gets its own small internal scrollbar once "+N more" is expanded, rather than growing the row.
 
 ## Navigation
 
