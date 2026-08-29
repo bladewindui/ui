@@ -32,6 +32,10 @@
     'disabledDates' => [],
 
     // ['date' => 'Y-m-d', 'end' => optional 'Y-m-d', 'label', 'type', 'href']
+    // date/end may also carry a time ('2026-09-01 15:00'): an event with a time
+    // is a timed event, positioned in week view's hour grid. An event without a
+    // time is an all-day event, shown as a marker in month view and as a banner
+    // across the days it spans in week view's all-day row.
     'events' => [],
     'maxEventsPerDay' => null,
 
@@ -104,11 +108,47 @@
         $periodLabel = $anchor->format('F Y');
     }
 
-    // normalise events into a per-date map, expanding multi-day spans across the
-    // dates they touch. Capped so a bad/huge span cannot blow up the grid.
+    // A timed event carries a clock time in `date` ("2026-09-01 15:00"): it is
+    // positioned in week view's hour grid. Anything else is an all-day event: a
+    // marker in month view, a banner spanning its days in week view's all-day
+    // row. Cross-midnight timed events are clamped to end at 23:59 the same
+    // day — out of scope for v1, same as the multi-day span guard below.
+    $isTimedEvent = fn ($value) => (bool) preg_match('/\d{1,2}:\d{2}/', (string) $value);
+
+    // per-date lists behind month view's markers: all-day events as-is, timed
+    // events prefixed with their start time, timed ones sorted after all-day
+    // ones and among themselves by start time
     $eventsByDate = [];
+    // per-date lists of timed events (only built out fully for week view, see
+    // $timedLayout below), keyed the same way
+    $timedByDate = [];
+
     foreach ((array) $events as $event) {
         if (empty($event['date'])) continue;
+
+        if ($isTimedEvent($event['date'])) {
+            $start = \Illuminate\Support\Carbon::parse($event['date']);
+            $end = ! empty($event['end']) && $isTimedEvent($event['end'])
+                ? \Illuminate\Support\Carbon::parse($event['end'])
+                : $start->copy()->addHour();
+            if ($end->lte($start)) $end = $start->copy()->addHour();
+            $dayEnd = $start->copy()->endOfDay();
+            if ($end->gt($dayEnd)) $end = $dayEnd;
+
+            $key = $start->toDateString();
+            $timedByDate[$key] ??= [];
+            $timedByDate[$key][] = [
+                'label' => (string) ($event['label'] ?? ''),
+                'type' => (string) ($event['type'] ?? 'info'),
+                'href' => $event['href'] ?? null,
+                'start' => $start,
+                'end' => $end,
+                'startMinutes' => $start->hour * 60 + $start->minute,
+                'endMinutes' => $end->hour * 60 + $end->minute,
+            ];
+            continue;
+        }
+
         $start = \Illuminate\Support\Carbon::parse($event['date'])->startOfDay();
         $end = ! empty($event['end']) ? \Illuminate\Support\Carbon::parse($event['end'])->startOfDay() : $start->copy();
         if ($end->lt($start)) $end = $start->copy();
@@ -128,6 +168,30 @@
         }
     }
 
+    // fold timed events into month view's per-day markers too, chronologically,
+    // after any all-day events already on that date
+    foreach ($timedByDate as $key => $list) {
+        usort($list, fn ($a, $b) => $a['startMinutes'] <=> $b['startMinutes']);
+        foreach ($list as $timed) {
+            $eventsByDate[$key] ??= [];
+            $eventsByDate[$key][] = [
+                'label' => $timed['start']->format('g:ia').' '.$timed['label'],
+                'type' => $timed['type'],
+                'href' => $timed['href'],
+            ];
+        }
+    }
+
+    $dayNameByDow = [
+        0 => __('bladewind::bladewind.sun'),
+        1 => __('bladewind::bladewind.mon'),
+        2 => __('bladewind::bladewind.tue'),
+        3 => __('bladewind::bladewind.wed'),
+        4 => __('bladewind::bladewind.thu'),
+        5 => __('bladewind::bladewind.fri'),
+        6 => __('bladewind::bladewind.sat'),
+    ];
+
     $weeks = [];
     $week = [];
     $cursor = $gridStart->copy();
@@ -143,6 +207,7 @@
         $week[] = [
             'iso' => $iso,
             'day' => $cursor->day,
+            'dayName' => mb_substr($dayNameByDow[$cursor->dayOfWeek], 0, 3),
             'label' => $cursor->translatedFormat('l, F j, Y'),
             'inPeriod' => $inPeriod,
             'isToday' => $cursor->isSameDay($today),
@@ -172,6 +237,95 @@
         }
     }
     $focusIso ??= $weeks[0][0]['iso'] ?? $gridStart->toDateString();
+
+    $hourRowHeight = 3; // rem per hour in week view's hour grid
+    $hoursInDay = 24;
+
+    // week view only: all-day banners, clipped to the visible week and spanning
+    // the day columns they cover, stacked into as few rows as they need so
+    // overlapping banners don't sit on top of each other
+    $allDayBanners = [];
+    $allDayRowCount = 0;
+    // week view only: each day's timed events packed into side-by-side columns
+    // — events that don't overlap anything share column 0; a run of mutually
+    // overlapping events gets one column each, sized to fit the widest moment
+    // in that run. Simple and robust rather than perfectly space-optimal.
+    $timedLayout = [];
+
+    if ($view === 'week') {
+        $rawAllDay = [];
+        foreach ((array) $events as $event) {
+            if (empty($event['date']) || $isTimedEvent($event['date'])) continue;
+            $start = \Illuminate\Support\Carbon::parse($event['date'])->startOfDay();
+            $end = ! empty($event['end']) ? \Illuminate\Support\Carbon::parse($event['end'])->startOfDay() : $start->copy();
+            if ($end->lt($start)) $end = $start->copy();
+
+            $clipStart = $start->lt($gridStart) ? $gridStart->copy() : $start;
+            $clipEnd = $end->gt($gridEnd) ? $gridEnd->copy() : $end;
+            if ($clipStart->gt($gridEnd) || $clipEnd->lt($gridStart)) continue;
+
+            $rawAllDay[] = [
+                'label' => (string) ($event['label'] ?? ''),
+                'type' => (string) ($event['type'] ?? 'info'),
+                'href' => $event['href'] ?? null,
+                'startIndex' => (int) $gridStart->diffInDays($clipStart),
+                'span' => (int) $gridStart->diffInDays($clipEnd) - (int) $gridStart->diffInDays($clipStart) + 1,
+            ];
+        }
+        usort($rawAllDay, fn ($a, $b) => $a['startIndex'] <=> $b['startIndex']);
+        $rowEnds = [];
+        foreach ($rawAllDay as $banner) {
+            $bannerEnd = $banner['startIndex'] + $banner['span'] - 1;
+            $placedRow = null;
+            foreach ($rowEnds as $rowIndex => $rowEnd) {
+                if ($banner['startIndex'] > $rowEnd) { $placedRow = $rowIndex; break; }
+            }
+            $placedRow ??= count($rowEnds);
+            $rowEnds[$placedRow] = $bannerEnd;
+            $banner['row'] = $placedRow;
+            $allDayBanners[] = $banner;
+        }
+        $allDayRowCount = max(1, count($rowEnds));
+
+        foreach ($weeks[0] as $day) {
+            $iso = $day['iso'];
+            $dayEvents = $timedByDate[$iso] ?? [];
+            usort($dayEvents, fn ($a, $b) => $a['startMinutes'] <=> $b['startMinutes']);
+
+            $placed = [];
+            $cluster = [];
+            $clusterEndMinutes = null;
+            $flush = function () use (&$cluster, &$placed) {
+                if (! $cluster) return;
+                $columns = [];
+                $startAt = count($placed);
+                foreach ($cluster as $item) {
+                    $placedCol = null;
+                    foreach ($columns as $colIndex => $colEndMinutes) {
+                        if ($item['startMinutes'] >= $colEndMinutes) { $placedCol = $colIndex; break; }
+                    }
+                    $placedCol ??= count($columns);
+                    $columns[$placedCol] = $item['endMinutes'];
+                    $item['col'] = $placedCol;
+                    $placed[] = $item;
+                }
+                $totalCols = count($columns);
+                for ($i = $startAt; $i < count($placed); $i++) $placed[$i]['totalCols'] = $totalCols;
+                $cluster = [];
+            };
+            foreach ($dayEvents as $event) {
+                if ($clusterEndMinutes !== null && $event['startMinutes'] >= $clusterEndMinutes) {
+                    $flush();
+                    $clusterEndMinutes = null;
+                }
+                $cluster[] = $event;
+                $clusterEndMinutes = $clusterEndMinutes === null ? $event['endMinutes'] : max($clusterEndMinutes, $event['endMinutes']);
+            }
+            $flush();
+
+            $timedLayout[$iso] = $placed;
+        }
+    }
 
     $eventsPayload = collect($events)->map(fn ($e) => [
         'date' => (string) ($e['date'] ?? ''),
@@ -223,69 +377,154 @@
     </div>
 
     <div class="bw-calendar-scroll" data-bw-calendar-scroll @if($height) style="height: {{ $height }}" @endif>
-    <table class="bw-calendar-grid" data-bw-calendar-table role="grid" aria-labelledby="{{ $titleId }}">
-        <thead>
-            <tr role="row">
-                @if($showWeekNumbers)<th class="bw-calendar-week-number-header" scope="col"><span class="sr-only">Week</span></th>@endif
-                @foreach($weekdayLabels as $weekdayLabel)
-                    <th scope="col" abbr="{{ $weekdayLabel }}">
-                        <span aria-hidden="true">{{ mb_substr($weekdayLabel, 0, 3) }}</span>
-                        <span class="sr-only">{{ $weekdayLabel }}</span>
-                    </th>
+    @if($view === 'week')
+        <div class="bw-calendar-week" data-bw-calendar-week aria-labelledby="{{ $titleId }}">
+            <div class="bw-calendar-week-header-row" role="row">
+                <div class="bw-calendar-week-gutter">
+                    @if($showWeekNumbers)<span class="bw-calendar-week-gutter-number">W{{ $weeks[0][0]['weekNumber'] }}</span>@endif
+                </div>
+                @foreach($weeks[0] as $day)
+                    <div role="gridcell"
+                        data-bw-calendar-day
+                        data-date="{{ $day['iso'] }}"
+                        tabindex="{{ $day['iso'] === $focusIso ? '0' : '-1' }}"
+                        @if($selectable !== 'none') aria-selected="{{ $day['isSelected'] ? 'true' : 'false' }}" @endif
+                        @if($day['isToday']) aria-current="date" @endif
+                        @if($day['isDisabled']) aria-disabled="true" @endif
+                        aria-label="{{ $day['label'] }}"
+                        @class([
+                            'bw-calendar-week-day-header',
+                            'bw-calendar-cell-today' => $day['isToday'],
+                            'bw-calendar-cell-selected' => $day['isSelected'],
+                            'bw-calendar-cell-disabled' => $day['isDisabled'],
+                        ])>
+                        <span class="bw-calendar-week-day-name" aria-hidden="true">{{ $day['dayName'] }}</span>
+                        <span class="bw-calendar-cell-date">{{ $day['day'] }}</span>
+                    </div>
                 @endforeach
-            </tr>
-        </thead>
-        <tbody data-bw-calendar-body>
-            @foreach($weeks as $week)
-                <tr role="row">
-                    @if($showWeekNumbers)<td class="bw-calendar-week-number">{{ $week[0]['weekNumber'] }}</td>@endif
-                    @foreach($week as $day)
-                        @php $overflow = max(0, count($day['events']) - $maxEventsPerDay); @endphp
-                        <td role="gridcell"
-                            data-bw-calendar-day
-                            data-date="{{ $day['iso'] }}"
-                            tabindex="{{ $day['iso'] === $focusIso ? '0' : '-1' }}"
-                            @if($selectable !== 'none') aria-selected="{{ $day['isSelected'] ? 'true' : 'false' }}" @endif
-                            @if($day['isToday']) aria-current="date" @endif
-                            @if($day['isDisabled']) aria-disabled="true" @endif
-                            aria-label="{{ $day['label'] }}"
-                            @class([
-                                'bw-calendar-cell',
-                                'bw-calendar-cell-outside' => ! $day['inPeriod'],
-                                'bw-calendar-cell-today' => $day['isToday'],
-                                'bw-calendar-cell-selected' => $day['isSelected'],
-                                'bw-calendar-cell-disabled' => $day['isDisabled'],
-                            ])
-                            @if(! $day['inPeriod'] && ! $showOtherMonthDays) hidden @endif>
-                            <div class="bw-calendar-cell-inner">
-                                <span class="bw-calendar-cell-date">{{ $day['day'] }}</span>
-                                @if(count($day['events']))
-                                    <div class="bw-calendar-cell-events">
-                                        @foreach($day['events'] as $index => $event)
-                                            @php $isOverflow = $index >= $maxEventsPerDay; @endphp
-                                            @if($event['href'])
-                                                <a href="{{ $event['href'] }}"
-                                                   class="bw-calendar-event bw-calendar-event-{{ $event['type'] }}"
-                                                   data-bw-calendar-overflow-event="{{ $isOverflow ? 'true' : 'false' }}"
-                                                   @if($isOverflow) hidden @endif>{{ $event['label'] }}</a>
-                                            @else
-                                                <span class="bw-calendar-event bw-calendar-event-{{ $event['type'] }}"
-                                                      data-bw-calendar-overflow-event="{{ $isOverflow ? 'true' : 'false' }}"
-                                                      @if($isOverflow) hidden @endif>{{ $event['label'] }}</span>
-                                            @endif
-                                        @endforeach
-                                        @if($overflow > 0)
-                                            <button type="button" class="bw-calendar-event-more" data-bw-calendar-more aria-expanded="false">+{{ $overflow }} more</button>
-                                        @endif
-                                    </div>
+            </div>
+
+            @if(count($allDayBanners))
+                <div class="bw-calendar-week-allday-row" role="row" style="--bw-calendar-allday-rows: {{ $allDayRowCount }}">
+                    <div class="bw-calendar-week-gutter bw-calendar-week-allday-label">All day</div>
+                    <div class="bw-calendar-week-allday-track">
+                        @foreach($allDayBanners as $banner)
+                            @if($banner['href'])
+                                <a href="{{ $banner['href'] }}" class="bw-calendar-event bw-calendar-week-allday-banner bw-calendar-event-{{ $banner['type'] }}"
+                                   style="grid-column: {{ $banner['startIndex'] + 1 }} / span {{ $banner['span'] }}; grid-row: {{ $banner['row'] + 1 }}">{{ $banner['label'] }}</a>
+                            @else
+                                <span class="bw-calendar-event bw-calendar-week-allday-banner bw-calendar-event-{{ $banner['type'] }}"
+                                   style="grid-column: {{ $banner['startIndex'] + 1 }} / span {{ $banner['span'] }}; grid-row: {{ $banner['row'] + 1 }}">{{ $banner['label'] }}</span>
+                            @endif
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
+            <div class="bw-calendar-week-body" data-bw-calendar-week-body style="height: {{ $hoursInDay * $hourRowHeight }}rem">
+                <div class="bw-calendar-week-hours" aria-hidden="true">
+                    @for($h = 0; $h < $hoursInDay; $h++)
+                        <div class="bw-calendar-week-hour-label" style="top: {{ $h * $hourRowHeight }}rem">{{ \Illuminate\Support\Carbon::createFromTime($h, 0)->format('g A') }}</div>
+                    @endfor
+                </div>
+                <div class="bw-calendar-week-days">
+                    @foreach($weeks[0] as $day)
+                        @php $iso = $day['iso']; @endphp
+                        <div class="bw-calendar-week-day-column @if($day['isToday']) bw-calendar-week-day-column-today @endif" data-date="{{ $iso }}">
+                            @for($h = 1; $h < $hoursInDay; $h++)
+                                <div class="bw-calendar-week-hour-line" style="top: {{ $h * $hourRowHeight }}rem" aria-hidden="true"></div>
+                            @endfor
+                            @foreach(($timedLayout[$iso] ?? []) as $event)
+                                @php
+                                    $top = ($event['startMinutes'] / 60) * $hourRowHeight;
+                                    $height = max(1.25, (($event['endMinutes'] - $event['startMinutes']) / 60) * $hourRowHeight);
+                                    $widthPct = 100 / $event['totalCols'];
+                                    $leftPct = $widthPct * $event['col'];
+                                @endphp
+                                @if($event['href'])
+                                    <a href="{{ $event['href'] }}" class="bw-calendar-event bw-calendar-week-timed-event bw-calendar-event-{{ $event['type'] }}"
+                                       style="top: {{ $top }}rem; height: {{ $height }}rem; left: {{ $leftPct }}%; width: calc({{ $widthPct }}% - 2px)">
+                                        <span class="bw-calendar-week-timed-event-time">{{ $event['start']->format('g:ia') }}</span>
+                                        <span class="bw-calendar-week-timed-event-label">{{ $event['label'] }}</span>
+                                    </a>
+                                @else
+                                    <span class="bw-calendar-event bw-calendar-week-timed-event bw-calendar-event-{{ $event['type'] }}"
+                                       style="top: {{ $top }}rem; height: {{ $height }}rem; left: {{ $leftPct }}%; width: calc({{ $widthPct }}% - 2px)">
+                                        <span class="bw-calendar-week-timed-event-time">{{ $event['start']->format('g:ia') }}</span>
+                                        <span class="bw-calendar-week-timed-event-label">{{ $event['label'] }}</span>
+                                    </span>
                                 @endif
-                            </div>
-                        </td>
+                            @endforeach
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    @else
+        <table class="bw-calendar-grid" data-bw-calendar-table role="grid" aria-labelledby="{{ $titleId }}">
+            <thead>
+                <tr role="row">
+                    @if($showWeekNumbers)<th class="bw-calendar-week-number-header" scope="col"><span class="sr-only">Week</span></th>@endif
+                    @foreach($weekdayLabels as $weekdayLabel)
+                        <th scope="col" abbr="{{ $weekdayLabel }}">
+                            <span aria-hidden="true">{{ mb_substr($weekdayLabel, 0, 3) }}</span>
+                            <span class="sr-only">{{ $weekdayLabel }}</span>
+                        </th>
                     @endforeach
                 </tr>
-            @endforeach
-        </tbody>
-    </table>
+            </thead>
+            <tbody data-bw-calendar-body>
+                @foreach($weeks as $week)
+                    <tr role="row">
+                        @if($showWeekNumbers)<td class="bw-calendar-week-number">{{ $week[0]['weekNumber'] }}</td>@endif
+                        @foreach($week as $day)
+                            @php $overflow = max(0, count($day['events']) - $maxEventsPerDay); @endphp
+                            <td role="gridcell"
+                                data-bw-calendar-day
+                                data-date="{{ $day['iso'] }}"
+                                tabindex="{{ $day['iso'] === $focusIso ? '0' : '-1' }}"
+                                @if($selectable !== 'none') aria-selected="{{ $day['isSelected'] ? 'true' : 'false' }}" @endif
+                                @if($day['isToday']) aria-current="date" @endif
+                                @if($day['isDisabled']) aria-disabled="true" @endif
+                                aria-label="{{ $day['label'] }}"
+                                @class([
+                                    'bw-calendar-cell',
+                                    'bw-calendar-cell-outside' => ! $day['inPeriod'],
+                                    'bw-calendar-cell-today' => $day['isToday'],
+                                    'bw-calendar-cell-selected' => $day['isSelected'],
+                                    'bw-calendar-cell-disabled' => $day['isDisabled'],
+                                ])
+                                @if(! $day['inPeriod'] && ! $showOtherMonthDays) hidden @endif>
+                                <div class="bw-calendar-cell-inner">
+                                    <span class="bw-calendar-cell-date">{{ $day['day'] }}</span>
+                                    @if(count($day['events']))
+                                        <div class="bw-calendar-cell-events">
+                                            @foreach($day['events'] as $index => $event)
+                                                @php $isOverflow = $index >= $maxEventsPerDay; @endphp
+                                                @if($event['href'])
+                                                    <a href="{{ $event['href'] }}"
+                                                       class="bw-calendar-event bw-calendar-event-{{ $event['type'] }}"
+                                                       data-bw-calendar-overflow-event="{{ $isOverflow ? 'true' : 'false' }}"
+                                                       @if($isOverflow) hidden @endif>{{ $event['label'] }}</a>
+                                                @else
+                                                    <span class="bw-calendar-event bw-calendar-event-{{ $event['type'] }}"
+                                                          data-bw-calendar-overflow-event="{{ $isOverflow ? 'true' : 'false' }}"
+                                                          @if($isOverflow) hidden @endif>{{ $event['label'] }}</span>
+                                                @endif
+                                            @endforeach
+                                            @if($overflow > 0)
+                                                <button type="button" class="bw-calendar-event-more" data-bw-calendar-more aria-expanded="false">+{{ $overflow }} more</button>
+                                            @endif
+                                        </div>
+                                    @endif
+                                </div>
+                            </td>
+                        @endforeach
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @endif
     </div>
 
     @if($selectable !== 'none')

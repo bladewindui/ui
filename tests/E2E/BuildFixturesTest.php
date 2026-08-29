@@ -595,6 +595,11 @@ class BuildFixturesTest extends TestCase
             ['date' => '2026-08-05', 'label' => 'Retro', 'type' => 'warning'],
             ['date' => '2026-08-05', 'label' => 'Overflow item', 'type' => 'danger'],
             ['date' => '2026-08-18', 'end' => '2026-08-20', 'label' => 'Conference', 'type' => 'success'],
+            // within the week view of date=2026-08-15 (Sun 2026-08-09 - Sat 2026-08-15)
+            ['date' => '2026-08-11 09:00', 'end' => '2026-08-11 10:00', 'label' => 'Standup', 'type' => 'info'],
+            ['date' => '2026-08-11 09:30', 'end' => '2026-08-11 10:30', 'label' => 'Design sync', 'type' => 'success'],
+            ['date' => '2026-08-11 14:00', 'end' => '2026-08-11 15:30', 'label' => 'Kenya project review', 'type' => 'warning'],
+            ['date' => '2026-08-13', 'end' => '2026-08-14', 'label' => 'Bisqui expected', 'type' => 'warning'],
         ];
 
         $primary = $this->render(

@@ -38,9 +38,100 @@ class CalendarTest extends TestCase
         $html = $this->calendar('name="team" view="week" date="2026-08-15"');
 
         $this->assertAttribute($html, '//*[@data-bw-calendar]', 'data-view', 'week');
-        $this->assertElementCount($html, '//td[@data-bw-calendar-day]', 7);
+        $this->assertElementCount($html, '//*[@data-bw-calendar-day]', 7);
+        $this->assertElementCount($html, '//*[@data-bw-calendar-week]', 1);
+        $this->assertElementCount($html, '//*[@data-bw-calendar-week-body]', 1);
         $this->assertAttribute($html, '//button[@data-bw-calendar-view="week"]', 'aria-pressed', 'true');
         $this->assertAttribute($html, '//button[@data-bw-calendar-view="month"]', 'aria-pressed', 'false');
+    }
+
+    /** Exact class-token match — plain contains(@class,...) also matches e.g. bw-calendar-week-timed-event-label. */
+    private function timedEventXpath(string $date): string
+    {
+        return '//div[contains(concat(" ", normalize-space(@class), " "), " bw-calendar-week-day-column ") and @data-date="'.$date.'"]'
+            .'//*[contains(concat(" ", normalize-space(@class), " "), " bw-calendar-week-timed-event ")]';
+    }
+
+    #[Test]
+    public function week_view_positions_a_timed_event_in_the_hour_grid(): void
+    {
+        // the week containing 2026-08-15 (a Saturday) runs Sun 2026-08-09 to Sat 2026-08-15
+        $events = [['date' => '2026-08-11 09:00', 'end' => '2026-08-11 10:30', 'label' => 'Standup', 'type' => 'info']];
+        $html = $this->calendar('name="team" view="week" date="2026-08-15"', $events);
+
+        $event = $this->timedEventXpath('2026-08-11');
+        $this->assertElementCount($html, $event, 1);
+        $this->assertAttributeContains($html, $event, 'style', 'top: 27rem'); // 9h * 3rem/h
+        $this->assertAttributeContains($html, $event, 'style', 'height: 4.5rem'); // 1.5h * 3rem/h
+        $this->assertStringContainsString('9:00am', $html);
+    }
+
+    #[Test]
+    public function week_view_folds_a_timed_event_into_the_month_view_marker_with_a_time_prefix(): void
+    {
+        $events = [['date' => '2026-08-15 09:00', 'label' => 'Standup', 'type' => 'info']];
+        $html = $this->calendar('name="team" date="2026-08-15"', $events);
+
+        $this->assertStringContainsString('9:00am Standup', $html);
+    }
+
+    #[Test]
+    public function week_view_packs_overlapping_timed_events_into_side_by_side_columns(): void
+    {
+        $events = [
+            ['date' => '2026-08-11 09:00', 'end' => '2026-08-11 10:00', 'label' => 'A', 'type' => 'info'],
+            ['date' => '2026-08-11 09:30', 'end' => '2026-08-11 10:30', 'label' => 'B', 'type' => 'success'],
+        ];
+        $html = $this->calendar('name="team" view="week" date="2026-08-15"', $events);
+
+        $event = $this->timedEventXpath('2026-08-11');
+        $this->assertElementCount($html, $event, 2);
+        // rendered in start-time order: A (09:00) first, B (09:30) second
+        $this->assertAttributeContains($html, '('.$event.')[1]', 'style', 'width: calc(50%');
+        $this->assertAttributeContains($html, '('.$event.')[1]', 'style', 'left: 0%');
+        $this->assertAttributeContains($html, '('.$event.')[2]', 'style', 'width: calc(50%');
+        $this->assertAttributeContains($html, '('.$event.')[2]', 'style', 'left: 50%');
+    }
+
+    #[Test]
+    public function week_view_non_overlapping_timed_events_each_take_the_full_column_width(): void
+    {
+        $events = [
+            ['date' => '2026-08-11 09:00', 'end' => '2026-08-11 09:30', 'label' => 'A', 'type' => 'info'],
+            ['date' => '2026-08-11 14:00', 'end' => '2026-08-11 14:30', 'label' => 'B', 'type' => 'info'],
+        ];
+        $html = $this->calendar('name="team" view="week" date="2026-08-15"', $events);
+
+        $event = $this->timedEventXpath('2026-08-11');
+        $this->assertElementCount($html, $event, 2);
+        $this->assertAttributeContains($html, '('.$event.')[1]', 'style', 'left: 0%');
+        $this->assertAttributeContains($html, '('.$event.')[2]', 'style', 'left: 0%');
+    }
+
+    #[Test]
+    public function week_view_renders_an_all_day_banner_spanning_the_days_it_covers(): void
+    {
+        // still within the Sun 2026-08-09 – Sat 2026-08-15 week
+        $events = [['date' => '2026-08-11', 'end' => '2026-08-13', 'label' => 'Conference', 'type' => 'success']];
+        $html = $this->calendar('name="team" view="week" date="2026-08-15"', $events);
+
+        $banner = '//*[contains(concat(" ", normalize-space(@class), " "), " bw-calendar-week-allday-banner ")]';
+        $this->assertElementCount($html, $banner, 1);
+        $this->assertAttributeContains($html, $banner, 'style', 'span 3');
+    }
+
+    #[Test]
+    public function week_view_stacks_overlapping_all_day_banners_onto_separate_rows(): void
+    {
+        $events = [
+            ['date' => '2026-08-11', 'end' => '2026-08-13', 'label' => 'Conference', 'type' => 'success'],
+            ['date' => '2026-08-12', 'label' => 'Holiday', 'type' => 'warning'],
+        ];
+        $html = $this->calendar('name="team" view="week" date="2026-08-15"', $events);
+
+        $banner = '//*[contains(concat(" ", normalize-space(@class), " "), " bw-calendar-week-allday-banner ")]';
+        $this->assertAttributeContains($html, '('.$banner.')[1]', 'style', 'grid-row: 1');
+        $this->assertAttributeContains($html, '('.$banner.')[2]', 'style', 'grid-row: 2');
     }
 
     #[Test]

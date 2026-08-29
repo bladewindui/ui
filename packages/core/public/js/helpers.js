@@ -2304,25 +2304,139 @@ const bwCalendarRegistry = {};
 
 /** Populates the per-instance registry the client-side renderer reads from. Called inline by the component itself, once per instance, before any interaction is possible. */
 const initBladewindCalendar = ({name, monthNames, dayNames, events}) => {
-    bwCalendarRegistry[name] = {monthNames, dayNames, eventsIndex: buildCalendarEventsIndex(events)};
+    bwCalendarRegistry[name] = {monthNames, dayNames, ...buildCalendarEventIndexes(events)};
 };
 
-const buildCalendarEventsIndex = (events) => {
-    const index = {};
+/** A timed event carries a clock time in `date`; anything else is all-day. Mirrors the PHP component's own detection so client-side navigation renders identically to the server. */
+const isCalendarTimedEvent = (value) => /\d{1,2}:\d{2}/.test(String(value || ''));
+
+const calendarAddMinutes = (date, minutes) => { const d = new Date(date); d.setMinutes(d.getMinutes() + minutes); return d; };
+
+/** e.g. "9:00am", "2:30pm" — mirrors the PHP side's Carbon 'g:ia' format. */
+const calendarFormatHourMinute = (date) => {
+    let hours = date.getHours();
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'pm' : 'am';
+    hours %= 12; if (hours === 0) hours = 12;
+    return `${hours}:${minutes}${ampm}`;
+};
+
+/** e.g. "7 AM", "12 PM" — the week grid's hour-of-day gutter labels. */
+const calendarFormatHourLabel = (hour) => {
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    let h = hour % 12; if (h === 0) h = 12;
+    return `${h} ${ampm}`;
+};
+
+/**
+ * Splits raw events into what each view needs:
+ *  - monthMarkersIndex: per-date list behind month view's markers — all-day
+ *    events as-is, timed events prefixed with their start time and sorted
+ *    after the all-day ones, chronologically among themselves
+ *  - timedIndex: per-date list of timed events for week view's hour grid
+ *  - allDaySpans: all-day events with their original (unexpanded) date range,
+ *    for week view's all-day row to clip and span across day columns
+ */
+const buildCalendarEventIndexes = (events) => {
+    const monthMarkersIndex = {};
+    const timedIndex = {};
+    const allDaySpans = [];
+    const timedByDate = {};
+
     (events || []).forEach((event) => {
         if (!event.date) return;
+
+        if (isCalendarTimedEvent(event.date)) {
+            const start = new Date(event.date.replace(' ', 'T'));
+            let end = event.end && isCalendarTimedEvent(event.end) ? new Date(event.end.replace(' ', 'T')) : calendarAddMinutes(start, 60);
+            if (end <= start) end = calendarAddMinutes(start, 60);
+            const dayEnd = new Date(start); dayEnd.setHours(23, 59, 0, 0);
+            if (end > dayEnd) end = dayEnd;
+
+            const key = calendarISO(start);
+            const item = {
+                label: event.label || '', type: event.type || 'info', href: event.href || null,
+                start, end, startMinutes: start.getHours() * 60 + start.getMinutes(), endMinutes: end.getHours() * 60 + end.getMinutes(),
+            };
+            (timedIndex[key] ??= []).push(item);
+            (timedByDate[key] ??= []).push(item);
+            return;
+        }
+
         const start = new Date(`${event.date}T00:00:00`);
         const end = event.end ? new Date(`${event.end}T00:00:00`) : new Date(start);
+        allDaySpans.push({label: event.label || '', type: event.type || 'info', href: event.href || null, start: new Date(start), end: new Date(end)});
+
         let cursor = new Date(start);
         let guard = 0;
         while (cursor <= end && guard < 366) {
             const key = calendarISO(cursor);
-            (index[key] ??= []).push({label: event.label || '', type: event.type || 'info', href: event.href || null});
+            (monthMarkersIndex[key] ??= []).push({label: event.label || '', type: event.type || 'info', href: event.href || null});
             cursor = calendarAddDays(cursor, 1);
             guard++;
         }
     });
-    return index;
+
+    Object.keys(timedByDate).forEach((key) => {
+        timedByDate[key].slice().sort((a, b) => a.startMinutes - b.startMinutes).forEach((timed) => {
+            (monthMarkersIndex[key] ??= []).push({label: `${calendarFormatHourMinute(timed.start)} ${timed.label}`, type: timed.type, href: timed.href});
+        });
+    });
+
+    return {monthMarkersIndex, timedIndex, allDaySpans};
+};
+
+/** Side-by-side column layout for a day's timed events: a run of mutually overlapping events gets one column each, sized to fit the widest moment in that run. Events that overlap nothing take the full width. Mirrors the PHP component's own layout exactly. */
+const packCalendarTimedEvents = (events) => {
+    const sorted = events.slice().sort((a, b) => a.startMinutes - b.startMinutes);
+    const placed = [];
+    let cluster = [];
+    let clusterEndMinutes = null;
+
+    const flush = () => {
+        if (!cluster.length) return;
+        const columns = [];
+        const startAt = placed.length;
+        cluster.forEach((item) => {
+            let placedCol = null;
+            for (let colIndex = 0; colIndex < columns.length; colIndex++) {
+                if (item.startMinutes >= columns[colIndex]) { placedCol = colIndex; break; }
+            }
+            placedCol ??= columns.length;
+            columns[placedCol] = item.endMinutes;
+            placed.push({...item, col: placedCol});
+        });
+        const totalCols = columns.length;
+        for (let i = startAt; i < placed.length; i++) placed[i].totalCols = totalCols;
+        cluster = [];
+    };
+
+    sorted.forEach((event) => {
+        if (clusterEndMinutes !== null && event.startMinutes >= clusterEndMinutes) { flush(); clusterEndMinutes = null; }
+        cluster.push(event);
+        clusterEndMinutes = clusterEndMinutes === null ? event.endMinutes : Math.max(clusterEndMinutes, event.endMinutes);
+    });
+    flush();
+
+    return placed;
+};
+
+/** Stacks all-day banners onto as few rows as they need, so overlapping ones don't sit on top of each other. Mirrors the PHP component's own layout exactly. */
+const packCalendarAllDayBanners = (rawBanners) => {
+    const sorted = rawBanners.slice().sort((a, b) => a.startIndex - b.startIndex);
+    const rowEnds = [];
+    const placed = [];
+    sorted.forEach((banner) => {
+        const bannerEnd = banner.startIndex + banner.span - 1;
+        let placedRow = null;
+        for (let rowIndex = 0; rowIndex < rowEnds.length; rowIndex++) {
+            if (banner.startIndex > rowEnds[rowIndex]) { placedRow = rowIndex; break; }
+        }
+        placedRow ??= rowEnds.length;
+        rowEnds[placedRow] = bannerEnd;
+        placed.push({...banner, row: placedRow});
+    });
+    return placed;
 };
 
 const calendarISO = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -2421,23 +2535,223 @@ const calendarSelectedDates = (name) => {
 const buildCalendarCellLabel = (date, dayNames, monthNames) => `${dayNames[date.getDay()]}, ${monthNames[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
 
 /** Rebuilds the header title and every day cell for `anchor`, then re-derives the roving tabindex target. Used only when client navigation is enabled. */
-const renderCalendarGrid = (calendar, anchor) => {
-    const name = calendar.getAttribute('data-name');
-    const registry = bwCalendarRegistry[name] || {monthNames: [], dayNames: [], eventsIndex: {}};
-    const view = calendar.getAttribute('data-view');
-    const weekStarts = calendar.getAttribute('data-week-starts');
-    const selectable = calendar.getAttribute('data-selectable');
-    const maxEventsPerDay = parseInt(calendar.getAttribute('data-max-events-per-day'), 10) || 0;
-    const showOtherMonthDays = calendar.getAttribute('data-show-other-month-days') === 'true';
-    const showWeekNumbers = calendar.getAttribute('data-show-week-numbers') === 'true';
-    const {min, max, disabled} = calendarConstraints(calendar);
-    const selected = new Set(calendarSelectedDates(name));
-    const previouslyFocused = calendar.querySelector('[data-bw-calendar-day][tabindex="0"]')?.getAttribute('data-date');
+const CALENDAR_WEEK_HOUR_ROW_REM = 3; // must match --bw-calendar hour row height in calendar.css
+const CALENDAR_WEEK_HOURS_IN_DAY = 24;
+const CALENDAR_WEEK_SCROLL_TO_HOUR = 7; // a sensible default window into the day, matching most calendars' behaviour
 
-    const weeks = computeCalendarGrid(anchor, view, weekStarts);
-    const body = calendar.querySelector('[data-bw-calendar-body]');
-    if (!body) return;
-    body.innerHTML = '';
+const calendarRemToPx = (rem) => rem * (parseFloat(getComputedStyle(document.documentElement).fontSize) || 16);
+
+/** The hour body itself doesn't scroll — the sticky header and all-day rows sit
+ * above it in the same scrollable ancestor, .bw-calendar-scroll, so its
+ * distance from that ancestor's top has to be added in rather than assumed. */
+const scrollCalendarWeekBodyToHour = (calendar, hour = CALENDAR_WEEK_SCROLL_TO_HOUR) => {
+    const scroller = calendar.querySelector('[data-bw-calendar-scroll]');
+    const body = calendar.querySelector('[data-bw-calendar-week-body]');
+    if (!scroller || !body) return;
+    const bodyOffset = body.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop;
+    scroller.scrollTop = bodyOffset + calendarRemToPx(CALENDAR_WEEK_HOUR_ROW_REM) * hour;
+};
+
+/** Builds one week's hour grid (day headers, all-day banners, and the scrollable hour body) fresh into `scroll`. Returns the previously-focused date's iso if it's still on screen, else null. */
+const renderCalendarWeekGrid = (calendar, scroll, weekDays, registry, previouslyFocused, ctx) => {
+    const {selectable, min, max, disabled, selected, showWeekNumbers} = ctx;
+
+    const week = document.createElement('div');
+    week.className = 'bw-calendar-week';
+    week.setAttribute('data-bw-calendar-week', '');
+    week.setAttribute('aria-labelledby', calendar.querySelector('[data-bw-calendar-title]')?.id || '');
+
+    let focusIso = null;
+
+    const headerRow = document.createElement('div');
+    headerRow.className = 'bw-calendar-week-header-row';
+    headerRow.setAttribute('role', 'row');
+    const headerGutter = document.createElement('div');
+    headerGutter.className = 'bw-calendar-week-gutter';
+    if (showWeekNumbers) {
+        const num = document.createElement('span');
+        num.textContent = `W${weekDays[0].weekNumber}`;
+        headerGutter.appendChild(num);
+    }
+    headerRow.appendChild(headerGutter);
+
+    weekDays.forEach((day) => {
+        const isDisabled = (min && day.date < min) || (max && day.date > max) || disabled.has(day.iso);
+        const isSelected = selected.has(day.iso);
+        const header = document.createElement('div');
+        header.setAttribute('role', 'gridcell');
+        header.setAttribute('data-bw-calendar-day', '');
+        header.setAttribute('data-date', day.iso);
+        header.tabIndex = -1;
+        header.setAttribute('aria-label', buildCalendarCellLabel(day.date, registry.dayNames, registry.monthNames));
+        if (selectable !== 'none') header.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+        if (day.isToday) header.setAttribute('aria-current', 'date');
+        if (isDisabled) header.setAttribute('aria-disabled', 'true');
+        header.className = 'bw-calendar-week-day-header'
+            + (day.isToday ? ' bw-calendar-cell-today' : '')
+            + (isSelected ? ' bw-calendar-cell-selected' : '')
+            + (isDisabled ? ' bw-calendar-cell-disabled' : '');
+
+        const dayName = document.createElement('span');
+        dayName.className = 'bw-calendar-week-day-name';
+        dayName.setAttribute('aria-hidden', 'true');
+        dayName.textContent = registry.dayNames[day.date.getDay()].slice(0, 3);
+        header.appendChild(dayName);
+
+        const dateSpan = document.createElement('span');
+        dateSpan.className = 'bw-calendar-cell-date';
+        dateSpan.textContent = String(day.day);
+        header.appendChild(dateSpan);
+
+        headerRow.appendChild(header);
+        if (!focusIso && day.iso === previouslyFocused) focusIso = day.iso;
+    });
+    week.appendChild(headerRow);
+
+    const gridStart = weekDays[0].date;
+    const gridEnd = weekDays[6].date;
+    const rawAllDay = [];
+    (registry.allDaySpans || []).forEach((event) => {
+        const clipStart = event.start < gridStart ? gridStart : event.start;
+        const clipEnd = event.end > gridEnd ? gridEnd : event.end;
+        if (clipStart > gridEnd || clipEnd < gridStart) return;
+        const startIndex = Math.round((clipStart - gridStart) / 86400000);
+        const endIndex = Math.round((clipEnd - gridStart) / 86400000);
+        rawAllDay.push({label: event.label, type: event.type, href: event.href, startIndex, span: endIndex - startIndex + 1});
+    });
+    const banners = packCalendarAllDayBanners(rawAllDay);
+
+    if (banners.length) {
+        const alldayRow = document.createElement('div');
+        alldayRow.className = 'bw-calendar-week-allday-row';
+        alldayRow.setAttribute('role', 'row');
+        const alldayGutter = document.createElement('div');
+        alldayGutter.className = 'bw-calendar-week-gutter bw-calendar-week-allday-label';
+        alldayGutter.textContent = 'All day';
+        alldayRow.appendChild(alldayGutter);
+        const track = document.createElement('div');
+        track.className = 'bw-calendar-week-allday-track';
+        banners.forEach((banner) => {
+            const el = document.createElement(banner.href ? 'a' : 'span');
+            if (banner.href) el.href = banner.href;
+            el.className = `bw-calendar-event bw-calendar-week-allday-banner bw-calendar-event-${banner.type}`;
+            el.textContent = banner.label;
+            el.style.gridColumn = `${banner.startIndex + 1} / span ${banner.span}`;
+            el.style.gridRow = String(banner.row + 1);
+            track.appendChild(el);
+        });
+        alldayRow.appendChild(track);
+        week.appendChild(alldayRow);
+    }
+
+    const body = document.createElement('div');
+    body.className = 'bw-calendar-week-body';
+    body.setAttribute('data-bw-calendar-week-body', '');
+    body.style.height = `${CALENDAR_WEEK_HOURS_IN_DAY * CALENDAR_WEEK_HOUR_ROW_REM}rem`;
+
+    const hours = document.createElement('div');
+    hours.className = 'bw-calendar-week-hours';
+    hours.setAttribute('aria-hidden', 'true');
+    for (let h = 0; h < CALENDAR_WEEK_HOURS_IN_DAY; h++) {
+        const label = document.createElement('div');
+        label.className = 'bw-calendar-week-hour-label';
+        label.style.top = `${h * CALENDAR_WEEK_HOUR_ROW_REM}rem`;
+        label.textContent = calendarFormatHourLabel(h);
+        hours.appendChild(label);
+    }
+    body.appendChild(hours);
+
+    const days = document.createElement('div');
+    days.className = 'bw-calendar-week-days';
+    weekDays.forEach((day) => {
+        const column = document.createElement('div');
+        column.className = 'bw-calendar-week-day-column' + (day.isToday ? ' bw-calendar-week-day-column-today' : '');
+        column.setAttribute('data-date', day.iso);
+        for (let h = 1; h < CALENDAR_WEEK_HOURS_IN_DAY; h++) {
+            const line = document.createElement('div');
+            line.className = 'bw-calendar-week-hour-line';
+            line.style.top = `${h * CALENDAR_WEEK_HOUR_ROW_REM}rem`;
+            line.setAttribute('aria-hidden', 'true');
+            column.appendChild(line);
+        }
+
+        packCalendarTimedEvents(registry.timedIndex[day.iso] || []).forEach((event) => {
+            const top = (event.startMinutes / 60) * CALENDAR_WEEK_HOUR_ROW_REM;
+            const height = Math.max(1.25, ((event.endMinutes - event.startMinutes) / 60) * CALENDAR_WEEK_HOUR_ROW_REM);
+            const widthPct = 100 / event.totalCols;
+            const leftPct = widthPct * event.col;
+            const el = document.createElement(event.href ? 'a' : 'span');
+            if (event.href) el.href = event.href;
+            el.className = `bw-calendar-event bw-calendar-week-timed-event bw-calendar-event-${event.type}`;
+            el.style.top = `${top}rem`;
+            el.style.height = `${height}rem`;
+            el.style.left = `${leftPct}%`;
+            el.style.width = `calc(${widthPct}% - 2px)`;
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'bw-calendar-week-timed-event-time';
+            timeSpan.textContent = calendarFormatHourMinute(event.start);
+            const labelSpan = document.createElement('span');
+            labelSpan.className = 'bw-calendar-week-timed-event-label';
+            labelSpan.textContent = event.label;
+            el.appendChild(timeSpan);
+            el.appendChild(labelSpan);
+            column.appendChild(el);
+        });
+
+        days.appendChild(column);
+    });
+    body.appendChild(days);
+    week.appendChild(body);
+
+    scroll.appendChild(week);
+    return focusIso;
+};
+
+/** Builds one month's `<table>` fresh into `scroll`, including the weekday header row. Returns the previously-focused date's iso if it's still on screen, else null. */
+const renderCalendarMonthTable = (calendar, scroll, weeks, registry, previouslyFocused, ctx) => {
+    const {selectable, maxEventsPerDay, showOtherMonthDays, showWeekNumbers, min, max, disabled, selected} = ctx;
+    const weekStarts = calendar.getAttribute('data-week-starts');
+
+    const table = document.createElement('table');
+    table.className = 'bw-calendar-grid';
+    table.setAttribute('data-bw-calendar-table', '');
+    table.setAttribute('role', 'grid');
+    table.setAttribute('aria-labelledby', calendar.querySelector('[data-bw-calendar-title]')?.id || '');
+
+    const thead = document.createElement('thead');
+    const headRow = document.createElement('tr');
+    headRow.setAttribute('role', 'row');
+    if (showWeekNumbers) {
+        const th = document.createElement('th');
+        th.className = 'bw-calendar-week-number-header';
+        th.setAttribute('scope', 'col');
+        const sr = document.createElement('span');
+        sr.className = 'sr-only';
+        sr.textContent = 'Week';
+        th.appendChild(sr);
+        headRow.appendChild(th);
+    }
+    const dayOrder = weekStarts === 'monday' ? [1, 2, 3, 4, 5, 6, 0] : [0, 1, 2, 3, 4, 5, 6];
+    dayOrder.forEach((dow) => {
+        const label = registry.dayNames[dow];
+        const th = document.createElement('th');
+        th.setAttribute('scope', 'col');
+        th.setAttribute('abbr', label);
+        const visible = document.createElement('span');
+        visible.setAttribute('aria-hidden', 'true');
+        visible.textContent = label.slice(0, 3);
+        const sr = document.createElement('span');
+        sr.className = 'sr-only';
+        sr.textContent = label;
+        th.appendChild(visible);
+        th.appendChild(sr);
+        headRow.appendChild(th);
+    });
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+    tbody.setAttribute('data-bw-calendar-body', '');
 
     let focusIso = null;
     weeks.forEach((week) => {
@@ -2478,7 +2792,7 @@ const renderCalendarGrid = (calendar, anchor) => {
             dateSpan.textContent = String(day.day);
             inner.appendChild(dateSpan);
 
-            const events = registry.eventsIndex[day.iso] || [];
+            const events = registry.monthMarkersIndex[day.iso] || [];
             if (events.length) {
                 const wrap = document.createElement('div');
                 wrap.className = 'bw-calendar-cell-events';
@@ -2506,18 +2820,46 @@ const renderCalendarGrid = (calendar, anchor) => {
             }
 
             row.appendChild(cell);
-
             if (!focusIso && day.iso === previouslyFocused) focusIso = day.iso;
         });
-        body.appendChild(row);
+        tbody.appendChild(row);
     });
+    table.appendChild(tbody);
+    scroll.appendChild(table);
+
+    return focusIso;
+};
+
+/** Rebuilds the header title and the whole grid — the month table or the week hour grid, whichever `data-view` calls for — then re-derives the roving tabindex target. Used only when client navigation is enabled. */
+const renderCalendarGrid = (calendar, anchor) => {
+    const name = calendar.getAttribute('data-name');
+    const registry = bwCalendarRegistry[name] || {monthNames: [], dayNames: [], monthMarkersIndex: {}, timedIndex: {}, allDaySpans: []};
+    const view = calendar.getAttribute('data-view');
+    const weekStarts = calendar.getAttribute('data-week-starts');
+    const selectable = calendar.getAttribute('data-selectable');
+    const maxEventsPerDay = parseInt(calendar.getAttribute('data-max-events-per-day'), 10) || 0;
+    const showOtherMonthDays = calendar.getAttribute('data-show-other-month-days') === 'true';
+    const showWeekNumbers = calendar.getAttribute('data-show-week-numbers') === 'true';
+    const {min, max, disabled} = calendarConstraints(calendar);
+    const selected = new Set(calendarSelectedDates(name));
+    const previouslyFocused = calendar.querySelector('[data-bw-calendar-day][tabindex="0"]')?.getAttribute('data-date');
+
+    const scroll = calendar.querySelector('[data-bw-calendar-scroll]');
+    if (!scroll) return;
+    const weeks = computeCalendarGrid(anchor, view, weekStarts);
+    scroll.innerHTML = '';
+
+    const ctx = {selectable, maxEventsPerDay, showOtherMonthDays, showWeekNumbers, min, max, disabled, selected};
+    let focusIso = view === 'week'
+        ? renderCalendarWeekGrid(calendar, scroll, weeks[0], registry, previouslyFocused, ctx)
+        : renderCalendarMonthTable(calendar, scroll, weeks, registry, previouslyFocused, ctx);
 
     if (!focusIso) {
         const flat = weeks.flat();
         const pick = flat.find((d) => selected.has(d.iso)) || flat.find((d) => d.isToday) || flat.find((d) => d.inPeriod) || flat[0];
         focusIso = pick.iso;
     }
-    const focusCell = body.querySelector(`[data-date="${focusIso}"]`);
+    const focusCell = calendar.querySelector(`[data-bw-calendar-day][data-date="${focusIso}"]`);
     if (focusCell) focusCell.tabIndex = 0;
 
     const title = calendar.querySelector('[data-bw-calendar-title]');
@@ -2527,6 +2869,8 @@ const renderCalendarGrid = (calendar, anchor) => {
     calendar.querySelectorAll('[data-bw-calendar-view]').forEach((button) => {
         button.setAttribute('aria-pressed', button.getAttribute('data-bw-calendar-view') === view ? 'true' : 'false');
     });
+
+    if (view === 'week') scrollCalendarWeekBodyToHour(calendar);
 };
 
 const applyCalendarNavigation = (calendar, target, options = {}) => {
@@ -2705,7 +3049,7 @@ bwOn('keydown', '[data-bw-calendar-day]', (cell, event) => {
 
     if (event.key === 'Home' || event.key === 'End') {
         event.preventDefault();
-        const cells = Array.from(cell.closest('tr')?.querySelectorAll('[data-bw-calendar-day]') || []);
+        const cells = Array.from(cell.closest('[role="row"]')?.querySelectorAll('[data-bw-calendar-day]') || []);
         const target = event.key === 'Home' ? cells[0] : cells[cells.length - 1];
         if (target) focusCalendarDay(calendar, target);
         return;
@@ -2751,6 +3095,11 @@ bwOn('click', '[data-bw-calendar-view]', (button) => {
     const calendar = button.closest('[data-bw-calendar]');
     if (calendar) setCalendarView(calendar.getAttribute('data-name'), button.getAttribute('data-bw-calendar-view'), {source: 'pointer'});
 });
+
+/** A server-rendered week view starts scrolled to the top of the day; give it the same sensible window client-side navigation already gets. */
+const initialiseCalendars = () => document.querySelectorAll('[data-bw-calendar][data-view="week"]').forEach((calendar) => scrollCalendarWeekBodyToHour(calendar));
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initialiseCalendars);
+else initialiseCalendars();
 
 // a tab heading either switches tab or navigates, depending on its url prop
 bwOn('click', '[data-bw-tab]', (tab) => {

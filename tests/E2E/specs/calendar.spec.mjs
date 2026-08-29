@@ -4,6 +4,24 @@ test.beforeEach(async ({ page }) => {
   await page.goto('/calendar.html')
 })
 
+test('arrow keys move focus between day-column headers in week view, and Enter selects one', async ({ page }) => {
+  const calendar = page.locator('[data-bw-calendar][data-name="team"]')
+  await calendar.locator('[data-bw-calendar-view="week"]').click()
+
+  const mon = calendar.locator('[data-bw-calendar-day][data-date="2026-08-10"]') // pre-selected by the fixture
+  const tue = calendar.locator('[data-bw-calendar-day][data-date="2026-08-11"]') // not selected
+  await mon.click()
+  await expect(mon).toHaveAttribute('tabindex', '0')
+
+  await page.keyboard.press('ArrowRight')
+  await expect(tue).toBeFocused()
+  await expect(tue).toHaveAttribute('tabindex', '0')
+  await expect(tue).toHaveAttribute('aria-selected', 'false')
+
+  await page.keyboard.press('Enter')
+  await expect(tue).toHaveAttribute('aria-selected', 'true')
+})
+
 test('a day with an overflowing event list stays the same row height as an empty day', async ({ page }) => {
   const calendar = page.locator('[data-bw-calendar][data-name="team"]')
   const busyDay = calendar.locator('[data-bw-calendar-day][data-date="2026-08-05"]') // 4 events, 1 overflowing
@@ -55,6 +73,43 @@ test('the view switch toggles between month and week and re-renders the grid', a
 
   const events = await page.evaluate(() => window.calendarEvents.filter((e) => e.type === 'bladewind:calendar:view-change'))
   expect(events.length).toBe(2)
+})
+
+test('switching to week view client-side builds the hour grid with positioned timed events', async ({ page }) => {
+  const calendar = page.locator('[data-bw-calendar][data-name="team"]')
+  await calendar.locator('[data-bw-calendar-view="week"]').click()
+
+  const column = calendar.locator('[data-bw-calendar-week-body] .bw-calendar-week-day-column[data-date="2026-08-11"]')
+  const events = column.locator('.bw-calendar-week-timed-event')
+  await expect(events).toHaveCount(3) // Standup, Design sync, Kenya project review
+
+  // Standup 09:00-10:00 -> top 27rem = 432px, Design sync overlaps -> second column
+  await expect(events.nth(0)).toHaveCSS('top', '432px')
+  await expect(events.nth(0)).toHaveCSS('left', '0px')
+  await expect(events.nth(1)).not.toHaveCSS('left', '0px')
+
+  await expect(calendar.locator('.bw-calendar-week-allday-banner')).toHaveText('Bisqui expected')
+})
+
+test('week view auto-scrolls to a sensible hour on load and after switching views', async ({ page }) => {
+  const calendar = page.locator('[data-bw-calendar][data-name="team"]')
+  const scroller = calendar.locator('[data-bw-calendar-scroll]')
+
+  await calendar.locator('[data-bw-calendar-view="week"]').click()
+  const scrollTop = await scroller.evaluate((el) => el.scrollTop)
+  expect(scrollTop).toBeGreaterThan(0) // scrolled past midnight, not sitting at the very top
+})
+
+test('paging weeks while in week view rebuilds the hour grid for the new week', async ({ page }) => {
+  const calendar = page.locator('[data-bw-calendar][data-name="team"]')
+  await calendar.locator('[data-bw-calendar-view="week"]').click()
+  await expect(calendar.locator('[data-bw-calendar-title]')).toHaveText('Aug 9 – 15, 2026')
+  await expect(calendar.locator('.bw-calendar-week-timed-event')).toHaveCount(3)
+
+  await calendar.locator('[data-bw-calendar-next]').click()
+  await expect(calendar.locator('[data-bw-calendar-title]')).toHaveText('Aug 16 – 22, 2026')
+  await expect(calendar.locator('.bw-calendar-week-timed-event')).toHaveCount(0)
+  await expect(calendar.locator('[data-bw-calendar-day]')).toHaveCount(7)
 })
 
 test('clicking a day toggles multiple selection and syncs hidden inputs', async ({ page }) => {

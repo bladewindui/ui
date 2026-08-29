@@ -29,7 +29,7 @@ The package installs Bladewind Core and Icon automatically.
 
 ## Views
 
-`view` is `month` or `week`. Both are shown by default with a toggle in the header; `date` is the anchor day (`Y-m-d`, defaults to today) — month view shows the month containing it, week view the week containing it.
+`view` is `month` or `week`. Both are shown by default with a toggle in the header; `date` is the anchor day (`Y-m-d`, defaults to today) — month view shows the month containing it, week view the week containing it. Week view is a real hour grid: an all-day row across the top for date-only and multi-day events, and 24 scrollable hour rows below with timed events positioned and sized to their duration, similar to Outlook or Google Calendar's week view. It opens scrolled to a sensible hour rather than midnight.
 
 ## Selection
 
@@ -37,7 +37,11 @@ The package installs Bladewind Core and Icon automatically.
 
 ## Events
 
-`events` is an array of `['date' => 'Y-m-d', 'end' => optional 'Y-m-d', 'label', 'type' => info|success|warning|danger, 'href' => optional]`. `end` spans an event across multiple days. Each day shows up to `max-events-per-day` (default 3) events; the rest sit behind a real, focusable "+N more" button.
+`events` is an array of `['date' => 'Y-m-d', 'end' => optional, 'label', 'type' => info|success|warning|danger, 'href' => optional]`.
+
+An event without a clock time in `date` is all-day: `end` (also date-only) spans it across multiple days, and it shows as a marker in month view and a banner across the days it covers in week view's all-day row. Each day shows up to `max-events-per-day` (default 3) markers in month view; the rest sit behind a real, focusable "+N more" button.
+
+An event with a clock time in `date` (e.g. `'2026-09-01 15:00'`) is timed: `end` is also a time on the same day, defaulting to one hour after `date` when omitted. Timed events are positioned in week view's hour grid; events that overlap in time are placed in side-by-side columns. In month view, timed events still show as a marker, prefixed with their start time (e.g. "3:00pm Kenya project review"). Cross-midnight timed events are clamped to end at 23:59 the same day.
 
 ## Restricting dates
 
@@ -70,7 +74,7 @@ Cancelable `before-navigate`, `before-view-change`, and `before-select`, and `na
 
 ## Accessibility
 
-The grid is a real `role="grid"` with `role="gridcell"` days and roving `tabindex` — arrow keys move focus by day, Home/End jump to the start/end of the row, PageUp/PageDown change the month or week, and Enter/Space selects. Event markers are real, independently focusable links or buttons, not decorations bolted onto a hand-rolled widget.
+The grid is a real `role="grid"` with `role="gridcell"` days and roving `tabindex` — arrow keys move focus by day (in week view, between the day-column headers), Home/End jump to the start/end of the row, PageUp/PageDown change the month or week, and Enter/Space selects. Event markers, including timed events positioned in week view's hour grid, are real, independently focusable links or buttons, not decorations bolted onto a hand-rolled widget.
 
 ## Documentation
 
