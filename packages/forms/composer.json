@@ -1,5 +1,5 @@
 {
-    "name": "mkocansey/bladewind-forms",
+    "name": "bladewindui/forms",
     "description": "BladewindUI forms bundle — installs all form components (Input, Select, Checkbox, Radio, Toggle, Datepicker, Timepicker, Colorpicker, Filepicker, Slider, Checkcards, Textarea, Number, Code)",
     "keywords": [
         "laravel",
@@ -17,19 +17,19 @@
         }
     ],
     "require": {
-        "mkocansey/bladewind-input": "^4.4",
-        "mkocansey/bladewind-textarea": "^4.4",
-        "mkocansey/bladewind-select": "^4.4",
-        "mkocansey/bladewind-checkbox": "^4.4",
-        "mkocansey/bladewind-radio": "^4.4",
-        "mkocansey/bladewind-toggle": "^4.4",
-        "mkocansey/bladewind-datepicker": "^4.4",
-        "mkocansey/bladewind-timepicker": "^4.4",
-        "mkocansey/bladewind-colorpicker": "^4.4",
-        "mkocansey/bladewind-filepicker": "^4.4",
-        "mkocansey/bladewind-slider": "^4.4",
-        "mkocansey/bladewind-checkcards": "^4.4",
-        "mkocansey/bladewind-number": "^4.4",
-        "mkocansey/bladewind-code": "^4.4"
+        "bladewindui/input": "^4.4",
+        "bladewindui/textarea": "^4.4",
+        "bladewindui/select": "^4.4",
+        "bladewindui/checkbox": "^4.4",
+        "bladewindui/radio": "^4.4",
+        "bladewindui/toggle": "^4.4",
+        "bladewindui/datepicker": "^4.4",
+        "bladewindui/timepicker": "^4.4",
+        "bladewindui/colorpicker": "^4.4",
+        "bladewindui/filepicker": "^4.4",
+        "bladewindui/slider": "^4.4",
+        "bladewindui/checkcards": "^4.4",
+        "bladewindui/number": "^4.4",
+        "bladewindui/code": "^4.4"
     }
 }

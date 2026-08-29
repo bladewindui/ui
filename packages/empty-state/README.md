@@ -1,4 +1,4 @@
-[![License](https://img.shields.io/github/license/mkocansey/bladewind)](https://github.com/mkocansey/bladewind/blob/main/LICENSE) [![Packagist Version](https://img.shields.io/packagist/v/mkocansey/bladewind-empty-state)](https://packagist.org/packages/mkocansey/bladewind-empty-state)
+[![License](https://img.shields.io/github/license/mkocansey/bladewind)](https://github.com/mkocansey/bladewind/blob/main/LICENSE) [![Packagist Version](https://img.shields.io/packagist/v/bladewindui/empty-state)](https://packagist.org/packages/bladewindui/empty-state)
 
 <img src="https://bladewindui.com/assets/images/bw-logo.png" height="30" alt="BladewindUI" />
 
@@ -9,13 +9,13 @@ BladewindUI — Empty state placeholder component.
 ## Installation
 
 ```bash
-composer require mkocansey/bladewind-empty-state
+composer require bladewindui/empty-state
 ```
 
 Or install the full library:
 
 ```bash
-composer require mkocansey/bladewind
+composer require bladewindui/ui
 ```
 
 ## Documentation

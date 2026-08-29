@@ -1,5 +1,5 @@
 {
-    "name": "mkocansey/bladewind-core",
+    "name": "bladewindui/core",
     "description": "Shared foundation for BladewindUI — helpers, CSS variables, and base JS",
     "keywords": [
         "laravel",

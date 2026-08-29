@@ -64,6 +64,29 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Breadcrumbs component
+    |--------------------------------------------------------------------------
+    */
+    'breadcrumbs' => [
+        'separator' => 'chevron',
+        'size' => 'regular',
+        'collapse' => true,
+    ],
+
+    'stepper' => [
+        'orientation' => 'horizontal',
+        'style' => 'circles',
+        'linear' => true,
+        'clickable' => true,
+        'show_numbers' => true,
+        'completed_icon' => 'check',
+        'error_icon' => 'exclamation-triangle',
+        'icon_type' => 'outline',
+        'icon_dir' => '',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Button component
     |--------------------------------------------------------------------------
     */
@@ -336,6 +359,29 @@ return [
         'show_close_icon' => false,
         'size' => 'medium',
         'radius' => 'small',
+    ],
+
+    'drawer' => [
+        'position' => 'right',
+        'size' => 'medium',
+        'modal' => true,
+        'show_close_button' => true,
+        'backdrop_can_close' => true,
+        'escape_can_close' => true,
+    ],
+
+    'sidebar' => [
+        'placement' => 'left',
+        'mobile' => 'drawer',
+        'mobile_size' => 'small',
+        'collapsible' => false,
+        'collapsed' => false,
+        'show_collapse_control' => true,
+        'close_on_navigate' => true,
+        'persist' => false,
+        'persist_groups' => false,
+        'height' => 'full',
+        'multiple_active' => false,
     ],
 
     /*

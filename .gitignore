@@ -9,3 +9,4 @@ node_modules
 /test-results
 /playwright-report
 /tests/E2E/public/*.html
+COMPONENT_BACKLOG.md

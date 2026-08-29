@@ -1,5 +1,5 @@
 {
-    "name": "mkocansey/bladewind-timepicker",
+    "name": "bladewindui/timepicker",
     "description": "BladewindUI — Timepicker component",
     "keywords": [
         "laravel",
@@ -18,12 +18,12 @@
     ],
     "require": {
         "php": ">=8.1",
-        "mkocansey/bladewind-core": "^4.4",
-        "mkocansey/bladewind-icon": "^4.4",
-        "mkocansey/bladewind-script": "^4.4",
-        "mkocansey/bladewind-input": "^4.4",
-        "mkocansey/bladewind-modal": "^4.4",
-        "mkocansey/bladewind-select": "^4.4"
+        "bladewindui/core": "^4.4",
+        "bladewindui/icon": "^4.4",
+        "bladewindui/script": "^4.4",
+        "bladewindui/input": "^4.4",
+        "bladewindui/modal": "^4.4",
+        "bladewindui/select": "^4.4"
     },
     "autoload": {
         "psr-4": {

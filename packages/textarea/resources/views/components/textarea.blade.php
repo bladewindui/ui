@@ -49,7 +49,7 @@
 @endphp
 {{-- format-ignore-end --}}
 
-<div class="relative w-full @if($addClearing) mb-3 @endif">
+<div class="bw-textarea-wrapper relative w-full @if($addClearing) has-clearing @endif">
     @if($toolbar)
         <div id="{{$name}}"></div>
         <textarea hidden name="{{ $name }}" id="{{ $name }}-hidden" class="size-0"></textarea>

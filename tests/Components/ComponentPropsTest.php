@@ -176,6 +176,19 @@ class ComponentPropsTest extends TestCase
     }
 
     #[Test]
+    public function an_input_group_uses_a_component_owned_clearing_class(): void
+    {
+        $html = $this->render(
+            "<x-bladewind::input-group>\n<x-bladewind::input name=\"q\" />\n<x-bladewind::button>Go</x-bladewind::button>\n</x-bladewind::input-group>"
+        );
+
+        $wrapper = $this->withClass('bw-input-group').'/*[contains(concat(" ", normalize-space(@class), " "), " bw-input-wrapper ")]';
+
+        $this->assertHasClasses($html, $wrapper, ['bw-input-wrapper', 'has-clearing']);
+        $this->assertMissingClasses($html, $wrapper, ['mb-4']);
+    }
+
+    #[Test]
     public function an_input_group_can_be_unattached(): void
     {
         $html = $this->render(

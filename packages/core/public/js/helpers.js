@@ -5,6 +5,8 @@
  */
 
 const openModals = [];
+const openDrawers = [];
+const drawerReturnFocus = new Map();
 /**
  * Shortcut for document.querySelector.
  * @param {string} element - The element to find in the DOM.
@@ -370,12 +372,92 @@ const trapFocusInModal = (event) => {
 const hideModal = (element) => {
     animateCss(`.bw-${element}`, 'zoomOut').then(() => {
         openModals.pop();
-        document.body.classList.remove('overflow-hidden');
+        syncDrawerScrollLock();
         domEl(`.bw-${element}-modal`).removeEventListener('keydown', trapFocusInModal);
         animateCss(`.bw-${element}-modal`, 'zoomOut').then(() => {
             hide(`.bw-${element}-modal`);
         });
     });
+};
+
+const drawerByName = (name) => Array.from(domEls('[data-bw-drawer]'))
+    .find((drawer) => drawer.getAttribute('data-name') === name);
+
+const drawerFocusable = (drawer) => Array.from(drawer.querySelectorAll(
+    'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+)).filter((element) => !element.hidden && element.getAttribute('aria-hidden') !== 'true');
+
+const syncDrawerScrollLock = () => {
+    const hasModalDrawer = openDrawers.some((name) => drawerByName(name)?.getAttribute('data-modal') === 'true');
+    document.body.classList.toggle('overflow-hidden', hasModalDrawer || openModals.length > 0);
+};
+
+const focusDrawer = (drawer) => {
+    const preferred = drawer.querySelector('[autofocus]') || drawerFocusable(drawer)[0] || drawer.querySelector('.bw-drawer-panel');
+    preferred?.focus({preventScroll: true});
+};
+
+const showDrawer = (name) => {
+    const drawer = drawerByName(name);
+    if (!drawer || drawer.getAttribute('data-state') === 'open') return false;
+    drawerReturnFocus.set(name, document.activeElement);
+    drawer.hidden = false;
+    drawer.setAttribute('data-state', 'opening');
+    drawer.setAttribute('aria-hidden', 'false');
+    drawer.style.zIndex = String(50 + (openDrawers.length * 10));
+    openDrawers.push(name);
+    syncDrawerScrollLock();
+    requestAnimationFrame(() => {
+        if (drawer.getAttribute('data-state') !== 'opening') return;
+        drawer.setAttribute('data-state', 'open');
+        focusDrawer(drawer);
+        drawer.dispatchEvent(new CustomEvent('bladewind:drawer-opened', {bubbles: true, detail: {name}}));
+    });
+    return true;
+};
+
+const hideDrawer = (name) => {
+    const drawer = drawerByName(name);
+    if (!drawer || drawer.hidden || drawer.getAttribute('data-state') === 'closed') return false;
+    drawer.setAttribute('data-state', 'closing');
+    drawer.setAttribute('aria-hidden', 'true');
+    const index = openDrawers.lastIndexOf(name);
+    if (index !== -1) openDrawers.splice(index, 1);
+    syncDrawerScrollLock();
+
+    let finished = false;
+    const finish = () => {
+        if (finished) return;
+        finished = true;
+        drawer.hidden = true;
+        drawer.setAttribute('data-state', 'closed');
+        drawer.style.removeProperty('z-index');
+        const trigger = drawerReturnFocus.get(name);
+        drawerReturnFocus.delete(name);
+        if (trigger?.isConnected) trigger.focus({preventScroll: true});
+        drawer.dispatchEvent(new CustomEvent('bladewind:drawer-closed', {bubbles: true, detail: {name}}));
+    };
+    drawer.querySelector('.bw-drawer-panel')?.addEventListener('transitionend', finish, {once: true});
+    setTimeout(finish, 300);
+    return true;
+};
+
+const toggleDrawer = (name) => {
+    const drawer = drawerByName(name);
+    if (!drawer) return false;
+    return drawer.hidden || drawer.getAttribute('data-state') !== 'open' ? showDrawer(name) : hideDrawer(name);
+};
+
+const initialiseDrawers = () => {
+    domEls('[data-bw-drawer][data-state="open"]').forEach((drawer) => {
+        const name = drawer.getAttribute('data-name');
+        drawer.hidden = false;
+        drawer.setAttribute('aria-hidden', 'false');
+        if (!openDrawers.includes(name)) openDrawers.push(name);
+    });
+    syncDrawerScrollLock();
+    const activeDrawer = drawerByName(openDrawers[openDrawers.length - 1]);
+    if (activeDrawer) focusDrawer(activeDrawer);
 };
 
 /**
@@ -1026,6 +1108,418 @@ const bwActivateOnKey = (selector) => {
     });
 };
 
+/** Find a stepper by its public name without interpolating untrusted text into CSS. */
+const stepperByName = (name) => {
+    const steppers = Array.from(document.querySelectorAll('[data-bw-stepper]'));
+    const stepper = steppers.find((candidate) => candidate.getAttribute('data-name') === String(name)) || null;
+    if (stepper && stepper.dataset.bwInitialised !== 'true') initialiseStepper(stepper, steppers.indexOf(stepper));
+    return stepper;
+};
+
+const stepperParts = (stepper) => ({
+    items: Array.from(stepper.querySelectorAll('[data-bw-stepper-item]')),
+    triggers: Array.from(stepper.querySelectorAll('[data-bw-stepper-step]')),
+    panels: Array.from(stepper.querySelectorAll('[data-bw-stepper-panel]')),
+});
+
+const stepperDetail = (stepper, previousStep, nextStep, direction) => ({
+    stepperName: stepper.getAttribute('data-name'),
+    previousStep,
+    nextStep,
+    direction,
+});
+
+const initialiseStepper = (stepper, index = 0) => {
+    if (stepper.dataset.bwInitialised === 'true') return;
+    const {items, triggers, panels} = stepperParts(stepper);
+    if (!items.length) return;
+
+    // Content components share the default slot with items. Move them outside the
+    // ordered list so the final DOM keeps list semantics and panels remain siblings.
+    panels.forEach((panel) => stepper.appendChild(panel));
+
+    const safeStepper = (stepper.getAttribute('data-name') || `stepper-${index + 1}`)
+        .replace(/[^A-Za-z0-9_-]/g, '-');
+    triggers.forEach((trigger, triggerIndex) => {
+        const step = trigger.getAttribute('data-bw-stepper-step');
+        const safeStep = (step || `step-${triggerIndex + 1}`).replace(/[^A-Za-z0-9_-]/g, '-');
+        const idBase = `bw-stepper-${index + 1}-${safeStepper}-${safeStep}`;
+        const panel = panels.find((candidate) => candidate.getAttribute('data-bw-stepper-panel') === step);
+        trigger.id = `${idBase}-step`;
+        if (panel) {
+            panel.id = `${idBase}-panel`;
+            panel.setAttribute('aria-labelledby', trigger.id);
+            trigger.setAttribute('aria-controls', panel.id);
+        }
+    });
+
+    const requested = stepper.getAttribute('data-current');
+    const requestedTrigger = triggers.find((trigger) => trigger.getAttribute('data-bw-stepper-step') === requested
+        && trigger.getAttribute('aria-disabled') !== 'true');
+    const stateTrigger = triggers.find((trigger) => trigger.closest('[data-bw-stepper-item]')?.getAttribute('data-state') === 'current'
+        && trigger.getAttribute('aria-disabled') !== 'true');
+    const initial = requestedTrigger || stateTrigger || triggers.find((trigger) => trigger.getAttribute('aria-disabled') !== 'true');
+    stepper.dataset.bwInitialised = 'true';
+    if (initial) setStepperCurrent(stepper, initial.getAttribute('data-bw-stepper-step'), {focus: false, emit: false, force: true});
+};
+
+const initialiseSteppers = () => document.querySelectorAll('[data-bw-stepper]')
+    .forEach((stepper, index) => initialiseStepper(stepper, index));
+
+const setStepperCurrent = (stepper, stepName, options = {}) => {
+    if (!stepper) return false;
+    const {items, triggers, panels} = stepperParts(stepper);
+    const target = triggers.find((trigger) => trigger.getAttribute('data-bw-stepper-step') === String(stepName));
+    if (!target || target.getAttribute('aria-disabled') === 'true') return false;
+
+    const currentName = stepper.getAttribute('data-current') || null;
+    const currentIndex = triggers.findIndex((trigger) => trigger.getAttribute('data-bw-stepper-step') === currentName);
+    const targetIndex = triggers.indexOf(target);
+    const direction = targetIndex > currentIndex ? 'forward' : targetIndex < currentIndex ? 'backward' : 'none';
+    if (!options.force && stepper.getAttribute('data-linear') === 'true') {
+        if (direction === 'forward' && !options.allowForward) return false;
+        const targetState = target.closest('[data-bw-stepper-item]')?.getAttribute('data-state');
+        if (direction === 'backward' && !options.allowBackward && targetState !== 'complete') return false;
+    }
+    if (currentName === String(stepName) && !options.force) return true;
+
+    const detail = stepperDetail(stepper, currentName, String(stepName), direction);
+    if (options.emit !== false) {
+        const before = new CustomEvent('bladewind:stepper:before-change', {bubbles: true, cancelable: true, detail});
+        if (!stepper.dispatchEvent(before)) return false;
+    }
+
+    items.forEach((item, itemIndex) => {
+        const trigger = triggers[itemIndex];
+        if (!trigger) return;
+        const isTarget = trigger === target;
+        const disabled = trigger.getAttribute('aria-disabled') === 'true';
+        const existing = item.getAttribute('data-state');
+        let state = isTarget ? 'current' : itemIndex < targetIndex ? 'complete' : 'upcoming';
+        if (disabled) state = 'disabled';
+        else if (!isTarget && existing === 'error') state = 'error';
+        item.setAttribute('data-state', state);
+        trigger.setAttribute('aria-current', isTarget ? 'step' : 'false');
+        trigger.setAttribute('tabindex', isTarget ? '0' : '-1');
+        const stateText = trigger.querySelector('.bw-stepper-state-text');
+        if (stateText) stateText.textContent = state.charAt(0).toUpperCase() + state.slice(1);
+    });
+    panels.forEach((panel) => {
+        const shown = panel.getAttribute('data-bw-stepper-panel') === String(stepName);
+        panel.hidden = !shown;
+        panel.setAttribute('aria-hidden', shown ? 'false' : 'true');
+        if (!shown) panel.setAttribute('inert', '');
+        else panel.removeAttribute('inert');
+    });
+    stepper.setAttribute('data-current', String(stepName));
+    if (options.focus !== false) target.focus({preventScroll: true});
+    if (options.emit !== false) stepper.dispatchEvent(new CustomEvent('bladewind:stepper:changed', {bubbles: true, detail}));
+    return true;
+};
+
+const showStepperStep = (stepperName, stepName) => setStepperCurrent(stepperByName(stepperName), stepName);
+
+const nextStepperStep = (stepperName) => {
+    const stepper = stepperByName(stepperName);
+    if (!stepper) return false;
+    const {triggers} = stepperParts(stepper);
+    const current = triggers.findIndex((trigger) => trigger.getAttribute('data-bw-stepper-step') === stepper.getAttribute('data-current'));
+    const next = triggers.slice(current + 1).find((trigger) => trigger.getAttribute('aria-disabled') !== 'true');
+    if (!next) {
+        const detail = stepperDetail(stepper, stepper.getAttribute('data-current'), null, 'complete');
+        stepper.dispatchEvent(new CustomEvent('bladewind:stepper:complete', {bubbles: true, detail}));
+        return true;
+    }
+    return setStepperCurrent(stepper, next.getAttribute('data-bw-stepper-step'), {allowForward: true});
+};
+
+const previousStepperStep = (stepperName) => {
+    const stepper = stepperByName(stepperName);
+    if (!stepper) return false;
+    const {triggers} = stepperParts(stepper);
+    const current = triggers.findIndex((trigger) => trigger.getAttribute('data-bw-stepper-step') === stepper.getAttribute('data-current'));
+    const previous = triggers.slice(0, current).reverse().find((trigger) => trigger.getAttribute('aria-disabled') !== 'true');
+    return previous ? setStepperCurrent(stepper, previous.getAttribute('data-bw-stepper-step'), {allowBackward: true}) : false;
+};
+
+const resetStepper = (stepperName) => {
+    const stepper = stepperByName(stepperName);
+    if (!stepper) return false;
+    const {items, triggers} = stepperParts(stepper);
+    items.forEach((item, index) => {
+        const initial = triggers[index]?.getAttribute('data-initial-state') || 'upcoming';
+        item.setAttribute('data-state', initial);
+    });
+    const initialName = stepper.getAttribute('data-initial-current');
+    const initial = triggers.find((trigger) => trigger.getAttribute('data-bw-stepper-step') === initialName
+        && trigger.getAttribute('aria-disabled') !== 'true') || triggers.find((trigger) => trigger.getAttribute('aria-disabled') !== 'true');
+    return initial ? setStepperCurrent(stepper, initial.getAttribute('data-bw-stepper-step'), {force: true}) : false;
+};
+
+/** Find and initialise one Sidebar without interpolating its public name into a selector. */
+const sidebarByName = (name) => {
+    const sidebars = Array.from(document.querySelectorAll('[data-bw-sidebar]'));
+    const sidebar = sidebars.find((candidate) => candidate.getAttribute('data-name') === String(name)) || null;
+    if (sidebar && sidebar.dataset.bwInitialised !== 'true') initialiseSidebar(sidebar);
+    return sidebar;
+};
+
+const sidebarHostByName = (attribute, name) => Array.from(document.querySelectorAll(`[${attribute}]`))
+    .find((host) => host.getAttribute(attribute) === String(name)) || null;
+
+const sidebarPresentation = () => window.matchMedia?.('(min-width: 1024px)')?.matches ? 'desktop' : 'mobile';
+
+const sidebarDetail = (sidebar, values = {}) => ({
+    sidebarName: sidebar.getAttribute('data-name'),
+    presentation: sidebarPresentation(),
+    placement: sidebar.getAttribute('data-resolved-placement') || sidebar.getAttribute('data-placement'),
+    triggeringElement: values.triggeringElement || null,
+    source: values.source || 'programmatic',
+    ...values,
+});
+
+const sidebarEvent = (sidebar, name, detail, cancelable = false) => sidebar.dispatchEvent(
+    new CustomEvent(`bladewind:sidebar:${name}`, {bubbles: true, cancelable, detail})
+);
+
+const sidebarStoredState = (sidebar) => {
+    if (sidebar.getAttribute('data-persist') !== 'true' && sidebar.getAttribute('data-persist-groups') !== 'true') return null;
+    try {
+        const parsed = JSON.parse(window.localStorage.getItem(sidebar.getAttribute('data-storage-key')) || 'null');
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
+        if ('collapsed' in parsed && typeof parsed.collapsed !== 'boolean') return null;
+        if ('groups' in parsed && (!parsed.groups || typeof parsed.groups !== 'object' || Array.isArray(parsed.groups))) return null;
+        if (parsed.groups && Object.values(parsed.groups).some((value) => typeof value !== 'boolean')) return null;
+        return parsed;
+    } catch (_) {
+        return null;
+    }
+};
+
+const persistSidebarState = (sidebar) => {
+    if (sidebar.getAttribute('data-persist') !== 'true' && sidebar.getAttribute('data-persist-groups') !== 'true') return false;
+    const state = {};
+    if (sidebar.getAttribute('data-persist') === 'true') state.collapsed = sidebar.getAttribute('data-state') === 'collapsed';
+    if (sidebar.getAttribute('data-persist-groups') === 'true') {
+        state.groups = {};
+        sidebar.querySelectorAll('[data-bw-sidebar-group]').forEach((group) => {
+            state.groups[group.getAttribute('data-group-name')] = group.getAttribute('data-expanded') === 'true';
+        });
+    }
+    try {
+        window.localStorage.setItem(sidebar.getAttribute('data-storage-key'), JSON.stringify(state));
+        return true;
+    } catch (_) {
+        return false;
+    }
+};
+
+const resolveSidebarPlacement = (sidebar) => {
+    const placement = sidebar.getAttribute('data-placement');
+    const rtl = window.getComputedStyle?.(sidebar)?.direction === 'rtl';
+    const resolved = placement === 'start' ? (rtl ? 'right' : 'left')
+        : placement === 'end' ? (rtl ? 'left' : 'right') : placement;
+    sidebar.setAttribute('data-resolved-placement', resolved);
+    const drawer = drawerByName(sidebar.getAttribute('data-drawer-name'));
+    if (drawer) drawer.setAttribute('data-position', resolved);
+};
+
+const setSidebarGroupExpanded = (sidebar, group, expanded, options = {}) => {
+    if (!sidebar || !group || group.getAttribute('data-disabled') === 'true') return false;
+    const previousState = group.getAttribute('data-expanded') === 'true';
+    if (previousState === expanded) return true;
+    const groupName = group.getAttribute('data-group-name');
+    const trigger = group.querySelector(':scope > [data-bw-sidebar-group-trigger]');
+    const panel = group.querySelector(':scope > .bw-sidebar-group-panel');
+    const detail = sidebarDetail(sidebar, {
+        groupName,
+        previousState: previousState ? 'expanded' : 'collapsed',
+        nextState: expanded ? 'expanded' : 'collapsed',
+        triggeringElement: options.triggeringElement || trigger,
+        source: options.source || 'programmatic',
+    });
+    if (options.emit !== false && !sidebarEvent(sidebar, 'group:before-change', detail, true)) return false;
+    if (!expanded && panel?.contains(document.activeElement)) trigger?.focus({preventScroll: true});
+    group.setAttribute('data-expanded', expanded ? 'true' : 'false');
+    trigger?.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    if (panel) {
+        panel.hidden = !expanded;
+        if (expanded) panel.removeAttribute('inert');
+        else panel.setAttribute('inert', '');
+    }
+    if (options.persist !== false) persistSidebarState(sidebar);
+    if (options.emit !== false) sidebarEvent(sidebar, 'group:changed', detail);
+    return true;
+};
+
+const sidebarGroupByName = (sidebar, groupName) => Array.from(sidebar?.querySelectorAll('[data-bw-sidebar-group]') || [])
+    .find((group) => group.getAttribute('data-group-name') === String(groupName)) || null;
+
+const expandSidebarGroup = (sidebarName, groupName) => setSidebarGroupExpanded(
+    sidebarByName(sidebarName), sidebarGroupByName(sidebarByName(sidebarName), groupName), true
+);
+
+const collapseSidebarGroup = (sidebarName, groupName) => setSidebarGroupExpanded(
+    sidebarByName(sidebarName), sidebarGroupByName(sidebarByName(sidebarName), groupName), false
+);
+
+const toggleSidebarGroup = (sidebarName, groupName) => {
+    const sidebar = sidebarByName(sidebarName);
+    const group = sidebarGroupByName(sidebar, groupName);
+    if (!group) return false;
+    return setSidebarGroupExpanded(sidebar, group, group.getAttribute('data-expanded') !== 'true');
+};
+
+const setSidebarCollapsed = (sidebar, collapsed, options = {}) => {
+    if (!sidebar || sidebar.getAttribute('data-collapsible') !== 'true') return false;
+    const previousState = sidebar.getAttribute('data-state');
+    const nextState = collapsed ? 'collapsed' : 'expanded';
+    if (previousState === nextState) return true;
+    const action = collapsed ? 'collapse' : 'expand';
+    const detail = sidebarDetail(sidebar, {
+        previousState,
+        nextState,
+        triggeringElement: options.triggeringElement || null,
+        source: options.source || 'programmatic',
+    });
+    if (options.emit !== false && !sidebarEvent(sidebar, `before-${action}`, detail, true)) return false;
+    sidebar.setAttribute('data-state', nextState);
+    const control = sidebar.querySelector('[data-bw-sidebar-collapse-control]');
+    if (control) {
+        const label = control.getAttribute(collapsed ? 'data-expand-label' : 'data-collapse-label');
+        control.setAttribute('aria-label', label);
+        control.setAttribute('title', label);
+    }
+    if (options.persist !== false) persistSidebarState(sidebar);
+    if (options.emit !== false) sidebarEvent(sidebar, collapsed ? 'collapsed' : 'expanded', detail);
+    return true;
+};
+
+const collapseSidebar = (sidebarName) => setSidebarCollapsed(sidebarByName(sidebarName), true);
+const expandSidebar = (sidebarName) => setSidebarCollapsed(sidebarByName(sidebarName), false);
+
+const moveSidebarToMobile = (sidebar) => {
+    const host = sidebarHostByName('data-bw-sidebar-mobile-host', sidebar.getAttribute('data-name'));
+    if (!host) return false;
+    if (sidebar.parentElement !== host) host.appendChild(sidebar);
+    return true;
+};
+
+const moveSidebarToDesktop = (sidebar) => {
+    const host = sidebarHostByName('data-bw-sidebar-desktop-host', sidebar.getAttribute('data-name'));
+    if (!host) return false;
+    if (sidebar.parentElement !== host) host.appendChild(sidebar);
+    return true;
+};
+
+const openSidebar = (sidebarName, options = {}) => {
+    const sidebar = sidebarByName(sidebarName);
+    if (!sidebar) return false;
+    if (sidebarPresentation() === 'desktop') return expandSidebar(sidebarName);
+    if (sidebar.getAttribute('data-mobile') !== 'drawer') return false;
+    const drawerName = sidebar.getAttribute('data-drawer-name');
+    const drawer = drawerByName(drawerName);
+    if (!drawer || drawer.getAttribute('data-state') === 'open') return false;
+    const detail = sidebarDetail(sidebar, {
+        previousState: 'closed', nextState: 'open',
+        triggeringElement: options.triggeringElement || document.activeElement,
+        source: options.source || 'programmatic',
+    });
+    if (!sidebarEvent(sidebar, 'before-open', detail, true)) return false;
+    resolveSidebarPlacement(sidebar);
+    if (!moveSidebarToMobile(sidebar)) return false;
+    sidebar._bwTransitionDetail = detail;
+    if (!showDrawer(drawerName)) {
+        moveSidebarToDesktop(sidebar);
+        return false;
+    }
+    return true;
+};
+
+const closeSidebar = (sidebarName, options = {}) => {
+    const sidebar = sidebarByName(sidebarName);
+    if (!sidebar) return false;
+    if (sidebarPresentation() === 'desktop') return collapseSidebar(sidebarName);
+    const drawer = drawerByName(sidebar.getAttribute('data-drawer-name'));
+    if (!drawer || drawer.hidden || drawer.getAttribute('data-state') === 'closed') return false;
+    const detail = sidebarDetail(sidebar, {
+        previousState: 'open', nextState: 'closed',
+        triggeringElement: options.triggeringElement || document.activeElement,
+        source: options.source || 'programmatic',
+    });
+    if (!sidebarEvent(sidebar, 'before-close', detail, true)) return false;
+    sidebar._bwTransitionDetail = detail;
+    return hideDrawer(sidebar.getAttribute('data-drawer-name'));
+};
+
+const toggleSidebar = (sidebarName) => {
+    const sidebar = sidebarByName(sidebarName);
+    if (!sidebar) return false;
+    if (sidebarPresentation() === 'desktop') {
+        return setSidebarCollapsed(sidebar, sidebar.getAttribute('data-state') !== 'collapsed');
+    }
+    const drawer = drawerByName(sidebar.getAttribute('data-drawer-name'));
+    return drawer && !drawer.hidden && drawer.getAttribute('data-state') !== 'closed'
+        ? closeSidebar(sidebarName) : openSidebar(sidebarName);
+};
+
+const resolveSidebarActiveItem = (sidebar) => {
+    const items = Array.from(sidebar.querySelectorAll('[data-bw-sidebar-item]'));
+    const enabled = items.filter((item) => item.getAttribute('data-disabled') !== 'true');
+    const canonical = sidebar.getAttribute('data-active');
+    let activeItems = canonical
+        ? enabled.filter((item) => item.getAttribute('data-item-name') === canonical).slice(0, 1)
+        : enabled.filter((item) => item.getAttribute('data-initial-active') === 'true');
+    if (sidebar.getAttribute('data-multiple-active') !== 'true') activeItems = activeItems.slice(0, 1);
+    items.forEach((item) => {
+        const active = activeItems.includes(item);
+        item.setAttribute('data-active', active ? 'true' : 'false');
+        const action = item.querySelector(':scope > .bw-sidebar-item-action');
+        if (active) action?.setAttribute('aria-current', 'page');
+        else action?.removeAttribute('aria-current');
+    });
+    activeItems.forEach((item) => {
+        let group = item.closest('[data-bw-sidebar-group]');
+        while (group) {
+            setSidebarGroupExpanded(sidebar, group, true, {emit: false, persist: false});
+            group = group.parentElement?.closest('[data-bw-sidebar-group]') || null;
+        }
+    });
+};
+
+const initialiseSidebar = (sidebar) => {
+    if (sidebar.dataset.bwInitialised === 'true') return;
+    resolveSidebarPlacement(sidebar);
+    const stored = sidebarStoredState(sidebar);
+    sidebar.querySelectorAll('[data-bw-sidebar-group]').forEach((group) => {
+        const groupName = group.getAttribute('data-group-name');
+        const storedValue = stored?.groups && Object.prototype.hasOwnProperty.call(stored.groups, groupName)
+            ? stored.groups[groupName] : null;
+        const expanded = storedValue === null
+            ? group.getAttribute('data-initial-expanded') === 'true' : storedValue;
+        setSidebarGroupExpanded(sidebar, group, expanded, {emit: false, persist: false});
+    });
+    if (sidebar.getAttribute('data-persist') === 'true' && typeof stored?.collapsed === 'boolean') {
+        setSidebarCollapsed(sidebar, stored.collapsed, {emit: false, persist: false});
+    }
+    resolveSidebarActiveItem(sidebar);
+    sidebar.dataset.bwInitialised = 'true';
+};
+
+const initialiseSidebars = () => document.querySelectorAll('[data-bw-sidebar]').forEach(initialiseSidebar);
+
+const resetSidebar = (sidebarName) => {
+    const sidebar = sidebarByName(sidebarName);
+    if (!sidebar) return false;
+    try { window.localStorage.removeItem(sidebar.getAttribute('data-storage-key')); } catch (_) {}
+    sidebar.querySelectorAll('[data-bw-sidebar-group]').forEach((group) => {
+        setSidebarGroupExpanded(sidebar, group, group.getAttribute('data-initial-expanded') === 'true', {emit: false, persist: false});
+    });
+    setSidebarCollapsed(sidebar, sidebar.getAttribute('data-initial-state') === 'collapsed', {emit: false, persist: false});
+    resolveSidebarActiveItem(sidebar);
+    return true;
+};
+
 /*
  | Delegated bindings for components whose behaviour lives in this file.
  | Replaces inline on* attributes, which a strict CSP blocks. See #608.
@@ -1040,6 +1534,186 @@ bwOn('click', '[data-bw-tag-remove]', (link) => link.parentElement?.remove());
 // the modal's own close buttons. a consumer-supplied ok/cancel action is their
 // javascript and stays inline, so it is not handled here
 bwOn('click', '[data-bw-modal-close]', (el) => hideModal(el.getAttribute('data-bw-modal-close')));
+bwOn('click', '[data-bw-drawer-close]', (el) => hideDrawer(el.getAttribute('data-bw-drawer-close')));
+bwOn('click', '[data-bw-drawer-backdrop]', (backdrop) => {
+    const drawer = backdrop.closest('[data-bw-drawer]');
+    if (drawer?.getAttribute('data-backdrop-can-close') === 'true') hideDrawer(drawer.getAttribute('data-name'));
+});
+
+document.addEventListener('keydown', (event) => {
+    const name = openDrawers[openDrawers.length - 1];
+    const drawer = name ? drawerByName(name) : null;
+    if (!drawer) return;
+    if (event.key === 'Escape' && drawer.getAttribute('data-escape-can-close') === 'true') {
+        event.preventDefault();
+        hideDrawer(name);
+        return;
+    }
+    if (event.key !== 'Tab' || drawer.getAttribute('data-modal') !== 'true') return;
+    const focusable = drawerFocusable(drawer);
+    if (focusable.length === 0) {
+        event.preventDefault();
+        drawer.querySelector('.bw-drawer-panel')?.focus();
+        return;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (!drawer.contains(document.activeElement)) {
+        event.preventDefault();
+        first.focus();
+        return;
+    }
+    if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+    }
+});
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initialiseDrawers);
+else initialiseDrawers();
+
+bwOn('click', '[data-bw-sidebar-group-trigger]', (trigger) => {
+    const sidebar = trigger.closest('[data-bw-sidebar]');
+    const group = trigger.closest('[data-bw-sidebar-group]');
+    if (!sidebar || !group) return;
+    setSidebarGroupExpanded(sidebar, group, group.getAttribute('data-expanded') !== 'true', {
+        triggeringElement: trigger,
+        source: 'pointer',
+    });
+});
+
+bwOn('click', '[data-bw-sidebar-collapse-control]', (control) => {
+    const sidebar = control.closest('[data-bw-sidebar]');
+    if (!sidebar) return;
+    setSidebarCollapsed(sidebar, sidebar.getAttribute('data-state') !== 'collapsed', {
+        triggeringElement: control,
+        source: 'pointer',
+    });
+});
+
+bwOn('click', '[data-bw-sidebar-close]', (control) => {
+    const sidebar = control.closest('[data-bw-sidebar]');
+    if (sidebar) closeSidebar(sidebar.getAttribute('data-name'), {triggeringElement: control, source: 'pointer'});
+});
+
+bwOn('click', '[data-bw-sidebar-item-action]', (action, event) => {
+    const sidebar = action.closest('[data-bw-sidebar]');
+    const item = action.closest('[data-bw-sidebar-item]');
+    if (!sidebar || !item || item.getAttribute('data-disabled') === 'true') return;
+    const isLink = action.tagName === 'A';
+    const detail = sidebarDetail(sidebar, {
+        itemName: item.getAttribute('data-item-name'),
+        href: isLink ? action.getAttribute('href') : null,
+        triggeringElement: action,
+        source: event.detail === 0 ? 'keyboard' : 'pointer',
+    });
+    const eventName = isLink ? 'before-navigate' : 'item-activate';
+    if (!sidebarEvent(sidebar, eventName, detail, true)) {
+        event.preventDefault();
+        return;
+    }
+    if (sidebarPresentation() === 'mobile' && sidebar.getAttribute('data-close-on-navigate') === 'true') {
+        closeSidebar(sidebar.getAttribute('data-name'), {triggeringElement: action, source: 'navigation'});
+    }
+});
+
+bwOn('keydown', '[data-bw-sidebar-focusable]', (current, event) => {
+    const sidebar = current.closest('[data-bw-sidebar]');
+    if (!sidebar) return;
+    const focusable = Array.from(sidebar.querySelectorAll('[data-bw-sidebar-focusable]')).filter((candidate) =>
+        candidate.getAttribute('aria-disabled') !== 'true' && !candidate.closest('[hidden]')
+    );
+    const index = focusable.indexOf(current);
+    if (index < 0) return;
+    let target = null;
+    if (event.key === 'ArrowDown') target = focusable[(index + 1) % focusable.length];
+    else if (event.key === 'ArrowUp') target = focusable[(index - 1 + focusable.length) % focusable.length];
+    else if (event.key === 'Home') target = focusable[0];
+    else if (event.key === 'End') target = focusable[focusable.length - 1];
+
+    const rtl = window.getComputedStyle?.(sidebar)?.direction === 'rtl';
+    const openKey = rtl ? 'ArrowLeft' : 'ArrowRight';
+    const closeKey = rtl ? 'ArrowRight' : 'ArrowLeft';
+    const group = current.closest('[data-bw-sidebar-group]');
+    if (current.hasAttribute('data-bw-sidebar-group-trigger') && (event.key === 'Enter' || event.key === ' ')) {
+        event.preventDefault();
+        setSidebarGroupExpanded(sidebar, group, group?.getAttribute('data-expanded') !== 'true', {
+            triggeringElement: current,
+            source: 'keyboard',
+        });
+        return;
+    }
+    if (current.hasAttribute('data-bw-sidebar-group-trigger') && event.key === openKey) {
+        if (group?.getAttribute('data-expanded') !== 'true') {
+            setSidebarGroupExpanded(sidebar, group, true, {triggeringElement: current, source: 'keyboard'});
+        } else {
+            target = Array.from(group.querySelectorAll('[data-bw-sidebar-focusable]'))
+                .find((candidate) => candidate !== current && !candidate.closest('[hidden]')) || null;
+        }
+    } else if (group && event.key === closeKey) {
+        const groupTrigger = group.querySelector(':scope > [data-bw-sidebar-group-trigger]');
+        if (current === groupTrigger && group.getAttribute('data-expanded') === 'true') {
+            setSidebarGroupExpanded(sidebar, group, false, {triggeringElement: current, source: 'keyboard'});
+        } else {
+            target = groupTrigger;
+        }
+    }
+    if (!target) return;
+    event.preventDefault();
+    target.focus({preventScroll: true});
+});
+
+document.addEventListener('click', (event) => {
+    const backdrop = event.target?.closest?.('[data-bw-drawer-backdrop]');
+    const drawer = backdrop?.closest?.('[data-bw-drawer]');
+    const sidebar = drawer?.querySelector?.('[data-bw-sidebar]');
+    if (!sidebar || drawer.getAttribute('data-backdrop-can-close') !== 'true') return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    closeSidebar(sidebar.getAttribute('data-name'), {triggeringElement: backdrop, source: 'backdrop'});
+}, true);
+
+document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    const drawer = drawerByName(openDrawers[openDrawers.length - 1]);
+    const sidebar = drawer?.querySelector?.('[data-bw-sidebar]');
+    if (!sidebar || drawer.getAttribute('data-escape-can-close') !== 'true') return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    closeSidebar(sidebar.getAttribute('data-name'), {triggeringElement: document.activeElement, source: 'escape'});
+}, true);
+
+document.addEventListener('bladewind:drawer-opened', (event) => {
+    const sidebar = event.target?.querySelector?.('[data-bw-sidebar]');
+    if (!sidebar) return;
+    sidebarEvent(sidebar, 'opened', sidebar._bwTransitionDetail || sidebarDetail(sidebar, {previousState: 'closed', nextState: 'open'}));
+    delete sidebar._bwTransitionDetail;
+});
+
+document.addEventListener('bladewind:drawer-closed', (event) => {
+    const sidebar = event.target?.querySelector?.('[data-bw-sidebar]');
+    if (!sidebar) return;
+    const detail = sidebar._bwTransitionDetail || sidebarDetail(sidebar, {previousState: 'open', nextState: 'closed'});
+    moveSidebarToDesktop(sidebar);
+    sidebarEvent(sidebar, 'closed', detail);
+    delete sidebar._bwTransitionDetail;
+});
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initialiseSidebars);
+else initialiseSidebars();
+
+window.addEventListener('resize', () => {
+    document.querySelectorAll('[data-bw-sidebar]').forEach((sidebar) => {
+        resolveSidebarPlacement(sidebar);
+        if (sidebarPresentation() !== 'desktop') return;
+        const drawer = drawerByName(sidebar.getAttribute('data-drawer-name'));
+        if (drawer && !drawer.hidden) hideDrawer(sidebar.getAttribute('data-drawer-name'));
+        else moveSidebarToDesktop(sidebar);
+    });
+});
 
 // a tab heading either switches tab or navigates, depending on its url prop
 bwOn('click', '[data-bw-tab]', (tab) => {
@@ -1054,6 +1728,38 @@ bwOn('click', '[data-bw-tab]', (tab) => {
 bwOn('click', '[data-bw-tab-url]', (tab) => {
     location.href = tab.getAttribute('data-bw-tab-url');
 });
+
+bwOn('click', '[data-bw-stepper-step]', (trigger) => {
+    const stepper = trigger.closest('[data-bw-stepper]');
+    if (!stepper || trigger.getAttribute('aria-disabled') === 'true') return;
+    const clickable = trigger.getAttribute('data-clickable') ?? stepper.getAttribute('data-clickable');
+    if (clickable !== 'true') return;
+    setStepperCurrent(stepper, trigger.getAttribute('data-bw-stepper-step'));
+});
+
+bwOn('keydown', '[data-bw-stepper-step]', (trigger, event) => {
+    const stepper = trigger.closest('[data-bw-stepper]');
+    if (!stepper) return;
+    const {triggers} = stepperParts(stepper);
+    const enabled = triggers.filter((candidate) => candidate.getAttribute('aria-disabled') !== 'true');
+    const index = enabled.indexOf(trigger);
+    if (index < 0) return;
+    const orientation = stepper.getAttribute('data-orientation');
+    const rtl = getComputedStyle(stepper).direction === 'rtl';
+    let target = null;
+    if (event.key === 'Home') target = enabled[0];
+    else if (event.key === 'End') target = enabled[enabled.length - 1];
+    else if (orientation === 'vertical' && event.key === 'ArrowDown') target = enabled[(index + 1) % enabled.length];
+    else if (orientation === 'vertical' && event.key === 'ArrowUp') target = enabled[(index - 1 + enabled.length) % enabled.length];
+    else if (orientation === 'horizontal' && event.key === 'ArrowRight') target = enabled[(index + (rtl ? -1 : 1) + enabled.length) % enabled.length];
+    else if (orientation === 'horizontal' && event.key === 'ArrowLeft') target = enabled[(index + (rtl ? 1 : -1) + enabled.length) % enabled.length];
+    if (!target) return;
+    event.preventDefault();
+    target.focus();
+});
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initialiseSteppers);
+else initialiseSteppers();
 
 // clicking an input or textarea label focuses its field
 bwOn('click', '[data-bw-focuses]', (label) => {
@@ -1101,6 +1807,18 @@ Object.assign(window, {
     showModal,
     trapFocusInModal,
     hideModal,
+    showDrawer,
+    hideDrawer,
+    toggleDrawer,
+    openSidebar,
+    closeSidebar,
+    toggleSidebar,
+    collapseSidebar,
+    expandSidebar,
+    toggleSidebarGroup,
+    expandSidebarGroup,
+    collapseSidebarGroup,
+    resetSidebar,
     showButtonSpinner,
     hideButtonSpinner,
     showModalActionButtons,
@@ -1114,6 +1832,11 @@ Object.assign(window, {
     enableTabKeyboardNavigation,
     positionTabActiveLine,
     initialiseTabActiveLines,
+    showStepperStep,
+    nextStepperStep,
+    previousStepperStep,
+    resetStepper,
+    initialiseSteppers,
     getPrefixSuffixOffsetWidth,
     positionPrefix,
     positionSuffix,

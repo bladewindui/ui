@@ -1,0 +1,78 @@
+@layer components {
+    .bw-breadcrumb-list {
+        gap: 0;
+    }
+
+    .bw-breadcrumb-item,
+    .bw-breadcrumb-overflow-marker {
+        min-width: 0;
+    }
+
+    .bw-breadcrumb-overflow-marker {
+        display: none;
+    }
+
+    .bw-breadcrumb-link {
+        display: inline-flex;
+        min-width: 0;
+        align-items: center;
+        gap: 0.375rem;
+        line-height: 1.5;
+    }
+
+    .bw-breadcrumb-label {
+        display: block;
+        max-width: min(18rem, 55vw);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .bw-breadcrumb-separator {
+        display: inline-flex;
+        margin-inline: 0.5rem;
+    }
+
+    .bw-breadcrumb-item:nth-child(2) > .bw-breadcrumb-separator {
+        display: none;
+    }
+
+    @media (max-width: 639px) {
+        .bw-breadcrumbs.collapsible .bw-breadcrumb-list:has(> .bw-breadcrumb-item:nth-child(5))
+        > .bw-breadcrumb-overflow-marker {
+            display: flex;
+            order: 1;
+        }
+
+        .bw-breadcrumbs.collapsible .bw-breadcrumb-list:has(> .bw-breadcrumb-item:nth-child(5))
+        > .bw-breadcrumb-item:nth-child(2) {
+            order: 0;
+        }
+
+        .bw-breadcrumbs.collapsible .bw-breadcrumb-list:has(> .bw-breadcrumb-item:nth-child(5))
+        > .bw-breadcrumb-item:not(:nth-child(2)):not(:last-child) {
+            order: 2;
+            max-width: 0;
+            opacity: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .bw-breadcrumbs.collapsible .bw-breadcrumb-list:has(> .bw-breadcrumb-item:nth-child(5))
+        > .bw-breadcrumb-item:not(:nth-child(2)):not(:last-child):focus-within {
+            max-width: min(18rem, 65vw);
+            opacity: 1;
+            overflow: visible;
+            pointer-events: auto;
+        }
+
+        .bw-breadcrumbs.collapsible .bw-breadcrumb-list:has(> .bw-breadcrumb-item:nth-child(5))
+        > .bw-breadcrumb-item:last-child {
+            order: 3;
+        }
+
+        .bw-breadcrumbs.collapsible .bw-breadcrumb-label {
+            max-width: 45vw;
+        }
+    }
+}

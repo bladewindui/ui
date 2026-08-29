@@ -1,5 +1,5 @@
 {
-    "name": "mkocansey/bladewind-horizontal-line-graph",
+    "name": "bladewindui/horizontal-line-graph",
     "description": "BladewindUI — Horizontal line graph / bar chart component",
     "keywords": [
         "laravel",
@@ -18,8 +18,8 @@
     ],
     "require": {
         "php": ">=8.1",
-        "mkocansey/bladewind-core": "^4.4",
-        "mkocansey/bladewind-progress": "^4.4"
+        "bladewindui/core": "^4.4",
+        "bladewindui/progress": "^4.4"
     },
     "autoload": {
         "psr-4": {

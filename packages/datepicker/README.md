@@ -1,4 +1,4 @@
-[![License](https://img.shields.io/github/license/mkocansey/bladewind)](https://github.com/mkocansey/bladewind/blob/main/LICENSE) [![Packagist Version](https://img.shields.io/packagist/v/mkocansey/bladewind-datepicker)](https://packagist.org/packages/mkocansey/bladewind-datepicker)
+[![License](https://img.shields.io/github/license/mkocansey/bladewind)](https://github.com/mkocansey/bladewind/blob/main/LICENSE) [![Packagist Version](https://img.shields.io/packagist/v/bladewindui/datepicker)](https://packagist.org/packages/bladewindui/datepicker)
 
 <img src="https://bladewindui.com/assets/images/bw-logo.png" height="30" alt="BladewindUI" />
 
@@ -9,13 +9,13 @@ BladewindUI — Datepicker component.
 ## Installation
 
 ```bash
-composer require mkocansey/bladewind-datepicker
+composer require bladewindui/datepicker
 ```
 
 Or install the full library:
 
 ```bash
-composer require mkocansey/bladewind
+composer require bladewindui/ui
 ```
 
 ## Documentation

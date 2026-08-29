@@ -1,4 +1,4 @@
-[![License](https://img.shields.io/github/license/mkocansey/bladewind)](https://github.com/mkocansey/bladewind/blob/main/LICENSE) [![Packagist Version](https://img.shields.io/packagist/v/mkocansey/bladewind-script)](https://packagist.org/packages/mkocansey/bladewind-script)
+[![License](https://img.shields.io/github/license/mkocansey/bladewind)](https://github.com/mkocansey/bladewind/blob/main/LICENSE) [![Packagist Version](https://img.shields.io/packagist/v/bladewindui/script)](https://packagist.org/packages/bladewindui/script)
 
 <img src="https://bladewindui.com/assets/images/bw-logo.png" height="30" alt="BladewindUI" />
 
@@ -6,12 +6,12 @@
 
 BladewindUI Script component — inline and external script tag helper.
 
-> **Note:** `mkocansey/bladewind-script` is a shared dependency — it is pulled in automatically when you install any BladewindUI component. You do not normally need to require it directly.
+> **Note:** `bladewindui/script` is a shared dependency — it is pulled in automatically when you install any BladewindUI component. You do not normally need to require it directly.
 
 ## Installation
 
 ```bash
-composer require mkocansey/bladewind-script
+composer require bladewindui/script
 ```
 
 ## Documentation

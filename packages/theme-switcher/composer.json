@@ -1,5 +1,5 @@
 {
-    "name": "mkocansey/bladewind-theme-switcher",
+    "name": "bladewindui/theme-switcher",
     "description": "BladewindUI — Light / dark theme switcher component",
     "keywords": [
         "laravel",
@@ -18,10 +18,10 @@
     ],
     "require": {
         "php": ">=8.1",
-        "mkocansey/bladewind-core": "^4.4",
-        "mkocansey/bladewind-icon": "^4.4",
-        "mkocansey/bladewind-script": "^4.4",
-        "mkocansey/bladewind-dropmenu": "^4.4"
+        "bladewindui/core": "^4.4",
+        "bladewindui/icon": "^4.4",
+        "bladewindui/script": "^4.4",
+        "bladewindui/dropmenu": "^4.4"
     },
     "autoload": {
         "psr-4": {

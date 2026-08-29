@@ -1,0 +1,15 @@
+{
+    "name": "bladewindui/bladewindui",
+    "description": "Moved to bladewindui/ui. This package forwards to it so existing installs keep working.",
+    "type": "metapackage",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Michael K. Ocansey",
+            "email": "mike@bladewindui.com"
+        }
+    ],
+    "require": {
+        "bladewindui/ui": "^4.4"
+    }
+}

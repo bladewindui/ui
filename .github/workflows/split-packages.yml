@@ -18,72 +18,77 @@ jobs:
         package:
 
           # ── Foundation ────────────────────────────────────────────────────────
-          - { local_path: 'packages/core',    split_repository: 'bladewind-core'    }
-          - { local_path: 'packages/icon',    split_repository: 'bladewind-icon'    }
-          - { local_path: 'packages/script',  split_repository: 'bladewind-script'  }
-          - { local_path: 'packages/spinner', split_repository: 'bladewind-spinner' }
-          - { local_path: 'packages/button',  split_repository: 'bladewind-button'  }
-          - { local_path: 'packages/alert',        split_repository: 'bladewind-alert'        }
-          - { local_path: 'packages/bell',         split_repository: 'bladewind-bell'         }
-          - { local_path: 'packages/notification', split_repository: 'bladewind-notification' }
-          - { local_path: 'packages/modal',   split_repository: 'bladewind-modal'   }
-          - { local_path: 'packages/table',   split_repository: 'bladewind-table'   }
+          - { local_path: 'packages/core',    split_repository: 'core'    }
+          - { local_path: 'packages/icon',    split_repository: 'icon'    }
+          - { local_path: 'packages/script',  split_repository: 'script'  }
+          - { local_path: 'packages/spinner', split_repository: 'spinner' }
+          - { local_path: 'packages/button',  split_repository: 'button'  }
+          - { local_path: 'packages/alert',        split_repository: 'alert'        }
+          - { local_path: 'packages/bell',         split_repository: 'bell'         }
+          - { local_path: 'packages/notification', split_repository: 'notification' }
+          - { local_path: 'packages/modal',   split_repository: 'modal'   }
+          - { local_path: 'packages/drawer',  split_repository: 'drawer'  }
+          - { local_path: 'packages/table',   split_repository: 'table'   }
 
           # ── Form leaf packages ────────────────────────────────────────────────
-          - { local_path: 'packages/input',       split_repository: 'bladewind-input'       }
-          - { local_path: 'packages/textarea',    split_repository: 'bladewind-textarea'    }
-          - { local_path: 'packages/select',      split_repository: 'bladewind-select'      }
-          - { local_path: 'packages/checkbox',    split_repository: 'bladewind-checkbox'    }
-          - { local_path: 'packages/radio',       split_repository: 'bladewind-radio'       }
-          - { local_path: 'packages/toggle',      split_repository: 'bladewind-toggle'      }
-          - { local_path: 'packages/datepicker',  split_repository: 'bladewind-datepicker'  }
-          - { local_path: 'packages/timepicker',  split_repository: 'bladewind-timepicker'  }
-          - { local_path: 'packages/colorpicker', split_repository: 'bladewind-colorpicker' }
-          - { local_path: 'packages/filepicker',  split_repository: 'bladewind-filepicker'  }
-          - { local_path: 'packages/slider',      split_repository: 'bladewind-slider'      }
-          - { local_path: 'packages/checkcards',  split_repository: 'bladewind-checkcards'  }
-          - { local_path: 'packages/number',      split_repository: 'bladewind-number'      }
-          - { local_path: 'packages/code',        split_repository: 'bladewind-code'        }
+          - { local_path: 'packages/input',       split_repository: 'input'       }
+          - { local_path: 'packages/textarea',    split_repository: 'textarea'    }
+          - { local_path: 'packages/select',      split_repository: 'select'      }
+          - { local_path: 'packages/checkbox',    split_repository: 'checkbox'    }
+          - { local_path: 'packages/radio',       split_repository: 'radio'       }
+          - { local_path: 'packages/toggle',      split_repository: 'toggle'      }
+          - { local_path: 'packages/datepicker',  split_repository: 'datepicker'  }
+          - { local_path: 'packages/timepicker',  split_repository: 'timepicker'  }
+          - { local_path: 'packages/colorpicker', split_repository: 'colorpicker' }
+          - { local_path: 'packages/filepicker',  split_repository: 'filepicker'  }
+          - { local_path: 'packages/slider',      split_repository: 'slider'      }
+          - { local_path: 'packages/checkcards',  split_repository: 'checkcards'  }
+          - { local_path: 'packages/number',      split_repository: 'number'      }
+          - { local_path: 'packages/code',        split_repository: 'code'        }
 
           # ── Forms aggregate (metapackage) ─────────────────────────────────────
-          - { local_path: 'packages/forms', split_repository: 'bladewind-forms' }
+          - { local_path: 'packages/forms', split_repository: 'forms' }
 
           # ── Content leaf packages ─────────────────────────────────────────────
-          - { local_path: 'packages/card',                 split_repository: 'bladewind-card'                 }
-          - { local_path: 'packages/contact-card',         split_repository: 'bladewind-contact-card'         }
-          - { local_path: 'packages/avatar',               split_repository: 'bladewind-avatar'               }
-          - { local_path: 'packages/accordion',            split_repository: 'bladewind-accordion'            }
-          - { local_path: 'packages/tag',                  split_repository: 'bladewind-tag'                  }
-          - { local_path: 'packages/timeline',             split_repository: 'bladewind-timeline'             }
-          - { local_path: 'packages/statistic',            split_repository: 'bladewind-statistic'            }
-          - { local_path: 'packages/rating',               split_repository: 'bladewind-rating'               }
-          - { local_path: 'packages/horizontal-line-graph',split_repository: 'bladewind-horizontal-line-graph'}
-          - { local_path: 'packages/empty-state',          split_repository: 'bladewind-empty-state'          }
-          - { local_path: 'packages/centered-content',     split_repository: 'bladewind-centered-content'     }
-          - { local_path: 'packages/chart',                split_repository: 'bladewind-chart'                }
-          - { local_path: 'packages/progress',             split_repository: 'bladewind-progress'             }
-          - { local_path: 'packages/listview',             split_repository: 'bladewind-listview'             }
-          - { local_path: 'packages/tooltip',              split_repository: 'bladewind-tooltip'              }
-          - { local_path: 'packages/popover',              split_repository: 'bladewind-popover'              }
-          - { local_path: 'packages/sortable',             split_repository: 'bladewind-sortable'             }
+          - { local_path: 'packages/card',                 split_repository: 'card'                 }
+          - { local_path: 'packages/contact-card',         split_repository: 'contact-card'         }
+          - { local_path: 'packages/avatar',               split_repository: 'avatar'               }
+          - { local_path: 'packages/accordion',            split_repository: 'accordion'            }
+          - { local_path: 'packages/tag',                  split_repository: 'tag'                  }
+          - { local_path: 'packages/timeline',             split_repository: 'timeline'             }
+          - { local_path: 'packages/statistic',            split_repository: 'statistic'            }
+          - { local_path: 'packages/rating',               split_repository: 'rating'               }
+          - { local_path: 'packages/horizontal-line-graph',split_repository: 'horizontal-line-graph'}
+          - { local_path: 'packages/empty-state',          split_repository: 'empty-state'          }
+          - { local_path: 'packages/centered-content',     split_repository: 'centered-content'     }
+          - { local_path: 'packages/chart',                split_repository: 'chart'                }
+          - { local_path: 'packages/progress',             split_repository: 'progress'             }
+          - { local_path: 'packages/listview',             split_repository: 'listview'             }
+          - { local_path: 'packages/tooltip',              split_repository: 'tooltip'              }
+          - { local_path: 'packages/popover',              split_repository: 'popover'              }
+          - { local_path: 'packages/sortable',             split_repository: 'sortable'             }
 
           # ── Content aggregate (metapackage) ───────────────────────────────────
-          - { local_path: 'packages/content', split_repository: 'bladewind-content' }
+          - { local_path: 'packages/content', split_repository: 'content' }
 
           # ── Navigation leaf packages ──────────────────────────────────────────
-          - { local_path: 'packages/tab',           split_repository: 'bladewind-tab'           }
-          - { local_path: 'packages/dropmenu',      split_repository: 'bladewind-dropmenu'      }
-          - { local_path: 'packages/pagination',    split_repository: 'bladewind-pagination'    }
-          - { local_path: 'packages/theme-switcher',split_repository: 'bladewind-theme-switcher'}
+          - { local_path: 'packages/breadcrumbs',   split_repository: 'breadcrumbs'   }
+          - { local_path: 'packages/sidebar',       split_repository: 'sidebar'       }
+          - { local_path: 'packages/stepper',       split_repository: 'stepper'       }
+          - { local_path: 'packages/tab',           split_repository: 'tab'           }
+          - { local_path: 'packages/dropmenu',      split_repository: 'dropmenu'      }
+          - { local_path: 'packages/pagination',    split_repository: 'pagination'    }
+          - { local_path: 'packages/theme-switcher',split_repository: 'theme-switcher'}
 
           # ── Navigation aggregate (metapackage) ────────────────────────────────
-          - { local_path: 'packages/navigation', split_repository: 'bladewind-navigation' }
+          - { local_path: 'packages/navigation', split_repository: 'navigation' }
 
           # NOTE: packages/meta is intentionally NOT split into its own repo.
-          # 'bladewindui/bladewindui' on Packagist is sourced directly from THIS
-          # monorepo — the root composer.json IS the full-install package, and its
-          # `replace` block declares every granular sub-package plus the former
-          # name 'mkocansey/bladewind', so installing it satisfies all of them.
+          # 'bladewindui/ui' on Packagist is sourced directly from THIS monorepo —
+          # the root composer.json IS the full-install package, and its `replace`
+          # block declares every granular sub-package plus the package's two
+          # former names, 'mkocansey/bladewind' and 'bladewindui/bladewindui', so
+          # installing it satisfies all of them.
           #
           # ⚠️ A split entry whose repository_organization + split_repository
           # resolve to this monorepo's own remote will force-push filtered subtree
@@ -91,11 +96,11 @@ jobs:
           # an entry targeted 'bladewind' while the monorepo lived at
           # mkocansey/bladewind; main was wiped and restored from a local clone.
           #
-          # The forbidden target moved with the repo. It is now:
-          #   repository_organization 'bladewindui' + split_repository 'bladewindui'
-          # The splits below still push to the 'mkocansey' org, so nothing here
-          # can currently collide — but if they are ever moved to 'bladewindui',
-          # a 'bladewindui' entry recreates the incident exactly.
+          # The splits below now push to the 'bladewindui' org — the same org
+          # this monorepo itself lives in (as 'bladewindui/bladewindui' today;
+          # see RELEASING.md for the pending move to 'bladewindui/ui'). NEVER add
+          # a matrix entry with split_repository 'bladewindui' or 'ui' — either
+          # one resolves to this monorepo's own remote and recreates the incident.
 
     steps:
       - uses: actions/checkout@v4
@@ -112,10 +117,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.MONOREPO_SPLIT_TOKEN }}
         with:
           package_directory: ${{ matrix.package.local_path }}
-          # the split mirrors still live in the 'mkocansey' org. Moving them is a
-          # separate job: 48 new repos and 48 Packagist registrations. Read the
-          # warning above the matrix before changing this to 'bladewindui'.
-          repository_organization: 'mkocansey'
+          # the split mirrors live in the 'bladewindui' org (moved from 'mkocansey'
+          # together with this rename). Read the warning above the matrix before
+          # ever changing a split_repository value to 'bladewindui' or 'ui'.
+          repository_organization: 'bladewindui'
           repository_name: ${{ matrix.package.split_repository }}
           user_name: 'BladewindUI Bot'
           user_email: 'bot@bladewindui.com'

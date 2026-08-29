@@ -1,4 +1,4 @@
-[![License](https://img.shields.io/github/license/mkocansey/bladewind)](https://github.com/mkocansey/bladewind/blob/main/LICENSE) [![Packagist Version](https://img.shields.io/packagist/v/mkocansey/bladewind-tag)](https://packagist.org/packages/mkocansey/bladewind-tag)
+[![License](https://img.shields.io/github/license/mkocansey/bladewind)](https://github.com/mkocansey/bladewind/blob/main/LICENSE) [![Packagist Version](https://img.shields.io/packagist/v/bladewindui/tag)](https://packagist.org/packages/bladewindui/tag)
 
 <img src="https://bladewindui.com/assets/images/bw-logo.png" height="30" alt="BladewindUI" />
 
@@ -9,13 +9,13 @@ BladewindUI — Tag and Tags components.
 ## Installation
 
 ```bash
-composer require mkocansey/bladewind-tag
+composer require bladewindui/tag
 ```
 
 Or install the full library:
 
 ```bash
-composer require mkocansey/bladewind
+composer require bladewindui/ui
 ```
 
 ## Documentation

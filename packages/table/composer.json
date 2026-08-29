@@ -1,5 +1,5 @@
 {
-    "name": "mkocansey/bladewind-table",
+    "name": "bladewindui/table",
     "description": "BladewindUI Table component — searchable, sortable, paginated data table",
     "keywords": [
         "laravel",
@@ -19,15 +19,15 @@
     ],
     "require": {
         "php": ">=8.1",
-        "mkocansey/bladewind-core": "^4.4",
-        "mkocansey/bladewind-icon": "^4.4",
-        "mkocansey/bladewind-script": "^4.4",
-        "mkocansey/bladewind-spinner": "^4.4",
-        "mkocansey/bladewind-button": "^4.4",
-        "mkocansey/bladewind-input": "^4.4",
-        "mkocansey/bladewind-checkbox": "^4.4",
-        "mkocansey/bladewind-empty-state": "^4.4",
-        "mkocansey/bladewind-pagination": "^4.4"
+        "bladewindui/core": "^4.4",
+        "bladewindui/icon": "^4.4",
+        "bladewindui/script": "^4.4",
+        "bladewindui/spinner": "^4.4",
+        "bladewindui/button": "^4.4",
+        "bladewindui/input": "^4.4",
+        "bladewindui/checkbox": "^4.4",
+        "bladewindui/empty-state": "^4.4",
+        "bladewindui/pagination": "^4.4"
     },
     "autoload": {
         "psr-4": {

@@ -18,19 +18,20 @@
     ],
     "require": {
         "php": ">=8.1",
-        "mkocansey/bladewind-core": "^4.4",
-        "mkocansey/bladewind-icon": "^4.4",
-        "mkocansey/bladewind-script": "^4.4",
-        "mkocansey/bladewind-spinner": "^4.4",
-        "mkocansey/bladewind-button": "^4.4",
-        "mkocansey/bladewind-alert": "^4.4",
-        "mkocansey/bladewind-bell": "^4.4",
-        "mkocansey/bladewind-notification": "^4.4",
-        "mkocansey/bladewind-modal": "^4.4",
-        "mkocansey/bladewind-table": "^4.4",
-        "mkocansey/bladewind-forms": "^4.4",
-        "mkocansey/bladewind-content": "^4.4",
-        "mkocansey/bladewind-navigation": "^4.4"
+        "bladewindui/core": "^4.4",
+        "bladewindui/icon": "^4.4",
+        "bladewindui/script": "^4.4",
+        "bladewindui/spinner": "^4.4",
+        "bladewindui/button": "^4.4",
+        "bladewindui/alert": "^4.4",
+        "bladewindui/bell": "^4.4",
+        "bladewindui/notification": "^4.4",
+        "bladewindui/modal": "^4.4",
+        "bladewindui/drawer": "^4.4",
+        "bladewindui/table": "^4.4",
+        "bladewindui/forms": "^4.4",
+        "bladewindui/content": "^4.4",
+        "bladewindui/navigation": "^4.4"
     },
     "autoload": {
         "psr-4": {
