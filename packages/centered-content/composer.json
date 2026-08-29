@@ -1,5 +1,5 @@
 {
-    "name": "mkocansey/bladewind-centered-content",
+    "name": "bladewindui/centered-content",
     "description": "BladewindUI — Centered content layout wrapper",
     "keywords": [
         "laravel",
@@ -18,7 +18,7 @@
     ],
     "require": {
         "php": ">=8.1",
-        "mkocansey/bladewind-core": "^4.4"
+        "bladewindui/core": "^4.4"
     },
     "autoload": {
         "psr-4": {

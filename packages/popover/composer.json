@@ -1,5 +1,5 @@
 {
-    "name": "mkocansey/bladewind-popover",
+    "name": "bladewindui/popover",
     "description": "BladewindUI — Popover component",
     "keywords": [
         "laravel",
@@ -18,9 +18,9 @@
     ],
     "require": {
         "php": ">=8.1",
-        "mkocansey/bladewind-core": "^4.4",
-        "mkocansey/bladewind-icon": "^4.4",
-        "mkocansey/bladewind-script": "^4.4"
+        "bladewindui/core": "^4.4",
+        "bladewindui/icon": "^4.4",
+        "bladewindui/script": "^4.4"
     },
     "autoload": {
         "psr-4": {

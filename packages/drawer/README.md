@@ -1,4 +1,4 @@
-[![License](https://img.shields.io/github/license/mkocansey/bladewind)](https://github.com/mkocansey/bladewind/blob/main/LICENSE) [![Packagist Version](https://img.shields.io/packagist/v/mkocansey/bladewind-drawer)](https://packagist.org/packages/mkocansey/bladewind-drawer)
+[![License](https://img.shields.io/github/license/mkocansey/bladewind)](https://github.com/mkocansey/bladewind/blob/main/LICENSE) [![Packagist Version](https://img.shields.io/packagist/v/bladewindui/drawer)](https://packagist.org/packages/bladewindui/drawer)
 
 <img src="https://bladewindui.com/assets/images/bw-logo.png" height="30" alt="BladewindUI" />
 
@@ -9,7 +9,7 @@ An accessible, responsive drawer or sheet that opens from any physical edge of t
 ## Installation
 
 ```bash
-composer require mkocansey/bladewind-drawer
+composer require bladewindui/drawer
 ```
 
 ## Usage

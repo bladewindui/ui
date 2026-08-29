@@ -1,5 +1,5 @@
 {
-    "name": "mkocansey/bladewind-colorpicker",
+    "name": "bladewindui/colorpicker",
     "description": "BladewindUI — Color picker component",
     "keywords": [
         "laravel",
@@ -18,8 +18,8 @@
     ],
     "require": {
         "php": ">=8.1",
-        "mkocansey/bladewind-core": "^4.4",
-        "mkocansey/bladewind-script": "^4.4"
+        "bladewindui/core": "^4.4",
+        "bladewindui/script": "^4.4"
     },
     "autoload": {
         "psr-4": {

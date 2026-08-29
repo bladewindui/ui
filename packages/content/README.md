@@ -1,4 +1,4 @@
-[![License](https://img.shields.io/github/license/mkocansey/bladewind)](https://github.com/mkocansey/bladewind/blob/main/LICENSE) [![Packagist Version](https://img.shields.io/packagist/v/mkocansey/bladewind-content)](https://packagist.org/packages/mkocansey/bladewind-content)
+[![License](https://img.shields.io/github/license/mkocansey/bladewind)](https://github.com/mkocansey/bladewind/blob/main/LICENSE) [![Packagist Version](https://img.shields.io/packagist/v/bladewindui/content)](https://packagist.org/packages/bladewindui/content)
 
 <img src="https://bladewindui.com/assets/images/bw-logo.png" height="30" alt="BladewindUI" />
 
@@ -9,35 +9,35 @@ BladewindUI content bundle — installs all content components (Card, Accordion,
 ## Installation
 
 ```bash
-composer require mkocansey/bladewind-content
+composer require bladewindui/content
 ```
 
 ### Included packages
 
 | Package | Component |
 |---|---|
-| `mkocansey/bladewind-card` | Card |
-| `mkocansey/bladewind-contact-card` | Contact Card |
-| `mkocansey/bladewind-avatar` | Avatar & Avatars |
-| `mkocansey/bladewind-accordion` | Accordion |
-| `mkocansey/bladewind-tag` | Tag & Tags |
-| `mkocansey/bladewind-timeline` | Timeline & Timelines |
-| `mkocansey/bladewind-statistic` | Statistic / KPI Card |
-| `mkocansey/bladewind-rating` | Rating |
-| `mkocansey/bladewind-horizontal-line-graph` | Horizontal Line Graph |
-| `mkocansey/bladewind-empty-state` | Empty State |
-| `mkocansey/bladewind-centered-content` | Centered Content |
-| `mkocansey/bladewind-chart` | Chart |
-| `mkocansey/bladewind-progress` | Progress |
-| `mkocansey/bladewind-listview` | List View |
-| `mkocansey/bladewind-tooltip` | Tooltip |
-| `mkocansey/bladewind-popover` | Popover |
-| `mkocansey/bladewind-drawer` | Drawer |
+| `bladewindui/card` | Card |
+| `bladewindui/contact-card` | Contact Card |
+| `bladewindui/avatar` | Avatar & Avatars |
+| `bladewindui/accordion` | Accordion |
+| `bladewindui/tag` | Tag & Tags |
+| `bladewindui/timeline` | Timeline & Timelines |
+| `bladewindui/statistic` | Statistic / KPI Card |
+| `bladewindui/rating` | Rating |
+| `bladewindui/horizontal-line-graph` | Horizontal Line Graph |
+| `bladewindui/empty-state` | Empty State |
+| `bladewindui/centered-content` | Centered Content |
+| `bladewindui/chart` | Chart |
+| `bladewindui/progress` | Progress |
+| `bladewindui/listview` | List View |
+| `bladewindui/tooltip` | Tooltip |
+| `bladewindui/popover` | Popover |
+| `bladewindui/drawer` | Drawer |
 
 You can also install the full BladewindUI library in one go:
 
 ```bash
-composer require mkocansey/bladewind
+composer require bladewindui/ui
 ```
 
 ## Documentation

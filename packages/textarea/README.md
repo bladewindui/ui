@@ -1,4 +1,4 @@
-[![License](https://img.shields.io/github/license/mkocansey/bladewind)](https://github.com/mkocansey/bladewind/blob/main/LICENSE) [![Packagist Version](https://img.shields.io/packagist/v/mkocansey/bladewind-textarea)](https://packagist.org/packages/mkocansey/bladewind-textarea)
+[![License](https://img.shields.io/github/license/mkocansey/bladewind)](https://github.com/mkocansey/bladewind/blob/main/LICENSE) [![Packagist Version](https://img.shields.io/packagist/v/bladewindui/textarea)](https://packagist.org/packages/bladewindui/textarea)
 
 <img src="https://bladewindui.com/assets/images/bw-logo.png" height="30" alt="BladewindUI" />
 
@@ -9,13 +9,13 @@ BladewindUI — Textarea component.
 ## Installation
 
 ```bash
-composer require mkocansey/bladewind-textarea
+composer require bladewindui/textarea
 ```
 
 Or install the full library:
 
 ```bash
-composer require mkocansey/bladewind
+composer require bladewindui/ui
 ```
 
 ## Documentation

@@ -1,4 +1,4 @@
-[![License](https://img.shields.io/github/license/mkocansey/bladewind)](https://github.com/mkocansey/bladewind/blob/main/LICENSE) [![Packagist Version](https://img.shields.io/packagist/v/mkocansey/bladewind-breadcrumbs)](https://packagist.org/packages/mkocansey/bladewind-breadcrumbs)
+[![License](https://img.shields.io/github/license/mkocansey/bladewind)](https://github.com/mkocansey/bladewind/blob/main/LICENSE) [![Packagist Version](https://img.shields.io/packagist/v/bladewindui/breadcrumbs)](https://packagist.org/packages/bladewindui/breadcrumbs)
 
 <img src="https://bladewindui.com/assets/images/bw-logo.png" height="30" alt="BladewindUI" />
 
@@ -11,13 +11,13 @@ Accessible, responsive breadcrumb navigation for Laravel Blade applications.
 Install only Breadcrumbs:
 
 ```bash
-composer require mkocansey/bladewind-breadcrumbs
+composer require bladewindui/breadcrumbs
 ```
 
 Or install every navigation component:
 
 ```bash
-composer require mkocansey/bladewind-navigation
+composer require bladewindui/navigation
 ```
 
 ## Usage

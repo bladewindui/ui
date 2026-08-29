@@ -1,5 +1,5 @@
 {
-    "name": "mkocansey/bladewind-statistic",
+    "name": "bladewindui/statistic",
     "description": "BladewindUI — Statistic / KPI card component",
     "keywords": [
         "laravel",
@@ -18,9 +18,9 @@
     ],
     "require": {
         "php": ">=8.1",
-        "mkocansey/bladewind-core": "^4.4",
-        "mkocansey/bladewind-icon": "^4.4",
-        "mkocansey/bladewind-spinner": "^4.4"
+        "bladewindui/core": "^4.4",
+        "bladewindui/icon": "^4.4",
+        "bladewindui/spinner": "^4.4"
     },
     "autoload": {
         "psr-4": {

@@ -11,24 +11,24 @@ This is the full BladewindUI install. It pulls in every component group and all 
 ## Installation
 
 ```bash
-composer require mkocansey/bladewind
+composer require bladewindui/ui
 ```
 
 ### What's included
 
 | Package | Component |
 |---|---|
-| `mkocansey/bladewind-core` | Core |
-| `mkocansey/bladewind-icon` | Icon |
-| `mkocansey/bladewind-script` | Script |
-| `mkocansey/bladewind-spinner` | Spinner, Shimmer & Processing |
-| `mkocansey/bladewind-button` | Button |
-| `mkocansey/bladewind-alert` | Alert, Notification & Bell |
-| `mkocansey/bladewind-modal` | Modal |
-| `mkocansey/bladewind-table` | Table |
-| `mkocansey/bladewind-forms` | Forms Bundle |
-| `mkocansey/bladewind-content` | Content Bundle |
-| `mkocansey/bladewind-navigation` | Navigation Bundle |
+| `bladewindui/core` | Core |
+| `bladewindui/icon` | Icon |
+| `bladewindui/script` | Script |
+| `bladewindui/spinner` | Spinner, Shimmer & Processing |
+| `bladewindui/button` | Button |
+| `bladewindui/alert` | Alert, Notification & Bell |
+| `bladewindui/modal` | Modal |
+| `bladewindui/table` | Table |
+| `bladewindui/forms` | Forms Bundle |
+| `bladewindui/content` | Content Bundle |
+| `bladewindui/navigation` | Navigation Bundle |
 
 Each group package itself pulls in all its individual component packages.
 

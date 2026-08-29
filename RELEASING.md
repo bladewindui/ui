@@ -1,7 +1,8 @@
 # Releasing BladewindUI
 
-All work happens in **this monorepo**, hosted at **`bladewindui/bladewindui`**.
-The individual package repos (`mkocansey/bladewind-table` etc.) are **read-only mirrors** — never push to them directly.
+All work happens in **this monorepo**, hosted at **`bladewindui/bladewindui`**
+(moving to **`bladewindui/ui`** — see below). The individual package repos
+(`bladewindui/table` etc.) are **read-only mirrors** — never push to them directly.
 
 > ⚠️ **Never target a split repo that resolves to this monorepo's own remote.**
 > A matrix entry whose `repository_organization` + `split_repository` add up to the
@@ -10,22 +11,23 @@ The individual package repos (`mkocansey/bladewind-table` etc.) are **read-only 
 > `bladewind` while the monorepo lived at `mkocansey/bladewind` — `main` was wiped down
 > to 3 files and restored from a contributor's local clone.
 >
-> **The forbidden name moved with the repo.** It is now `bladewindui` + `bladewindui`.
-> The splits still push to the `mkocansey` org, so nothing can collide today; if they
-> are ever moved, that pairing recreates the incident. See the note above the
+> **The forbidden name moves with the repo.** The splits now push to the
+> `bladewindui` org — the same org this monorepo itself lives in — so a matrix entry
+> with `split_repository: 'bladewindui'` or (once the pending rename below lands)
+> `split_repository: 'ui'` recreates the incident exactly. See the note above the
 > (deliberately absent) `packages/meta` entry in `split-packages.yml`.
 
 ---
 
 ## Root `composer.json` — why it is a `library` with `replace`
 
-The monorepo root is named `bladewindui/bladewindui` and declares `type: library` so
-that downstream projects can depend on it directly via a Composer **path repository**
-during local development:
+The monorepo root is named `bladewindui/bladewindui` (moving to `bladewindui/ui`,
+see below) and declares `type: library` so that downstream projects can depend on
+it directly via a Composer **path repository** during local development:
 
 ```json
 "repositories": {
-    "bladewindui/bladewindui": {
+    "bladewindui/ui": {
         "type": "path",
         "url": "/path/to/bladewindui"
     }
@@ -33,21 +35,22 @@ during local development:
 ```
 
 The `replace` block tells Composer that installing the root package also satisfies every
-sub-package requirement (e.g. `mkocansey/bladewind-button ^2.0`), so no network calls
+sub-package requirement (e.g. `bladewindui/button ^2.0`), so no network calls
 are made for the individual split repos during local dev.
 
 The `extra.laravel.providers` list registers all component service providers so Laravel
 auto-discovers them from a single path-repo install.
 
-**On Packagist**, `bladewindui/bladewindui` is sourced **directly from this monorepo**.
-The root `composer.json` *is* the published full-install package: its `replace` block
+**On Packagist**, the root package is sourced **directly from this monorepo**. The
+root `composer.json` *is* the published full-install package: its `replace` block
 declares every granular sub-package, so installing it transparently satisfies
-`mkocansey/bladewind-button`, `mkocansey/bladewind-table`, etc. without Composer ever
+`bladewindui/button`, `bladewindui/table`, etc. without Composer ever
 touching the split repos.
 
-That `replace` block also declares the package's **former name**,
-`mkocansey/bladewind`, at `self.version`. Anything that still depends on the old name —
-a consuming app, or a third-party package — is satisfied by installing this one.
+That `replace` block also declares the package's **two former names**,
+`mkocansey/bladewind` and `bladewindui/bladewindui`, both at `self.version`. Anything
+that still depends on either old name — a consuming app, or a third-party package —
+is satisfied by installing this one.
 
 `packages/meta` is **intentionally not split** into its own repo — doing so would
 require a split target literally named `bladewind`, which collides with this monorepo's
@@ -56,12 +59,19 @@ where that matrix entry would otherwise go).
 
 ---
 
-## Moving the package to `bladewindui/bladewindui`
+## Moving the package to `bladewindui/ui`
+
+This is the **second** rename. The first, `mkocansey/bladewind` → `bladewindui/bladewindui`,
+already shipped (as `4.4.0`) — that history is preserved below and in
+`docs/migration/`. This one drops the doubled-up name Packagist users found odd, and
+folds in the 48 split packages' `mkocansey/bladewind-<name>` → `bladewindui/<name>`
+rename (the leaf `composer.json` names, `packages/meta`'s `require` block, and
+`split-packages.yml`'s `repository_organization` are already updated on this branch).
 
 The root `composer.json`, `split-packages.yml` and this file are already prepared for
 the move. **This branch must not reach `main` until the new repo and Packagist package
-exist** — the moment `main` says `bladewindui/bladewindui`, Packagist's webhook for
-`mkocansey/bladewind` sees a name mismatch and refuses the update.
+exist** — the moment `main` says `bladewindui/ui`, Packagist's webhook for
+`bladewindui/bladewindui` sees a name mismatch and refuses the update.
 
 ### What deliberately does not change
 
@@ -81,41 +91,47 @@ one audited application alone has ~4,600 of them — for no benefit. Don't.
 
 ### Steps
 
-1. **Create `bladewindui/bladewindui`** on GitHub. Do *not* transfer
-   `mkocansey/bladewind`: the old repo has to keep existing to serve the compatibility
-   shim in step 4, and creating a repo at a transferred name disables GitHub's redirect
-   anyway. The trade is that stars, watchers and issues stay on the old repo.
+1. **Create `bladewindui/ui`** on GitHub. Do *not* transfer `bladewindui/bladewindui`:
+   the old repo has to keep existing to serve the compatibility shim in step 4, and
+   creating a repo at a transferred name disables GitHub's redirect anyway. The trade
+   is that stars, watchers and issues stay on the old repo.
 2. **Push this monorepo's full history** to the new remote, then merge this branch.
-3. **Register `bladewindui/bladewindui` on Packagist** with the GitHub webhook, and
-   release `4.4.0` from it using the flow below. Keep the version line continuous —
+3. **Register `bladewindui/ui` on Packagist** with the GitHub webhook, and release the
+   next version from it using the flow below. Keep the version line continuous —
    starting again at 1.0.0 would break `monorepo-builder`'s single-version invariant.
-4. **Publish the shim.** On `mkocansey/bladewind`, reduce `composer.json` to the
-   metapackage in `docs/migration/old-package-composer.json` and tag `4.4.0`. An
+4. **Publish the shim.** On `bladewindui/bladewindui`, reduce `composer.json` to a
+   metapackage requiring `bladewindui/ui` (same shape as
+   `docs/migration/old-package-composer.json`, new file needed) and tag it. An
    existing app then picks up the real package on its next `composer update` with no
    changes to its own code — same namespace, same tags, same config, same assets.
-5. **Mark `mkocansey/bladewind` abandoned** on Packagist, replacement
-   `bladewindui/bladewindui`. The notice is advisory; the shim keeps it working.
+   `mkocansey/bladewind`'s existing shim should point straight at `bladewindui/ui` too,
+   so a still-unmigrated app doesn't hop through two metapackages.
+5. **Mark `bladewindui/bladewindui` abandoned** on Packagist, replacement
+   `bladewindui/ui`. The notice is advisory; the shim keeps it working.
 
 ### Tell consumers about the vendor path
 
-The one thing that genuinely breaks is a hardcoded `vendor/mkocansey/bladewind` path.
+The one thing that genuinely breaks is a hardcoded `vendor/bladewindui/bladewindui` path.
 Tailwind v4 apps commonly have:
 
 ```css
-@source '../../vendor/mkocansey/bladewind/packages';
+@source '../../vendor/bladewindui/bladewindui/packages';
 ```
 
-After the move that is `vendor/bladewindui/bladewindui/packages`. **The build does not
+After the move that is `vendor/bladewindui/ui/packages`. **The build does not
 error** — it silently stops generating the utilities scanned from BladeWind templates,
 and styles go missing. This belongs at the top of the release notes.
 
-### The split mirrors are staying put
+### The split mirrors already moved
 
-The 48 `mkocansey/bladewind-*` repos are not moving in this change. They are read-only
-mirrors, they keep working, and moving them means 48 new repos plus 48 Packagist
-registrations plus 48 shims. `repository_organization` in `split-packages.yml` therefore
-stays `mkocansey` — and if you ever do move them, re-read the warning at the top of this
-file first.
+The 48 leaf repos moved from `mkocansey/bladewind-<name>` to `bladewindui/<name>` in
+the same change that introduces this rename — dropping the `bladewind-` prefix
+entirely rather than just relocating it, since the org itself now carries that name.
+Same shim pattern as the root package: each `mkocansey/bladewind-<name>` repo becomes
+a metapackage requiring `bladewindui/<name>`, so `composer update` picks up the real
+package transparently. `repository_organization` in `split-packages.yml` is now
+`bladewindui`; see the warning above the matrix before ever setting a
+`split_repository` to `bladewindui` or `ui`.
 
 ---
 
@@ -128,68 +144,68 @@ There are **48 repos** in total — one per `packages/*` directory plus the full
 
 ```
 # Foundation
-mkocansey/bladewind-core
-mkocansey/bladewind-icon
-mkocansey/bladewind-script
-mkocansey/bladewind-spinner
-mkocansey/bladewind-button
-mkocansey/bladewind-alert
-mkocansey/bladewind-bell
-mkocansey/bladewind-notification
-mkocansey/bladewind-modal
-mkocansey/bladewind-table
+bladewindui/core
+bladewindui/icon
+bladewindui/script
+bladewindui/spinner
+bladewindui/button
+bladewindui/alert
+bladewindui/bell
+bladewindui/notification
+bladewindui/modal
+bladewindui/table
 
 # Forms leaf packages
-mkocansey/bladewind-input
-mkocansey/bladewind-textarea
-mkocansey/bladewind-select
-mkocansey/bladewind-checkbox
-mkocansey/bladewind-radio
-mkocansey/bladewind-toggle
-mkocansey/bladewind-datepicker
-mkocansey/bladewind-timepicker
-mkocansey/bladewind-colorpicker
-mkocansey/bladewind-filepicker
-mkocansey/bladewind-slider
-mkocansey/bladewind-checkcards
-mkocansey/bladewind-number
-mkocansey/bladewind-code
+bladewindui/input
+bladewindui/textarea
+bladewindui/select
+bladewindui/checkbox
+bladewindui/radio
+bladewindui/toggle
+bladewindui/datepicker
+bladewindui/timepicker
+bladewindui/colorpicker
+bladewindui/filepicker
+bladewindui/slider
+bladewindui/checkcards
+bladewindui/number
+bladewindui/code
 
 # Forms aggregate (metapackage)
-mkocansey/bladewind-forms
+bladewindui/forms
 
 # Content leaf packages
-mkocansey/bladewind-card
-mkocansey/bladewind-contact-card
-mkocansey/bladewind-avatar
-mkocansey/bladewind-accordion
-mkocansey/bladewind-tag
-mkocansey/bladewind-timeline
-mkocansey/bladewind-statistic
-mkocansey/bladewind-rating
-mkocansey/bladewind-horizontal-line-graph
-mkocansey/bladewind-empty-state
-mkocansey/bladewind-centered-content
-mkocansey/bladewind-chart
-mkocansey/bladewind-progress
-mkocansey/bladewind-listview
-mkocansey/bladewind-tooltip
-mkocansey/bladewind-popover
+bladewindui/card
+bladewindui/contact-card
+bladewindui/avatar
+bladewindui/accordion
+bladewindui/tag
+bladewindui/timeline
+bladewindui/statistic
+bladewindui/rating
+bladewindui/horizontal-line-graph
+bladewindui/empty-state
+bladewindui/centered-content
+bladewindui/chart
+bladewindui/progress
+bladewindui/listview
+bladewindui/tooltip
+bladewindui/popover
 
 # Content aggregate (metapackage)
-mkocansey/bladewind-content
+bladewindui/content
 
 # Navigation leaf packages
-mkocansey/bladewind-tab
-mkocansey/bladewind-dropmenu
-mkocansey/bladewind-pagination
-mkocansey/bladewind-theme-switcher
+bladewindui/tab
+bladewindui/dropmenu
+bladewindui/pagination
+bladewindui/theme-switcher
 
 # Navigation aggregate (metapackage)
-mkocansey/bladewind-navigation
+bladewindui/navigation
 
 # Full-install meta package
-mkocansey/bladewind          ← maps to packages/meta/
+bladewindui/ui                ← maps to packages/meta/
 ```
 
 ### 2. Add the GitHub Actions secret
@@ -256,22 +272,22 @@ All packages always share the same version number. The monorepo-builder enforces
 Every component is a **standalone leaf package** that users can install individually:
 
 ```
-composer require mkocansey/bladewind-accordion   # just accordion
-composer require mkocansey/bladewind-table       # just table (pulls exact deps)
+composer require bladewindui/accordion   # just accordion
+composer require bladewindui/table       # just table (pulls exact deps)
 ```
 
 Three **aggregate metapackages** bundle related components for convenience:
 
 ```
-composer require mkocansey/bladewind-forms       # all form components
-composer require mkocansey/bladewind-content     # all content components
-composer require mkocansey/bladewind-navigation  # all navigation components
+composer require bladewindui/forms       # all form components
+composer require bladewindui/content     # all content components
+composer require bladewindui/navigation  # all navigation components
 ```
 
 The full install meta-package pulls everything:
 
 ```
-composer require mkocansey/bladewind             # the whole library
+composer require bladewindui/ui                  # the whole library
 ```
 
 Aggregate packages are `type: metapackage` — they contain no code, only a `require` list.
@@ -281,7 +297,7 @@ Aggregate packages are `type: metapackage` — they contain no code, only a `req
 ## Adding a new component
 
 1. Create `packages/<name>/` with:
-   - `composer.json` (name: `mkocansey/bladewind-<name>`, type: `library`) — list only the leaf packages it actually depends on in `require` (grep the blade file for `<x-bladewind::*` to find them), and declare its own provider in `extra.laravel.providers` as `"Mkocansey\\Bladewind\\<Name>\\Bladewind<Name>ServiceProvider"` — **keep the `Bladewind` prefix**, this is the entry the split package is installed with
+   - `composer.json` (name: `bladewindui/<name>`, type: `library`) — list only the leaf packages it actually depends on in `require` (grep the blade file for `<x-bladewind::*` to find them), and declare its own provider in `extra.laravel.providers` as `"Mkocansey\\Bladewind\\<Name>\\Bladewind<Name>ServiceProvider"` — **keep the `Bladewind` prefix**, this is the entry the split package is installed with
    - `src/Bladewind<Name>ServiceProvider.php` — see the template below
    - any CSS in `resources/assets/css/`, imported from the root `tailwind.css` so it lands in the compiled bundle
    - any JavaScript in `packages/core/public/js/` — **not** in a `public/` directory of its own (see below)
@@ -290,12 +306,12 @@ Aggregate packages are `type: metapackage` — they contain no code, only a `req
 
 2. Add to root `composer.json` — three places:
    - `autoload.psr-4`: `"Mkocansey\\Bladewind\\<Name>\\": "packages/<name>/src/"`
-   - `replace`: `"mkocansey/bladewind-<name>": "self.version"`
+   - `replace`: `"bladewindui/<name>": "self.version"`
    - `extra.laravel.providers`: `"Mkocansey\\Bladewind\\<Name>\\Bladewind<Name>ServiceProvider"`
 
 3. Add a matrix entry to `.github/workflows/split-packages.yml`:
    ```yaml
-   - { local_path: 'packages/<name>', split_repository: 'bladewind-<name>' }
+   - { local_path: 'packages/<name>', split_repository: '<name>' }
    ```
 
 4. If the component belongs to a group (forms/content/navigation), add it to the relevant `packages/<group>/composer.json` `require`
@@ -304,7 +320,7 @@ Aggregate packages are `type: metapackage` — they contain no code, only a `req
 
 6. Add its config keys to `packages/meta/config/bladewind.php`
 
-7. Create the empty GitHub repo `mkocansey/bladewind-<name>`
+7. Create the empty GitHub repo `bladewindui/<name>`
 
 8. Register it on Packagist with a GitHub webhook
 
@@ -331,7 +347,7 @@ Add yours to its provider — that is what stops the next component reintroducin
 
 ### Where assets live
 
-All published assets live in `packages/core/public`, and `BladewindCoreServiceProvider` is the only provider that publishes them (tag: `bladewind-public`). Every component package requires `mkocansey/bladewind-core`, so a user who installs a single component still gets the assets.
+All published assets live in `packages/core/public`, and `BladewindCoreServiceProvider` is the only provider that publishes them (tag: `bladewind-public`). Every component package requires `bladewindui/core`, so a user who installs a single component still gets the assets.
 
 Do not give a component package its own `public/` directory. Nothing publishes it, so the file is never served — it just becomes a second copy that drifts. That is exactly what happened to `select.js`: the copy left behind in `packages/select/public` missed the `filter()` fix in 65d3525 for two releases before it was removed.
 
