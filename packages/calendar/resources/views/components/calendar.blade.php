@@ -604,11 +604,13 @@
              clicking straight from one event to another swaps the drawer's
              content without having to close it first. --}}
         <x-bladewind::drawer name="{{ $name }}-event-details" data-bw-calendar-event-drawer="true" position="right" size="small" contained="true" modal="false" aria-label="Event details">
+            <h2 data-bw-calendar-event-drawer-title class="bw-calendar-event-drawer-title"></h2>
             <div class="bw-calendar-event-drawer-eyebrow">
                 <span data-bw-calendar-event-drawer-type class="bw-calendar-event-drawer-dot" aria-hidden="true"></span>
-                <span data-bw-calendar-event-drawer-time class="bw-calendar-event-drawer-time"></span>
+                <span data-bw-calendar-event-drawer-date class="bw-calendar-event-drawer-date"></span>
             </div>
-            <h2 data-bw-calendar-event-drawer-title class="bw-calendar-event-drawer-title"></h2>
+            {{-- empty (all-day events have no specific time) and hidden via CSS --}}
+            <p data-bw-calendar-event-drawer-time class="bw-calendar-event-drawer-time"></p>
             <p data-bw-calendar-event-drawer-description class="bw-calendar-event-drawer-description"></p>
             <a data-bw-calendar-event-drawer-link class="bw-calendar-event-drawer-link" href="#" hidden>View full details</a>
         </x-bladewind::drawer>

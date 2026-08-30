@@ -369,7 +369,8 @@ test('a month-view event with a description opens the contained event details dr
   await calendar.locator('[data-bw-calendar-event-trigger]').first().click() // Standup, 2026-08-05
   await expect(drawer).toHaveAttribute('data-state', 'open')
   await expect(drawer.locator('[data-bw-calendar-event-drawer-title]')).toHaveText('Standup')
-  await expect(drawer.locator('[data-bw-calendar-event-drawer-time]')).toHaveText('Wednesday, August 5, 2026')
+  await expect(drawer.locator('[data-bw-calendar-event-drawer-date]')).toHaveText('Wednesday, August 5, 2026')
+  await expect(drawer.locator('[data-bw-calendar-event-drawer-time]')).toBeEmpty() // all-day: no specific time, and hidden via CSS :empty
   await expect(drawer.locator('[data-bw-calendar-event-drawer-description]')).toContainText('Daily sync in the main conference room.')
   await expect(drawer.locator('[data-bw-calendar-event-drawer-link]')).toHaveAttribute('href', '/events/standup')
 
@@ -418,6 +419,8 @@ test('clicking a different event while the drawer is open swaps its content in p
   await calendar.locator('[data-bw-calendar-view="week"]').click()
   await day11.locator('[data-bw-calendar-event-trigger]').nth(0).click() // Design sync, 9:30-10:30
   await expect(drawer.locator('[data-bw-calendar-event-drawer-title]')).toHaveText('Design sync')
+  await expect(drawer.locator('[data-bw-calendar-event-drawer-date]')).toHaveText('Tuesday, August 11, 2026')
+  await expect(drawer.locator('[data-bw-calendar-event-drawer-time]')).toHaveText('9:30am to 10:30am')
 
   await day11.locator('[data-bw-calendar-event-trigger]').nth(1).click() // Kenya project review, 14:00-15:30
   await expect(drawer).toHaveAttribute('data-state', 'open')

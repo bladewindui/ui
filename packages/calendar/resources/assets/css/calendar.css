@@ -111,15 +111,20 @@ a.bw-calendar-event,button.bw-calendar-event { cursor: pointer; }
 /* the event details drawer's own content — the drawer chrome itself (panel,
  * backdrop, close button, open/close animation) is Drawer's, reused as-is
  * via the contained prop; only what goes in its body is calendar-specific. */
-.bw-calendar-event-drawer-eyebrow { display: flex; align-items: center; gap: .5rem; margin-bottom: .5rem; }
+.bw-calendar-event-drawer-title { font-size: 1.0625rem; font-weight: 600; }
+.bw-calendar-event-drawer-eyebrow { display: flex; align-items: center; gap: .5rem; margin-top: .625rem; }
 .bw-calendar-event-drawer-dot { width: .5rem; height: .5rem; border-radius: 9999px; background: var(--color-primary-500); }
 .bw-calendar-event-drawer-dot.bw-calendar-event-info { background: rgb(30 64 175); }
 .bw-calendar-event-drawer-dot.bw-calendar-event-success { background: rgb(22 101 52); }
 .bw-calendar-event-drawer-dot.bw-calendar-event-warning { background: rgb(133 77 14); }
 .bw-calendar-event-drawer-dot.bw-calendar-event-danger { background: rgb(153 27 27); }
-.bw-calendar-event-drawer-time { font-size: .75rem; font-weight: 600; letter-spacing: .01em; color: rgb(100 116 139); }
+.bw-calendar-event-drawer-date { font-size: .75rem; font-weight: 600; letter-spacing: .01em; color: rgb(100 116 139); }
+.bw-calendar-event-drawer-date { @variant dark { color: #a7aaad; } }
+/* empty (all-day events have no specific time) and hidden rather than left
+ * as blank space above the description. */
+.bw-calendar-event-drawer-time { margin-top: .25rem; font-size: .8125rem; color: rgb(100 116 139); }
 .bw-calendar-event-drawer-time { @variant dark { color: #a7aaad; } }
-.bw-calendar-event-drawer-title { font-size: 1.0625rem; font-weight: 600; }
+.bw-calendar-event-drawer-time:empty { display: none; }
 .bw-calendar-event-drawer-description { margin-top: .75rem; font-size: .875rem; line-height: 1.5; color: rgb(71 85 105); white-space: pre-line; }
 .bw-calendar-event-drawer-description { @variant dark { color: #d2d4d7; } }
 .bw-calendar-event-drawer-description:empty { display: none; }
