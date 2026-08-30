@@ -44,6 +44,11 @@
 .bw-calendar-cell-outside { @variant dark { color: #6c7075; } }
 .bw-calendar-cell-disabled { cursor: not-allowed; opacity: .55; }
 .bw-calendar-cell-events { display: flex; flex: 1 1 auto; flex-direction: column; gap: .1875rem; margin-top: .25rem; min-height: 0; overflow-y: auto; }
+/* flex items shrink by default, and this column is often shorter than its
+ * expanded content wants — without this, the browser compresses every event
+ * row toward zero height instead of leaving them their natural size and
+ * letting the column above scroll. */
+.bw-calendar-cell-events > .bw-calendar-event { flex-shrink: 0; }
 /* text-align/width are no-ops for the span/a variants and correctness for
  * the button variant (an event with a description), which browsers
  * otherwise center-align and shrink to content by default. cursor:pointer is

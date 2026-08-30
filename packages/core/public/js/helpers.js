@@ -3196,7 +3196,7 @@ bwOn('click', '[data-bw-calendar-more]', (button) => {
     if (!cell) return;
     const expanded = button.getAttribute('aria-expanded') === 'true';
     if (!button.dataset.moreLabel) button.dataset.moreLabel = button.textContent;
-    cell.querySelectorAll('[data-bw-calendar-overflow-event]').forEach((el) => { el.hidden = expanded; });
+    cell.querySelectorAll('[data-bw-calendar-overflow-event="true"]').forEach((el) => { el.hidden = expanded; });
     button.setAttribute('aria-expanded', expanded ? 'false' : 'true');
     button.textContent = expanded ? button.dataset.moreLabel : 'Show less';
 });

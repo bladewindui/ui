@@ -32,8 +32,24 @@ test('a day with an overflowing event list stays the same row height as an empty
   expect(busyHeight).toBe(emptyHeight)
 
   // expanding "+1 more" reveals it within the cell's own scroll, not by growing the row
-  await busyDay.locator('[data-bw-calendar-more]').click()
+  const more = busyDay.locator('[data-bw-calendar-more]')
+  await more.click()
   expect((await busyDay.boundingBox()).height).toBe(busyHeight)
+
+  // every event, including the ones already visible before expanding, keeps its
+  // real height rather than being squashed to nothing by the flex column
+  const events = busyDay.locator('.bw-calendar-event')
+  await expect(events).toHaveCount(4)
+  for (const box of await events.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().height))) {
+    expect(box).toBeGreaterThan(0)
+  }
+
+  // collapsing hides only the overflow item, not the ones shown before expanding
+  await more.click()
+  await expect(busyDay.locator('.bw-calendar-event:visible')).toHaveCount(3)
+  await expect(busyDay.getByText('Overflow item')).toBeHidden()
+  await expect(busyDay.getByText('Design review')).toBeVisible()
+  await expect(busyDay.getByText('Retro')).toBeVisible()
 })
 
 test('next/previous rebuild the grid client-side and update the title', async ({ page }) => {
