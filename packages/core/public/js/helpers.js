@@ -2369,18 +2369,24 @@ const calendarFormatHourLabel = (hour) => {
 /** e.g. "Tuesday, August 11, 2026" — mirrors the PHP side's Carbon 'l, F j, Y' format. */
 const calendarFormatFullDate = (date, dayNames, monthNames) => `${dayNames[date.getDay()]}, ${monthNames[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
 
-/** The event details drawer's date/time line: a single date, a date range, or a date with a start-end time, depending on what kind of event it is. */
-const calendarFormatEventDateTime = (detail, dayNames, monthNames) => {
+/** The event details drawer's date line: a single date, or a date range for a multi-day all-day event. Never includes a time — see calendarFormatEventTime for that. */
+const calendarFormatEventDate = (detail, dayNames, monthNames) => {
     if (isCalendarTimedEvent(detail.date)) {
-        const start = new Date(detail.date.replace(' ', 'T'));
-        const end = detail.end && isCalendarTimedEvent(detail.end) ? new Date(detail.end.replace(' ', 'T')) : calendarAddMinutes(start, 60);
-        return `${calendarFormatFullDate(start, dayNames, monthNames)}, ${calendarFormatHourMinute(start)} to ${calendarFormatHourMinute(end)}`;
+        return calendarFormatFullDate(new Date(detail.date.replace(' ', 'T')), dayNames, monthNames);
     }
     const start = new Date(`${detail.date}T00:00:00`);
     if (detail.end && detail.end !== detail.date) {
         return `${calendarFormatFullDate(start, dayNames, monthNames)} to ${calendarFormatFullDate(new Date(`${detail.end}T00:00:00`), dayNames, monthNames)}`;
     }
     return calendarFormatFullDate(start, dayNames, monthNames);
+};
+
+/** The event details drawer's time line: a start-end range for a timed event, or '' for an all-day event (no specific time to show — the element is hidden via CSS :empty when this is blank). */
+const calendarFormatEventTime = (detail) => {
+    if (!isCalendarTimedEvent(detail.date)) return '';
+    const start = new Date(detail.date.replace(' ', 'T'));
+    const end = detail.end && isCalendarTimedEvent(detail.end) ? new Date(detail.end.replace(' ', 'T')) : calendarAddMinutes(start, 60);
+    return `${calendarFormatHourMinute(start)} to ${calendarFormatHourMinute(end)}`;
 };
 
 /** Populates the (single, reused) event details drawer from one event's data and opens it. Content is set via textContent throughout, never innerHTML — description is arbitrary text a consumer supplied, not markup this component trusts. */
@@ -2391,14 +2397,17 @@ const openCalendarEventDetails = (calendar, eventIndex) => {
     const drawer = calendar.querySelector('[data-bw-calendar-event-drawer]');
     if (!detail || !drawer) return false;
 
+    const title = drawer.querySelector('[data-bw-calendar-event-drawer-title]');
+    if (title) title.textContent = detail.label || '';
+
     const dot = drawer.querySelector('[data-bw-calendar-event-drawer-type]');
     if (dot) dot.className = `bw-calendar-event-drawer-dot bw-calendar-event-${detail.type || 'info'}`;
 
-    const time = drawer.querySelector('[data-bw-calendar-event-drawer-time]');
-    if (time) time.textContent = calendarFormatEventDateTime(detail, registry.dayNames, registry.monthNames);
+    const date = drawer.querySelector('[data-bw-calendar-event-drawer-date]');
+    if (date) date.textContent = calendarFormatEventDate(detail, registry.dayNames, registry.monthNames);
 
-    const title = drawer.querySelector('[data-bw-calendar-event-drawer-title]');
-    if (title) title.textContent = detail.label || '';
+    const time = drawer.querySelector('[data-bw-calendar-event-drawer-time]');
+    if (time) time.textContent = calendarFormatEventTime(detail);
 
     const description = drawer.querySelector('[data-bw-calendar-event-drawer-description]');
     if (description) description.textContent = detail.description || '';
