@@ -153,9 +153,11 @@
         <div class="bw-data-grid-toolbar">
             @if($searchable)
                 <div class="bw-data-grid-search">
-                    <x-bladewind::icon name="magnifying-glass" class="bw-data-grid-search-icon !size-4" />
-                    <input type="text" class="bw-data-grid-search-input" data-bw-data-grid-search
+                    <input type="text" class="bw-input small focus:outline-primary-500 focus:border-primary-500 bw-data-grid-search-input" data-bw-data-grid-search
                         aria-label="Search {{ $label }}" placeholder="{{ $searchPlaceholder }}" autocomplete="off" />
+                    <div class="bw-data-grid-search-prefix prefix">
+                        <x-bladewind::icon name="magnifying-glass" class="!size-[18px] !stroke-2 !opacity-70" />
+                    </div>
                 </div>
             @endif
             @isset($toolbar)<div class="bw-data-grid-toolbar-content">{{ $toolbar }}</div>@endisset
@@ -179,7 +181,7 @@
                     @if($selectable)
                         <th class="bw-data-grid-select-col" scope="col">
                             @if($selectionMode === 'multiple')
-                                <input type="checkbox" data-bw-data-grid-select-all aria-label="{{ $selectAllLabel }}" />
+                                <input type="checkbox" class="bw-data-grid-checkbox" data-bw-data-grid-select-all aria-label="{{ $selectAllLabel }}" />
                             @else
                                 <span class="sr-only">{{ $selectAllLabel }}</span>
                             @endif
@@ -226,6 +228,7 @@
                             @if($selectable)
                                 <td class="bw-data-grid-select-col">
                                     <input type="{{ $selectionMode === 'single' ? 'radio' : 'checkbox' }}"
+                                        class="bw-data-grid-checkbox"
                                         @if($selectionMode === 'single') name="{{ $name }}-select" @endif
                                         data-bw-data-grid-select value="{{ $entry['key'] }}"
                                         @checked($entry['selected']) aria-label="Select row" />
