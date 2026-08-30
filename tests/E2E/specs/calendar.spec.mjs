@@ -31,8 +31,14 @@ test('a day with an overflowing event list stays the same row height as an empty
   const emptyHeight = (await emptyDay.boundingBox()).height
   expect(busyHeight).toBe(emptyHeight)
 
-  // expanding "+1 more" reveals it within the cell's own scroll, not by growing the row
+  // "+1 more" itself must be fully visible without scrolling in the default,
+  // collapsed state — scrolling is meant to only kick in once expanded
   const more = busyDay.locator('[data-bw-calendar-more]')
+  const wrap = busyDay.locator('.bw-calendar-cell-events')
+  const [moreBox, wrapBox] = await Promise.all([more.boundingBox(), wrap.boundingBox()])
+  expect(moreBox.y + moreBox.height).toBeLessThanOrEqual(wrapBox.y + wrapBox.height + 0.5)
+
+  // expanding "+1 more" reveals it within the cell's own scroll, not by growing the row
   await more.click()
   expect((await busyDay.boundingBox()).height).toBe(busyHeight)
 
