@@ -60,7 +60,7 @@ Command Palette emits cancelable `before-open`, `before-close`, and `before-sele
 
 ## Components
 
-- `command-palette`: named root, label, placeholder, search label, keyboard shortcut, size, initial open state, loading state, empty and loading text, close-on-select, backdrop and escape dismissal, and an optional footer slot appended after the built-in keyboard hints.
+- `command-palette`: named root, label, placeholder, search label, keyboard shortcut, size, initial open state, loading state, empty text with an optional supporting description, loading text, close-on-select, backdrop and escape dismissal, and an optional footer slot appended after the built-in keyboard hints.
 - `command-palette.group`: name and heading label for a set of items.
 - `command-palette.item`: name, label, description, icon, icon type, icon directory, display shortcut, extra search keywords, link or button behavior, disabled state, external state, target, and custom slot content.
 
