@@ -32,7 +32,11 @@
 .bw-command-palette-search { display: flex; flex: none; align-items: center; gap: .75rem; border-bottom: 1px solid rgb(226 232 240); padding: 1rem 1.25rem; }
 .bw-command-palette-search { @variant dark { border-color: rgb(74 78 83 / .75); } }
 .bw-command-palette-search-icon { flex: none; color: rgb(148 163 184); }
-.bw-command-palette-input { flex: 1; min-width: 0; min-height: 2.5rem; border: 0; background: transparent; color: inherit; font-size: 1rem; line-height: 1.5rem; outline: none; }
+/* box-shadow: none is load-bearing, not decorative — Tailwind's own Preflight
+ * puts a default focus ring on every text-like input via box-shadow (a
+ * property border/outline resets don't touch), so without it the ring shows
+ * through untouched on focus despite border:0 and outline:none. */
+.bw-command-palette-input { flex: 1; min-width: 0; min-height: 2.5rem; border: 0; background: transparent; color: inherit; font-size: 1rem; line-height: 1.5rem; outline: none; box-shadow: none; }
 .bw-command-palette-input::placeholder { color: rgb(148 163 184); }
 .bw-command-palette-close { flex: none; display: grid; width: 2rem; height: 2rem; place-items: center; border-radius: 9999px; background: rgb(241 245 249); color: rgb(100 116 139); transition: background-color .15s ease, color .15s ease; }
 .bw-command-palette-close { @variant dark { background: #262a2f; color: #a7aaad; } }
