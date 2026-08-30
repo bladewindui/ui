@@ -2650,7 +2650,7 @@ const scrollCalendarWeekBodyToHour = (calendar, hour = CALENDAR_WEEK_SCROLL_TO_H
 
 /** Builds one week's hour grid (day headers, all-day banners, and the scrollable hour body) fresh into `scroll`. Returns the previously-focused date's iso if it's still on screen, else null. */
 const renderCalendarWeekGrid = (calendar, scroll, weekDays, registry, previouslyFocused, ctx) => {
-    const {selectable, min, max, disabled, selected, showWeekNumbers} = ctx;
+    const {selectable, min, max, disabled, selected, showWeekNumbers, highlightToday} = ctx;
 
     const week = document.createElement('div');
     week.className = 'bw-calendar-week';
@@ -2685,7 +2685,7 @@ const renderCalendarWeekGrid = (calendar, scroll, weekDays, registry, previously
         if (day.isToday) header.setAttribute('aria-current', 'date');
         if (isDisabled) header.setAttribute('aria-disabled', 'true');
         header.className = 'bw-calendar-week-day-header'
-            + (day.isToday ? ' bw-calendar-cell-today' : '')
+            + (day.isToday && highlightToday ? ' bw-calendar-cell-today' : '')
             + (isSelected ? ' bw-calendar-cell-selected' : '')
             + (isDisabled ? ' bw-calendar-cell-disabled' : '');
 
@@ -2768,7 +2768,7 @@ const renderCalendarWeekGrid = (calendar, scroll, weekDays, registry, previously
     days.className = 'bw-calendar-week-days';
     weekDays.forEach((day) => {
         const column = document.createElement('div');
-        column.className = 'bw-calendar-week-day-column' + (day.isToday ? ' bw-calendar-week-day-column-today' : '');
+        column.className = 'bw-calendar-week-day-column' + (day.isToday && highlightToday ? ' bw-calendar-week-day-column-today' : '');
         column.setAttribute('data-date', day.iso);
         for (let h = 1; h < CALENDAR_WEEK_HOURS_IN_DAY; h++) {
             const line = document.createElement('div');
@@ -2818,7 +2818,7 @@ const renderCalendarWeekGrid = (calendar, scroll, weekDays, registry, previously
 
 /** Builds one month's `<table>` fresh into `scroll`, including the weekday header row. Returns the previously-focused date's iso if it's still on screen, else null. */
 const renderCalendarMonthTable = (calendar, scroll, weeks, registry, previouslyFocused, ctx) => {
-    const {selectable, maxEventsPerDay, showOtherMonthDays, showWeekNumbers, min, max, disabled, selected} = ctx;
+    const {selectable, maxEventsPerDay, showOtherMonthDays, showWeekNumbers, highlightToday, min, max, disabled, selected} = ctx;
     const weekStarts = calendar.getAttribute('data-week-starts');
 
     const table = document.createElement('table');
@@ -2887,7 +2887,7 @@ const renderCalendarMonthTable = (calendar, scroll, weeks, registry, previouslyF
             if (isDisabled) cell.setAttribute('aria-disabled', 'true');
             cell.className = 'bw-calendar-cell'
                 + (!day.inPeriod ? ' bw-calendar-cell-outside' : '')
-                + (day.isToday ? ' bw-calendar-cell-today' : '')
+                + (day.isToday && highlightToday ? ' bw-calendar-cell-today' : '')
                 + (isSelected ? ' bw-calendar-cell-selected' : '')
                 + (isDisabled ? ' bw-calendar-cell-disabled' : '');
             if (!day.inPeriod && !showOtherMonthDays) cell.hidden = true;
@@ -2955,6 +2955,7 @@ const renderCalendarGrid = (calendar, anchor) => {
     const maxEventsPerDay = parseInt(calendar.getAttribute('data-max-events-per-day'), 10) || 0;
     const showOtherMonthDays = calendar.getAttribute('data-show-other-month-days') === 'true';
     const showWeekNumbers = calendar.getAttribute('data-show-week-numbers') === 'true';
+    const highlightToday = calendar.getAttribute('data-highlight-today') === 'true';
     const {min, max, disabled} = calendarConstraints(calendar);
     const selected = new Set(calendarSelectedDates(name));
     const previouslyFocused = calendar.querySelector('[data-bw-calendar-day][tabindex="0"]')?.getAttribute('data-date');
@@ -2965,7 +2966,7 @@ const renderCalendarGrid = (calendar, anchor) => {
     scroll.innerHTML = '';
 
     const isTimelineView = view === 'week' || view === 'day';
-    const ctx = {selectable, maxEventsPerDay, showOtherMonthDays, showWeekNumbers, min, max, disabled, selected};
+    const ctx = {selectable, maxEventsPerDay, showOtherMonthDays, showWeekNumbers, highlightToday, min, max, disabled, selected};
     let focusIso = isTimelineView
         ? renderCalendarWeekGrid(calendar, scroll, weeks[0], registry, previouslyFocused, ctx)
         : renderCalendarMonthTable(calendar, scroll, weeks, registry, previouslyFocused, ctx);

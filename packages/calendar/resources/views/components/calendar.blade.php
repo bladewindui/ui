@@ -45,6 +45,10 @@
 
     'showWeekNumbers' => null,
 
+    // tint today's date (month view) and today's whole column (week/day view)
+    // to call it out from the rest of the grid. Off by default.
+    'highlightToday' => null,
+
     // fixes the grid at this height (e.g. '28rem') with an internal scrollbar,
     // so switching between months with different week counts, or between month
     // and week view, never changes the calendar's overall height. Defaults to
@@ -73,6 +77,7 @@
     $maxEventsPerDay = max(0, (int) parseBladewindVariable($maxEventsPerDay ?? config('bladewind.calendar.max_events_per_day', 3), 'int'));
     $showOtherMonthDays = parseBladewindVariable($showOtherMonthDays ?? config('bladewind.calendar.show_other_month_days', true));
     $showWeekNumbers = parseBladewindVariable($showWeekNumbers ?? config('bladewind.calendar.show_week_numbers', false));
+    $highlightToday = parseBladewindVariable($highlightToday ?? config('bladewind.calendar.highlight_today', false));
     $height = $height ?? config('bladewind.calendar.height', '40rem');
     $clientNavigation = parseBladewindVariable($clientNavigation ?? config('bladewind.calendar.client_navigation', true));
     $todayLabel = $todayLabel ?? config('bladewind.calendar.today_label', 'Today');
@@ -381,6 +386,7 @@
     data-max-events-per-day="{{ $maxEventsPerDay }}"
     data-show-other-month-days="{{ $showOtherMonthDays ? 'true' : 'false' }}"
     data-show-week-numbers="{{ $showWeekNumbers ? 'true' : 'false' }}"
+    data-highlight-today="{{ $highlightToday ? 'true' : 'false' }}"
     data-client-navigation="{{ $clientNavigation ? 'true' : 'false' }}"
     @if($minDate) data-min-date="{{ $minCarbon->toDateString() }}" @endif
     @if($maxDate) data-max-date="{{ $maxCarbon->toDateString() }}" @endif
@@ -431,7 +437,7 @@
                         aria-label="{{ $day['label'] }}"
                         @class([
                             'bw-calendar-week-day-header',
-                            'bw-calendar-cell-today' => $day['isToday'],
+                            'bw-calendar-cell-today' => $day['isToday'] && $highlightToday,
                             'bw-calendar-cell-selected' => $day['isSelected'],
                             'bw-calendar-cell-disabled' => $day['isDisabled'],
                         ])>
@@ -471,7 +477,7 @@
                 <div class="bw-calendar-week-days">
                     @foreach($weeks[0] as $day)
                         @php $iso = $day['iso']; @endphp
-                        <div class="bw-calendar-week-day-column @if($day['isToday']) bw-calendar-week-day-column-today @endif" data-date="{{ $iso }}">
+                        <div class="bw-calendar-week-day-column @if($day['isToday'] && $highlightToday) bw-calendar-week-day-column-today @endif" data-date="{{ $iso }}">
                             @for($h = 1; $h < $hoursInDay; $h++)
                                 <div class="bw-calendar-week-hour-line" style="top: {{ $h * $hourRowHeight }}rem" aria-hidden="true"></div>
                             @endfor
@@ -538,7 +544,7 @@
                                 @class([
                                     'bw-calendar-cell',
                                     'bw-calendar-cell-outside' => ! $day['inPeriod'],
-                                    'bw-calendar-cell-today' => $day['isToday'],
+                                    'bw-calendar-cell-today' => $day['isToday'] && $highlightToday,
                                     'bw-calendar-cell-selected' => $day['isSelected'],
                                     'bw-calendar-cell-disabled' => $day['isDisabled'],
                                 ])

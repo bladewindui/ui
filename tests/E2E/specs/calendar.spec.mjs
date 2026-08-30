@@ -402,3 +402,23 @@ test('clicking a different event while the drawer is open swaps its content in p
   await expect(drawer.locator('[data-bw-calendar-event-drawer-title]')).toHaveText('Kenya project review')
   await expect(drawer.locator('[data-bw-calendar-event-drawer-description]')).toContainText('Quarterly numbers, then open questions.')
 })
+
+test('today is not highlighted by default, in month view or in a client-rendered week view', async ({ page }) => {
+  const calendar = page.locator('[data-bw-calendar][data-name="not-highlighted"]')
+  const todayCell = calendar.locator('[data-bw-calendar-day][aria-current="date"]')
+  await expect(todayCell).not.toHaveClass(/bw-calendar-cell-today/)
+
+  await calendar.locator('[data-bw-calendar-view="week"]').click() // forces a client-side re-render
+  await expect(calendar.locator('[data-bw-calendar-day][aria-current="date"]')).not.toHaveClass(/bw-calendar-cell-today/)
+  await expect(calendar.locator('.bw-calendar-week-day-column-today')).toHaveCount(0)
+})
+
+test('highlight-today marks today in month view and, after switching, in a client-rendered week view', async ({ page }) => {
+  const calendar = page.locator('[data-bw-calendar][data-name="highlighted"]')
+  const todayCell = calendar.locator('[data-bw-calendar-day][aria-current="date"]')
+  await expect(todayCell).toHaveClass(/bw-calendar-cell-today/)
+
+  await calendar.locator('[data-bw-calendar-view="week"]').click() // forces a client-side re-render
+  await expect(calendar.locator('[data-bw-calendar-day][aria-current="date"]')).toHaveClass(/bw-calendar-cell-today/)
+  await expect(calendar.locator('.bw-calendar-week-day-column-today')).toHaveCount(1)
+})
