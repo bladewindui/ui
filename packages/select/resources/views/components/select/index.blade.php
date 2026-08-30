@@ -185,7 +185,7 @@
          @if(!empty($label)) aria-label="{{ strip_tags($label) }}" @elseif(!empty($placeholder)) aria-label="{{ strip_tags($placeholder) }}" @endif
          @if($required) aria-required="true" @endif
          @if($disabled) aria-disabled="true" @endif
-         class="flex justify-between text-sm items-center rounded-md bg-white dark:bg-transparent text-gray-600
+         class="flex justify-between text-sm items-center rounded-md bg-transparent text-gray-600
          dark:text-dark-300 {{$sizes[$size]}} pl-4 pr-2 clickable focus:!outline-primary-500
          focus:!border-primary-500  dark:focus:!border-primary-500  dark:focus:!outline-primary-500
          @if($disabled) disabled @elseif($readonly) readonly @else enabled @endif

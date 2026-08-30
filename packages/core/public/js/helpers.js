@@ -52,6 +52,35 @@ const domEls = (element, scope = null) => {
 const dom_els = domEls;
 
 /**
+ * A position:fixed element is normally positioned against the viewport, but an
+ * ancestor with transform, filter, perspective, contain, or backdrop-filter
+ * becomes its containing block instead (CSS Transforms / Filter Effects spec).
+ * The library's popups compute their fixed left/top from getBoundingClientRect(),
+ * which is always viewport-relative — inside a hijacked containing block that
+ * math is off by exactly that ancestor's own position. modal's content wrapper
+ * carries drop-shadow-2xl (a filter), so any select/dropmenu/popover opened
+ * from inside a modal lands away from its trigger. See #614.
+ * @param {Element} el - the popup's trigger, or another element inside it
+ * @return {{top: number, left: number}} the hijacking ancestor's rect offset, or {0,0} if none
+ */
+const fixedPositioningOffset = (el) => {
+    let node = el?.parentElement;
+    while (node && node !== document.body && node !== document.documentElement) {
+        let cs = getComputedStyle(node);
+        let hijacks = (cs.transform !== 'none') || (cs.perspective !== 'none') || (cs.filter !== 'none')
+            || (cs.backdropFilter && cs.backdropFilter !== 'none')
+            || ['layout', 'paint', 'strict', 'content'].includes(cs.contain)
+            || /transform|perspective|filter/.test(cs.willChange || '');
+        if (hijacks) {
+            let rect = node.getBoundingClientRect();
+            return {top: rect.top, left: rect.left};
+        }
+        node = node.parentElement;
+    }
+    return {top: 0, left: 0};
+};
+
+/**
  * Check to see if val is empty
  * @param {string} val - The string to test emptiness for
  * @return {boolean} True if string is empty

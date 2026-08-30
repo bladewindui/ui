@@ -20,16 +20,19 @@ class DarkModeTest extends TestCase
     use RendersComponents;
 
     #[Test]
-    public function the_select_trigger_has_a_dark_background(): void
+    public function the_select_trigger_is_transparent(): void
     {
         $html = $this->render(
             '<x-bladewind::select name="c" :data="$d" />',
             ['d' => [['label' => 'Ghana', 'value' => 'GH']]]
         );
 
-        // bg-white is a utility, so it beat .bw-select div.clickable's dark rule
-        // in the components layer and the trigger stayed white on a dark page
-        $this->assertHasClasses($html, $this->withClass('clickable'), ['bg-white', 'dark:bg-transparent']);
+        // the trigger used to carry bg-white, forcing a white box in light mode
+        // no matter what background it sat on — unlike the input field, which is
+        // transparent by default. bg-transparent needs no dark: pair since it is
+        // the same value in both themes. See #614.
+        $this->assertHasClasses($html, $this->withClass('clickable'), ['bg-transparent']);
+        $this->assertMissingClasses($html, $this->withClass('clickable'), ['bg-white']);
     }
 
     #[Test]
