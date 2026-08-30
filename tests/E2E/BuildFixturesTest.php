@@ -621,6 +621,15 @@ class BuildFixturesTest extends TestCase
             '<x-bladewind::calendar name="sized" label="Fixed-height calendar" date="2026-08-15" height="6rem" class="e2e-sized-calendar" />'
         );
 
+        // no explicit date on either: defaults to today, so today's cell/column
+        // is on screen without navigating, in whichever view the test switches to
+        $highlighted = $this->render(
+            '<x-bladewind::calendar name="highlighted" label="Highlighted calendar" highlight-today="true" />'
+        );
+        $notHighlighted = $this->render(
+            '<x-bladewind::calendar name="not-highlighted" label="Not highlighted calendar" />'
+        );
+
         $scripts = <<<'HTML'
         <script>
           window.calendarEvents = [];
@@ -642,7 +651,7 @@ class BuildFixturesTest extends TestCase
         HTML;
 
         $body = '<main style="display:flex;flex-direction:column;gap:24px;padding:16px;max-width:700px">'
-            .$primary.$restricted.$serverDriven.$sized
+            .$primary.$restricted.$serverDriven.$sized.$highlighted.$notHighlighted
             .'</main>';
 
         file_put_contents(

@@ -8,6 +8,7 @@ return [
         'max_events_per_day' => 3,
         'show_other_month_days' => true,
         'show_week_numbers' => false,
+        'highlight_today' => false,
         'height' => '40rem',
         'client_navigation' => true,
         'today_label' => 'Today',
