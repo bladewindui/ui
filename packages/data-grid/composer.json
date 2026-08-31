@@ -22,7 +22,8 @@
         "php": ">=8.1",
         "bladewindui/core": "^5.0",
         "bladewindui/icon": "^5.0",
-        "bladewindui/pagination": "^5.0"
+        "bladewindui/pagination": "^5.0",
+        "bladewindui/spinner": "^5.0"
     },
     "autoload": {
         "psr-4": {
