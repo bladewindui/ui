@@ -1,8 +1,7 @@
 <p><img src="https://img.shields.io/github/license/bladewindui/bladewindui" alt="License" /></p>
 <p><img src="https://bladewindui.com/assets/images/bw-logo.png" style="height: 30px; margin-bottom:10px" /></p>
 
-BladewindUI is a collection of UI components built with TailwindCSS, Laravel Blade templates, and vanilla JavaScript.
-Every component is simple to use and ships with sensible defaults you can override per-project.
+BladewindUI is a modern, open-source UI component library designed to help developers build beautiful, consistent, and responsive web interfaces faster. It provides a growing collection of thoughtfully designed, customizable components that are simple to integrate, easy to use, and flexible enough for everything from dashboards and internal tools to full-featured web applications.Every component is simple to use and ships with sensible defaults you can override per-project.
 
 # Installation
 
