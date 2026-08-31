@@ -31,9 +31,31 @@ test('a day with an overflowing event list stays the same row height as an empty
   const emptyHeight = (await emptyDay.boundingBox()).height
   expect(busyHeight).toBe(emptyHeight)
 
+  // "+1 more" itself must be fully visible without scrolling in the default,
+  // collapsed state — scrolling is meant to only kick in once expanded
+  const more = busyDay.locator('[data-bw-calendar-more]')
+  const wrap = busyDay.locator('.bw-calendar-cell-events')
+  const [moreBox, wrapBox] = await Promise.all([more.boundingBox(), wrap.boundingBox()])
+  expect(moreBox.y + moreBox.height).toBeLessThanOrEqual(wrapBox.y + wrapBox.height + 0.5)
+
   // expanding "+1 more" reveals it within the cell's own scroll, not by growing the row
-  await busyDay.locator('[data-bw-calendar-more]').click()
+  await more.click()
   expect((await busyDay.boundingBox()).height).toBe(busyHeight)
+
+  // every event, including the ones already visible before expanding, keeps its
+  // real height rather than being squashed to nothing by the flex column
+  const events = busyDay.locator('.bw-calendar-event')
+  await expect(events).toHaveCount(4)
+  for (const box of await events.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().height))) {
+    expect(box).toBeGreaterThan(0)
+  }
+
+  // collapsing hides only the overflow item, not the ones shown before expanding
+  await more.click()
+  await expect(busyDay.locator('.bw-calendar-event:visible')).toHaveCount(3)
+  await expect(busyDay.getByText('Overflow item')).toBeHidden()
+  await expect(busyDay.getByText('Design review')).toBeVisible()
+  await expect(busyDay.getByText('Retro')).toBeVisible()
 })
 
 test('next/previous rebuild the grid client-side and update the title', async ({ page }) => {
@@ -347,7 +369,8 @@ test('a month-view event with a description opens the contained event details dr
   await calendar.locator('[data-bw-calendar-event-trigger]').first().click() // Standup, 2026-08-05
   await expect(drawer).toHaveAttribute('data-state', 'open')
   await expect(drawer.locator('[data-bw-calendar-event-drawer-title]')).toHaveText('Standup')
-  await expect(drawer.locator('[data-bw-calendar-event-drawer-time]')).toHaveText('Wednesday, August 5, 2026')
+  await expect(drawer.locator('[data-bw-calendar-event-drawer-date]')).toHaveText('Wednesday, August 5, 2026')
+  await expect(drawer.locator('[data-bw-calendar-event-drawer-time]')).toBeEmpty() // all-day: no specific time, and hidden via CSS :empty
   await expect(drawer.locator('[data-bw-calendar-event-drawer-description]')).toContainText('Daily sync in the main conference room.')
   await expect(drawer.locator('[data-bw-calendar-event-drawer-link]')).toHaveAttribute('href', '/events/standup')
 
@@ -396,9 +419,31 @@ test('clicking a different event while the drawer is open swaps its content in p
   await calendar.locator('[data-bw-calendar-view="week"]').click()
   await day11.locator('[data-bw-calendar-event-trigger]').nth(0).click() // Design sync, 9:30-10:30
   await expect(drawer.locator('[data-bw-calendar-event-drawer-title]')).toHaveText('Design sync')
+  await expect(drawer.locator('[data-bw-calendar-event-drawer-date]')).toHaveText('Tuesday, August 11, 2026')
+  await expect(drawer.locator('[data-bw-calendar-event-drawer-time]')).toHaveText('9:30am to 10:30am')
 
   await day11.locator('[data-bw-calendar-event-trigger]').nth(1).click() // Kenya project review, 14:00-15:30
   await expect(drawer).toHaveAttribute('data-state', 'open')
   await expect(drawer.locator('[data-bw-calendar-event-drawer-title]')).toHaveText('Kenya project review')
   await expect(drawer.locator('[data-bw-calendar-event-drawer-description]')).toContainText('Quarterly numbers, then open questions.')
+})
+
+test('today is not highlighted by default, in month view or in a client-rendered week view', async ({ page }) => {
+  const calendar = page.locator('[data-bw-calendar][data-name="not-highlighted"]')
+  const todayCell = calendar.locator('[data-bw-calendar-day][aria-current="date"]')
+  await expect(todayCell).not.toHaveClass(/bw-calendar-cell-today/)
+
+  await calendar.locator('[data-bw-calendar-view="week"]').click() // forces a client-side re-render
+  await expect(calendar.locator('[data-bw-calendar-day][aria-current="date"]')).not.toHaveClass(/bw-calendar-cell-today/)
+  await expect(calendar.locator('.bw-calendar-week-day-column-today')).toHaveCount(0)
+})
+
+test('highlight-today marks today in month view and, after switching, in a client-rendered week view', async ({ page }) => {
+  const calendar = page.locator('[data-bw-calendar][data-name="highlighted"]')
+  const todayCell = calendar.locator('[data-bw-calendar-day][aria-current="date"]')
+  await expect(todayCell).toHaveClass(/bw-calendar-cell-today/)
+
+  await calendar.locator('[data-bw-calendar-view="week"]').click() // forces a client-side re-render
+  await expect(calendar.locator('[data-bw-calendar-day][aria-current="date"]')).toHaveClass(/bw-calendar-cell-today/)
+  await expect(calendar.locator('.bw-calendar-week-day-column-today')).toHaveCount(1)
 })

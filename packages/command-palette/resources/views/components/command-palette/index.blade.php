@@ -8,6 +8,7 @@
     'open' => false,
     'loading' => false,
     'emptyText' => 'No results found.',
+    'emptyDescription' => 'Try a different search term or command.',
     'loadingText' => 'Loading…',
     'closeOnSelect' => null,
     'backdropCanClose' => null,
@@ -64,8 +65,15 @@
         <div id="{{ $listId }}" class="bw-command-palette-results" role="listbox" aria-label="{{ $label }}" data-bw-command-palette-list>
             {{ $slot }}
         </div>
-        <p id="{{ $emptyId }}" class="bw-command-palette-empty" data-bw-command-palette-empty hidden>{{ $emptyText }}</p>
-        <p class="bw-command-palette-loading" data-bw-command-palette-loading @if(!$loading) hidden @endif>{{ $loadingText }}</p>
+        <div id="{{ $emptyId }}" class="bw-command-palette-empty" data-bw-command-palette-empty hidden>
+            <div class="bw-command-palette-empty-icon"><x-bladewind::icon name="magnifying-glass" class="!size-6" /></div>
+            <p class="bw-command-palette-empty-title">{{ $emptyText }}</p>
+            <p class="bw-command-palette-empty-description">{{ $emptyDescription }}</p>
+        </div>
+        <div class="bw-command-palette-loading" data-bw-command-palette-loading @if(!$loading) hidden @endif>
+            <x-bladewind::icon name="arrow-path" class="bw-command-palette-loading-icon !size-5" />
+            <p>{{ $loadingText }}</p>
+        </div>
         <footer class="bw-command-palette-footer">
             <div class="bw-command-palette-hints">
                 <span class="bw-command-palette-hint"><kbd>&uarr;</kbd><kbd>&darr;</kbd> Navigate</span>

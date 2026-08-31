@@ -114,11 +114,15 @@
                 if (!root || !container) return;
 
                 let rect = root.getBoundingClientRect();
+                // an ancestor with transform/filter/etc. (e.g. modal's drop-shadow-2xl)
+                // becomes the containing block for position:fixed instead of the
+                // viewport — offset our viewport-relative rect by its position too.
+                let offset = fixedPositioningOffset(root);
 
                 container.classList.remove('absolute');
                 container.classList.add('fixed');
                 container.style.width = `${rect.width}px`;
-                container.style.left = `${rect.left}px`;
+                container.style.left = `${rect.left - offset.left}px`;
                 container.style.zIndex = '9999';
 
                 // flip above the trigger when the space below cannot hold the list
@@ -126,10 +130,10 @@
                 let below = window.innerHeight - rect.bottom;
 
                 if (height > below && rect.top > below) {
-                    container.style.top = `${Math.max(0, rect.top - height)}px`;
+                    container.style.top = `${Math.max(0, rect.top - height) - offset.top}px`;
                 } else {
                     // -mt-1.5 in the markup tucks the list under the trigger's border
-                    container.style.top = `${rect.bottom - 6}px`;
+                    container.style.top = `${rect.bottom - 6 - offset.top}px`;
                 }
             }
 

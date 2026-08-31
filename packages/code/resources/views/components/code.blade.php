@@ -20,7 +20,8 @@
     'errorMessage' => __('bladewind::bladewind.otp_error_message'),
 
     // should input text be masked to hide code
-    'mask' => config('bladewind.code.mask', false),
+    'mask' => config('bladewind.code.mask', false), //TODO: drop this attribute in the next major release, use hideInput instead
+    'hideInput' => config('bladewind.code.hide_input', false),
 
     // after how many seconds should the link to resend a code be displayed
     'timer' => null,
@@ -28,11 +29,17 @@
     // boxes can either be big or regular
     'size' => config('bladewind.code.size', 'regular'),
 
+    // splits the boxes into two groups separated by a dash. when the total
+    // number of boxes is odd, the left group gets the extra box
+    'hasSeparator' => config('bladewind.code.has_separator', false),
+
     'nonce' => config('bladewind.script.nonce', null),
 ])
 @php
     $name = parseBladewindName($name);
-    $mask = parseBladewindVariable($mask);
+    $hide_input = parseBladewindVariable($hideInput) || parseBladewindVariable($mask);
+    $has_separator = parseBladewindVariable($hasSeparator);
+    $left_digits = $has_separator ? (int) ceil($totalDigits / 2) : $totalDigits;
     $input_css = ($size !== 'big') ? " w-14 text-xl" : "w-[75px] text-5xl";
     $cloak_size = ($size == 'big') ? " h-24" : "h-16";
     $onverify = $onVerify;
@@ -41,11 +48,15 @@
 
 <div class="dv-{{ $name }} relative">
     <div class="flex {{ $name }}-boxes">
-        <div class="flex space-x-2 mx-auto">
+        <div class="flex items-center space-x-2 mx-auto">
             @for ($x = 0; $x < $totalDigits; $x++)
+                @if($has_separator && $x == $left_digits)
+                    <span class="text-slate-400 dark:text-dark-400 font-light px-1 {{ ($size == 'big') ? 'text-6xl' : 'text-3xl' }}">&#45;</span>
+                @endif
                 <x-bladewind::input
-                        numeric="true"
-                        type="{{ ($mask) ? 'password' : 'text' }}"
+                        numeric="{{ $hide_input ? 'false' : 'true' }}"
+                        type="{{ ($hide_input) ? 'password' : 'text' }}"
+                        inputmode="numeric"
                         with_dots="false"
                         add_clearing="false"
                         data-bw-pin="{{ $name }}"
@@ -95,9 +106,9 @@
     var pastePinCode = (name, index, total_digits, user_function, evt) => {
     evt.preventDefault();
     let pasted = (evt.clipboardData || window.clipboardData).getData('text') || '';
-    let is_numeric = domEl(`.${name}-pcode${index}`).type === 'number';
-    pasted = pasted.replace(/\s/g, '');
-    if (is_numeric) pasted = pasted.replace(/\D/g, '');
+    /* pin codes are always digits, even when hide-input switches the boxes to
+       type="password" so pasted content still needs stripping down to digits */
+    pasted = pasted.replace(/\D/g, '');
     if (!pasted) return;
 
     let boxes = pasted.slice(0, total_digits - index).split('');
@@ -140,6 +151,15 @@
     /* delegated rather than an inline onkeydown, so a strict CSP does not stop
        the error clearing as the user types. see #608 */
     bwOn('keydown', '[data-bw-pin]', (el) => hidePinError(el.getAttribute('data-bw-pin')));
+
+    /* type="number" ignores the maxlength attribute, and the last box never loses
+       focus after a digit is entered, so without this a box can hold more than
+       one digit. hide-input switches the box to type="password", which accepts
+       any character, so non-digits also need stripping here. */
+    bwOn('input', '[data-bw-pin-index]', (el) => {
+    let digits = el.value.replace(/\D/g, '');
+    el.value = digits.slice(-1);
+    });
 
     bwOn('keyup', '[data-bw-pin-index]', (el, e) => {
     moveCursorNext(

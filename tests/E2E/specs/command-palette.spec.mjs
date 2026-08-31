@@ -14,6 +14,19 @@ test('opens via helper, focuses the search field, and highlights the first visib
   await expect(page.locator('body')).toHaveClass(/overflow-hidden/)
 })
 
+test('the search field has no focus ring or border of its own', async ({ page }) => {
+  // Tailwind's own Preflight puts a default focus ring on every text-like
+  // input via box-shadow, a property outline:none/border:0 don't touch --
+  // the component has to explicitly neutralize it too.
+  const palette = page.locator('[data-bw-command-palette][data-name="app-commands"]')
+  await page.locator('#open-app').click()
+  const input = palette.locator('[data-bw-command-palette-input]')
+  await expect(input).toBeFocused()
+  await expect(input).toHaveCSS('box-shadow', 'none')
+  await expect(input).toHaveCSS('outline-style', 'none')
+  await expect(input).toHaveCSS('border-width', '0px')
+})
+
 test('opens with the Cmd/Ctrl+K shortcut and toggles closed on a second press', async ({ page }) => {
   const palette = page.locator('[data-bw-command-palette][data-name="app-commands"]')
   await page.keyboard.press('Control+k')

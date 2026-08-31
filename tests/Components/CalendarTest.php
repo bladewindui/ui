@@ -299,6 +299,52 @@ class CalendarTest extends TestCase
         $this->assertStringContainsString('+1 more', $html);
     }
 
+    protected function tearDown(): void
+    {
+        \Illuminate\Support\Carbon::setTestNow();
+        parent::tearDown();
+    }
+
+    #[Test]
+    public function today_is_not_visually_highlighted_by_default_but_stays_marked_for_screen_readers(): void
+    {
+        \Illuminate\Support\Carbon::setTestNow('2026-08-15');
+
+        $month = $this->calendar('name="team" date="2026-08-15"');
+        $this->assertElementCount($month, '//td[@data-bw-calendar-day and @data-date="2026-08-15"][contains(concat(" ", normalize-space(@class), " "), " bw-calendar-cell-today ")]', 0);
+        $this->assertAttribute($month, '//td[@data-bw-calendar-day and @data-date="2026-08-15"]', 'aria-current', 'date');
+
+        $week = $this->calendar('name="team" view="week" date="2026-08-15"');
+        $this->assertElementCount($week, '//div[@data-date="2026-08-15" and contains(concat(" ", normalize-space(@class), " "), " bw-calendar-week-day-column-today ")]', 0);
+        $this->assertElementCount($week, '//div[@data-bw-calendar-day and @data-date="2026-08-15"][contains(concat(" ", normalize-space(@class), " "), " bw-calendar-cell-today ")]', 0);
+        $this->assertAttribute($week, '//div[@data-bw-calendar-day and @data-date="2026-08-15"]', 'aria-current', 'date');
+    }
+
+    #[Test]
+    public function highlight_today_turns_on_the_today_styling_in_month_and_week_view(): void
+    {
+        \Illuminate\Support\Carbon::setTestNow('2026-08-15');
+
+        $month = $this->calendar('name="team" date="2026-08-15" highlight-today="true"');
+        $this->assertAttribute($month, '//*[@data-bw-calendar]', 'data-highlight-today', 'true');
+        $this->assertElementCount($month, '//td[@data-bw-calendar-day and @data-date="2026-08-15"][contains(concat(" ", normalize-space(@class), " "), " bw-calendar-cell-today ")]', 1);
+
+        $week = $this->calendar('name="team" view="week" date="2026-08-15" highlight-today="true"');
+        $this->assertElementCount($week, '//div[@data-date="2026-08-15" and contains(concat(" ", normalize-space(@class), " "), " bw-calendar-week-day-column-today ")]', 1);
+        $this->assertElementCount($week, '//div[@data-bw-calendar-day and @data-date="2026-08-15"][contains(concat(" ", normalize-space(@class), " "), " bw-calendar-cell-today ")]', 1);
+    }
+
+    #[Test]
+    public function highlight_today_can_be_turned_on_globally_via_config(): void
+    {
+        \Illuminate\Support\Carbon::setTestNow('2026-08-15');
+        config()->set('bladewind.calendar.highlight_today', true);
+
+        $html = $this->calendar('name="team" date="2026-08-15"');
+        $this->assertAttribute($html, '//*[@data-bw-calendar]', 'data-highlight-today', 'true');
+        $this->assertElementCount($html, '//td[@data-bw-calendar-day and @data-date="2026-08-15"][contains(concat(" ", normalize-space(@class), " "), " bw-calendar-cell-today ")]', 1);
+    }
+
     #[Test]
     public function no_event_details_drawer_renders_when_no_event_has_a_description(): void
     {

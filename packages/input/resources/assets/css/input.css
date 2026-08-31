@@ -54,23 +54,23 @@
     .form-label {
         @apply
         absolute cursor-text left-3 rtl:right-3 rtl:left-[unset] inline-block -top-2 text-sm px-1 transition-all
-        peer-placeholder-shown:top-[10.2px] peer-focus:-top-2 bg-white text-primary-900/40 dark:text-dark-300/50
+        peer-placeholder-shown:top-[12.2px] peer-focus:-top-2 bg-white text-primary-900/40 dark:text-dark-300/50
         z-20 dark:bg-dark-700/95 dark:px-2 dark:rounded-md dark:py-0.5 tracking-wider
     }
 
     .form-label.small {
         @apply
-        peer-placeholder-shown:top-[7px] peer-focus:-top-2
+        peer-placeholder-shown:top-[9px] peer-focus:-top-2
     }
 
     .form-label.medium {
         @apply
-        peer-placeholder-shown:top-[11.5px] peer-focus:-top-[9px]
+        peer-placeholder-shown:top-[13.5px] peer-focus:-top-[9px]
     }
 
     .form-label.big {
         @apply
-        peer-placeholder-shown:top-[23px] peer-focus:-top-2
+        peer-placeholder-shown:top-[25px] peer-focus:-top-2
     }
 
     .bw-select div.clickable.disabled, .bw-select div.clickable.readonly, fieldset[disabled] .bw-select {

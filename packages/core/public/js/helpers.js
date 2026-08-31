@@ -52,6 +52,35 @@ const domEls = (element, scope = null) => {
 const dom_els = domEls;
 
 /**
+ * A position:fixed element is normally positioned against the viewport, but an
+ * ancestor with transform, filter, perspective, contain, or backdrop-filter
+ * becomes its containing block instead (CSS Transforms / Filter Effects spec).
+ * The library's popups compute their fixed left/top from getBoundingClientRect(),
+ * which is always viewport-relative — inside a hijacked containing block that
+ * math is off by exactly that ancestor's own position. modal's content wrapper
+ * carries drop-shadow-2xl (a filter), so any select/dropmenu/popover opened
+ * from inside a modal lands away from its trigger. See #614.
+ * @param {Element} el - the popup's trigger, or another element inside it
+ * @return {{top: number, left: number}} the hijacking ancestor's rect offset, or {0,0} if none
+ */
+const fixedPositioningOffset = (el) => {
+    let node = el?.parentElement;
+    while (node && node !== document.body && node !== document.documentElement) {
+        let cs = getComputedStyle(node);
+        let hijacks = (cs.transform !== 'none') || (cs.perspective !== 'none') || (cs.filter !== 'none')
+            || (cs.backdropFilter && cs.backdropFilter !== 'none')
+            || ['layout', 'paint', 'strict', 'content'].includes(cs.contain)
+            || /transform|perspective|filter/.test(cs.willChange || '');
+        if (hijacks) {
+            let rect = node.getBoundingClientRect();
+            return {top: rect.top, left: rect.left};
+        }
+        node = node.parentElement;
+    }
+    return {top: 0, left: 0};
+};
+
+/**
  * Check to see if val is empty
  * @param {string} val - The string to test emptiness for
  * @return {boolean} True if string is empty
@@ -415,7 +444,9 @@ const showDrawer = (name) => {
     requestAnimationFrame(() => {
         if (drawer.getAttribute('data-state') !== 'opening') return;
         drawer.setAttribute('data-state', 'open');
-        focusDrawer(drawer);
+        // something (a script, assistive tech) may have already moved focus into the
+        // drawer during the frame this was waiting on, don't steal it back
+        if (!drawer.contains(document.activeElement)) focusDrawer(drawer);
         drawer.dispatchEvent(new CustomEvent('bladewind:drawer-opened', {bubbles: true, detail: {name}}));
     });
     return true;
@@ -2340,18 +2371,24 @@ const calendarFormatHourLabel = (hour) => {
 /** e.g. "Tuesday, August 11, 2026" — mirrors the PHP side's Carbon 'l, F j, Y' format. */
 const calendarFormatFullDate = (date, dayNames, monthNames) => `${dayNames[date.getDay()]}, ${monthNames[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
 
-/** The event details drawer's date/time line: a single date, a date range, or a date with a start-end time, depending on what kind of event it is. */
-const calendarFormatEventDateTime = (detail, dayNames, monthNames) => {
+/** The event details drawer's date line: a single date, or a date range for a multi-day all-day event. Never includes a time — see calendarFormatEventTime for that. */
+const calendarFormatEventDate = (detail, dayNames, monthNames) => {
     if (isCalendarTimedEvent(detail.date)) {
-        const start = new Date(detail.date.replace(' ', 'T'));
-        const end = detail.end && isCalendarTimedEvent(detail.end) ? new Date(detail.end.replace(' ', 'T')) : calendarAddMinutes(start, 60);
-        return `${calendarFormatFullDate(start, dayNames, monthNames)}, ${calendarFormatHourMinute(start)} to ${calendarFormatHourMinute(end)}`;
+        return calendarFormatFullDate(new Date(detail.date.replace(' ', 'T')), dayNames, monthNames);
     }
     const start = new Date(`${detail.date}T00:00:00`);
     if (detail.end && detail.end !== detail.date) {
         return `${calendarFormatFullDate(start, dayNames, monthNames)} to ${calendarFormatFullDate(new Date(`${detail.end}T00:00:00`), dayNames, monthNames)}`;
     }
     return calendarFormatFullDate(start, dayNames, monthNames);
+};
+
+/** The event details drawer's time line: a start-end range for a timed event, or '' for an all-day event (no specific time to show — the element is hidden via CSS :empty when this is blank). */
+const calendarFormatEventTime = (detail) => {
+    if (!isCalendarTimedEvent(detail.date)) return '';
+    const start = new Date(detail.date.replace(' ', 'T'));
+    const end = detail.end && isCalendarTimedEvent(detail.end) ? new Date(detail.end.replace(' ', 'T')) : calendarAddMinutes(start, 60);
+    return `${calendarFormatHourMinute(start)} to ${calendarFormatHourMinute(end)}`;
 };
 
 /** Populates the (single, reused) event details drawer from one event's data and opens it. Content is set via textContent throughout, never innerHTML — description is arbitrary text a consumer supplied, not markup this component trusts. */
@@ -2362,14 +2399,17 @@ const openCalendarEventDetails = (calendar, eventIndex) => {
     const drawer = calendar.querySelector('[data-bw-calendar-event-drawer]');
     if (!detail || !drawer) return false;
 
+    const title = drawer.querySelector('[data-bw-calendar-event-drawer-title]');
+    if (title) title.textContent = detail.label || '';
+
     const dot = drawer.querySelector('[data-bw-calendar-event-drawer-type]');
     if (dot) dot.className = `bw-calendar-event-drawer-dot bw-calendar-event-${detail.type || 'info'}`;
 
-    const time = drawer.querySelector('[data-bw-calendar-event-drawer-time]');
-    if (time) time.textContent = calendarFormatEventDateTime(detail, registry.dayNames, registry.monthNames);
+    const date = drawer.querySelector('[data-bw-calendar-event-drawer-date]');
+    if (date) date.textContent = calendarFormatEventDate(detail, registry.dayNames, registry.monthNames);
 
-    const title = drawer.querySelector('[data-bw-calendar-event-drawer-title]');
-    if (title) title.textContent = detail.label || '';
+    const time = drawer.querySelector('[data-bw-calendar-event-drawer-time]');
+    if (time) time.textContent = calendarFormatEventTime(detail);
 
     const description = drawer.querySelector('[data-bw-calendar-event-drawer-description]');
     if (description) description.textContent = detail.description || '';
@@ -2621,7 +2661,7 @@ const scrollCalendarWeekBodyToHour = (calendar, hour = CALENDAR_WEEK_SCROLL_TO_H
 
 /** Builds one week's hour grid (day headers, all-day banners, and the scrollable hour body) fresh into `scroll`. Returns the previously-focused date's iso if it's still on screen, else null. */
 const renderCalendarWeekGrid = (calendar, scroll, weekDays, registry, previouslyFocused, ctx) => {
-    const {selectable, min, max, disabled, selected, showWeekNumbers} = ctx;
+    const {selectable, min, max, disabled, selected, showWeekNumbers, highlightToday} = ctx;
 
     const week = document.createElement('div');
     week.className = 'bw-calendar-week';
@@ -2656,7 +2696,7 @@ const renderCalendarWeekGrid = (calendar, scroll, weekDays, registry, previously
         if (day.isToday) header.setAttribute('aria-current', 'date');
         if (isDisabled) header.setAttribute('aria-disabled', 'true');
         header.className = 'bw-calendar-week-day-header'
-            + (day.isToday ? ' bw-calendar-cell-today' : '')
+            + (day.isToday && highlightToday ? ' bw-calendar-cell-today' : '')
             + (isSelected ? ' bw-calendar-cell-selected' : '')
             + (isDisabled ? ' bw-calendar-cell-disabled' : '');
 
@@ -2739,7 +2779,7 @@ const renderCalendarWeekGrid = (calendar, scroll, weekDays, registry, previously
     days.className = 'bw-calendar-week-days';
     weekDays.forEach((day) => {
         const column = document.createElement('div');
-        column.className = 'bw-calendar-week-day-column' + (day.isToday ? ' bw-calendar-week-day-column-today' : '');
+        column.className = 'bw-calendar-week-day-column' + (day.isToday && highlightToday ? ' bw-calendar-week-day-column-today' : '');
         column.setAttribute('data-date', day.iso);
         for (let h = 1; h < CALENDAR_WEEK_HOURS_IN_DAY; h++) {
             const line = document.createElement('div');
@@ -2789,7 +2829,7 @@ const renderCalendarWeekGrid = (calendar, scroll, weekDays, registry, previously
 
 /** Builds one month's `<table>` fresh into `scroll`, including the weekday header row. Returns the previously-focused date's iso if it's still on screen, else null. */
 const renderCalendarMonthTable = (calendar, scroll, weeks, registry, previouslyFocused, ctx) => {
-    const {selectable, maxEventsPerDay, showOtherMonthDays, showWeekNumbers, min, max, disabled, selected} = ctx;
+    const {selectable, maxEventsPerDay, showOtherMonthDays, showWeekNumbers, highlightToday, min, max, disabled, selected} = ctx;
     const weekStarts = calendar.getAttribute('data-week-starts');
 
     const table = document.createElement('table');
@@ -2858,7 +2898,7 @@ const renderCalendarMonthTable = (calendar, scroll, weeks, registry, previouslyF
             if (isDisabled) cell.setAttribute('aria-disabled', 'true');
             cell.className = 'bw-calendar-cell'
                 + (!day.inPeriod ? ' bw-calendar-cell-outside' : '')
-                + (day.isToday ? ' bw-calendar-cell-today' : '')
+                + (day.isToday && highlightToday ? ' bw-calendar-cell-today' : '')
                 + (isSelected ? ' bw-calendar-cell-selected' : '')
                 + (isDisabled ? ' bw-calendar-cell-disabled' : '');
             if (!day.inPeriod && !showOtherMonthDays) cell.hidden = true;
@@ -2926,6 +2966,7 @@ const renderCalendarGrid = (calendar, anchor) => {
     const maxEventsPerDay = parseInt(calendar.getAttribute('data-max-events-per-day'), 10) || 0;
     const showOtherMonthDays = calendar.getAttribute('data-show-other-month-days') === 'true';
     const showWeekNumbers = calendar.getAttribute('data-show-week-numbers') === 'true';
+    const highlightToday = calendar.getAttribute('data-highlight-today') === 'true';
     const {min, max, disabled} = calendarConstraints(calendar);
     const selected = new Set(calendarSelectedDates(name));
     const previouslyFocused = calendar.querySelector('[data-bw-calendar-day][tabindex="0"]')?.getAttribute('data-date');
@@ -2936,7 +2977,7 @@ const renderCalendarGrid = (calendar, anchor) => {
     scroll.innerHTML = '';
 
     const isTimelineView = view === 'week' || view === 'day';
-    const ctx = {selectable, maxEventsPerDay, showOtherMonthDays, showWeekNumbers, min, max, disabled, selected};
+    const ctx = {selectable, maxEventsPerDay, showOtherMonthDays, showWeekNumbers, highlightToday, min, max, disabled, selected};
     let focusIso = isTimelineView
         ? renderCalendarWeekGrid(calendar, scroll, weeks[0], registry, previouslyFocused, ctx)
         : renderCalendarMonthTable(calendar, scroll, weeks, registry, previouslyFocused, ctx);
@@ -3166,7 +3207,7 @@ bwOn('click', '[data-bw-calendar-more]', (button) => {
     if (!cell) return;
     const expanded = button.getAttribute('aria-expanded') === 'true';
     if (!button.dataset.moreLabel) button.dataset.moreLabel = button.textContent;
-    cell.querySelectorAll('[data-bw-calendar-overflow-event]').forEach((el) => { el.hidden = expanded; });
+    cell.querySelectorAll('[data-bw-calendar-overflow-event="true"]').forEach((el) => { el.hidden = expanded; });
     button.setAttribute('aria-expanded', expanded ? 'false' : 'true');
     button.textContent = expanded ? button.dataset.moreLabel : 'Show less';
 });

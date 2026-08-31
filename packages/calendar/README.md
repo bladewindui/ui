@@ -31,6 +31,8 @@ The package installs Bladewind Core and Icon automatically.
 
 `view` is `month`, `week`, or `day`. All three are shown by default with a toggle in the header; `date` is the anchor day (`Y-m-d`, defaults to today) — month view shows the month containing it, week view the week containing it, day view just that day. Week and day view share the same hour grid: an all-day row across the top for date-only and multi-day events, and 24 scrollable hour rows below with timed events positioned and sized to their duration, similar to Outlook or Google Calendar. Day view is that same grid narrowed to one column. Both open scrolled to a sensible hour rather than midnight.
 
+`highlight-today` (default `false`) tints today's date in month view and today's whole column in week/day view. Today stays marked with `aria-current="date"` for screen readers either way; the attribute only controls the visual tint.
+
 ## Selection
 
 `selectable` is `none` (display-only, the default), `single`, or `multiple`. Pass pre-selected dates through `selected` as a `Y-m-d` string, comma-separated string, or array. When selectable, the component renders hidden inputs under `name` (or `name[]` for multiple) so the current selection posts with the surrounding form.
