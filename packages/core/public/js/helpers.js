@@ -444,7 +444,9 @@ const showDrawer = (name) => {
     requestAnimationFrame(() => {
         if (drawer.getAttribute('data-state') !== 'opening') return;
         drawer.setAttribute('data-state', 'open');
-        focusDrawer(drawer);
+        // something (a script, assistive tech) may have already moved focus into the
+        // drawer during the frame this was waiting on, don't steal it back
+        if (!drawer.contains(document.activeElement)) focusDrawer(drawer);
         drawer.dispatchEvent(new CustomEvent('bladewind:drawer-opened', {bubbles: true, detail: {name}}));
     });
     return true;
