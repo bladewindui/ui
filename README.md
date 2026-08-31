@@ -1,4 +1,4 @@
-<p><img src="https://img.shields.io/github/license/bladewindui/bladewindui" alt="License" /></p>
+<p><img src="https://img.shields.io/github/license/bladewindui/ui" alt="License" /></p>
 <p><img src="https://bladewindui.com/assets/images/bw-logo.png" style="height: 30px; margin-bottom:10px" /></p>
 
 BladewindUI is a modern, open-source UI component library designed to help developers build beautiful, consistent, and responsive web interfaces faster. It provides a growing collection of thoughtfully designed, customizable components that are simple to integrate, easy to use, and flexible enough for everything from dashboards and internal tools to full-featured web applications.Every component is simple to use and ships with sensible defaults you can override per-project.
@@ -70,7 +70,7 @@ Full installation guide: [bladewindui.com/install](https://bladewindui.com/insta
 ## Components
 
 Components are organised into groups. Each group maps directly to a Composer package.
-Standalone packages (Button, Modal, Alert, Bell, Notification, Table, Spinner) sit outside any group.
+Standalone packages (Button, Modal, Alert, Bell, Notification, Table, Data Grid, Calendar, Spinner) sit outside any group.
 
 ### Standalone packages
 
@@ -89,6 +89,8 @@ They are pulled in as dependencies by other components that need them.
 | [Notification](https://bladewindui.com/component/notification) | `bladewindui/notification` | Notification                                   |
 | [Spinner](https://bladewindui.com/component/spinner)           | `bladewindui/spinner`      | Spinner, Shimmer, Processing, Process Complete |
 | [Table](https://bladewindui.com/component/table)               | `bladewindui/table`        | Table, Table Icons                             |
+| [Data Grid](https://bladewindui.com/component/data-grid)        | `bladewindui/data-grid`    | Data Grid                                      |
+| [Calendar](https://bladewindui.com/component/calendar)          | `bladewindui/calendar`     | Calendar                                       |
 
 ### Forms group — `bladewindui/forms`
 
@@ -158,6 +160,7 @@ composer require bladewindui/navigation
 # or install any single component
 composer require bladewindui/breadcrumbs
 composer require bladewindui/sidebar
+composer require bladewindui/command-palette
 composer require bladewindui/tab
 composer require bladewindui/stepper
 composer require bladewindui/pagination
@@ -168,6 +171,7 @@ composer require bladewindui/pagination
 |--------------------------------------------------------------------|--------------------------------------|-----------------------------------------|
 | [Breadcrumbs](https://bladewindui.com/component/breadcrumbs)       | `bladewindui/breadcrumbs`    | Breadcrumbs, Breadcrumbs Item           |
 | [Sidebar](https://bladewindui.com/component/sidebar)               | `bladewindui/sidebar`        | Sidebar, Sidebar Group, Sidebar Item     |
+| [Command Palette](https://bladewindui.com/component/command-palette) | `bladewindui/command-palette` | Command Palette, Command Palette Group, Command Palette Item |
 | [Stepper](https://bladewindui.com/component/stepper)               | `bladewindui/stepper`        | Stepper, Stepper Item, Stepper Content  |
 | [Dropmenu](https://bladewindui.com/component/dropmenu)             | `bladewindui/dropmenu`       | Dropmenu, Dropmenu Item                 |
 | [Pagination](https://bladewindui.com/component/pagination)         | `bladewindui/pagination`     | Pagination                              |
