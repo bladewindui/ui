@@ -3,7 +3,7 @@
 .bw-data-grid-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; border-bottom: 1px solid rgb(226 232 240); padding: .625rem .875rem; }
 .bw-data-grid-toolbar { @variant dark { border-color: rgb(74 78 83 / .75); } }
 .bw-data-grid-search { position: relative; flex: 1; min-width: 12rem; max-width: 22rem; }
-.bw-data-grid-search-input { width: 100%; padding-left: 3rem !important; }
+.bw-data-grid-search-input.bw-input { width: 100%; padding-left: 3rem; }
 .bw-data-grid-search-prefix { position: absolute; inset-block: 0; left: 0; z-index: 20; display: inline-flex; align-items: center; padding-left: .875rem; padding-right: .5rem; color: rgb(30 58 138 / .5); pointer-events: none; }
 .bw-data-grid-search-prefix { @variant dark { color: #a7aaad; } }
 .bw-data-grid-toolbar-content { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-inline-start: auto; }

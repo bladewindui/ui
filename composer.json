@@ -208,6 +208,7 @@
         "bladewindui/timepicker": "5.0.0",
         "bladewindui/toggle": "5.0.0",
         "bladewindui/tooltip": "5.0.0",
-        "mkocansey/bladewind": "5.0.0"
+        "mkocansey/bladewind": "5.0.0",
+        "bladewindui/bladewindui": "5.0.0"
     }
 }
