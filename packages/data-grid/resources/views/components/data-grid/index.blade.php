@@ -173,6 +173,9 @@
     @endif
 
     <div class="bw-data-grid-scroll" data-bw-data-grid-scroll @if($height) style="max-height: {{ $height }}" @endif>
+        <div class="bw-data-grid-loading-overlay" data-bw-data-grid-loading-overlay aria-hidden="true">
+            <x-bladewind::spinner size="small" color="primary" />
+        </div>
         <table class="{{ $name }} bw-data-grid-table" data-bw-data-grid-table data-name="{{ $name }}"
             @if($paginated && ! $isPaginator) data-current-page="{{ $defaultPage }}" @endif
             aria-label="{{ $label }}" aria-busy="{{ $loading ? 'true' : 'false' }}" aria-rowcount="{{ $ariaRowCount }}">
