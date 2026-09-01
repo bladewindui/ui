@@ -78,8 +78,17 @@
     <x-bladewind::script :nonce="$nonce" src="{{ asset('vendor/bladewind/js/dropmenu.js') }}"></x-bladewind::script>
 @endonce
 <x-bladewind::script :nonce="$nonce" :modular="$modular">
-    const {{ $name }} = new BladewindDropmenu('{{ $name }}', {
-    triggerOn: '{{$triggerOn}}',
-    hideAfterClick: '{{$hideAfterClick}}'
-    });
+    (() => {
+        const root = document.querySelector('.{{ $name }}');
+        // Guard against a duplicate instance (and duplicate document-level
+        // listeners) when a framework like Livewire re-renders this markup
+        // without a full page reload.
+        if (root && root.dataset.bwInitialised === 'true') return;
+        if (root) root.dataset.bwInitialised = 'true';
+
+        new BladewindDropmenu('{{ $name }}', {
+            triggerOn: '{{$triggerOn}}',
+            hideAfterClick: '{{$hideAfterClick}}'
+        });
+    })();
 </x-bladewind::script>

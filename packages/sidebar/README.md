@@ -95,6 +95,10 @@ All three components forward supported custom classes and HTML attributes throug
 
 Full examples and the complete attribute tables are available at [bladewindui.com/component/sidebar](https://bladewindui.com/component/sidebar).
 
+## Livewire
+
+Collapsed/expanded group state and, on mobile, open/closed state live in the sidebar's own DOM, not in Livewire's component state — persistence options re-hydrate that state from storage on init, but a Livewire re-render that touches this markup mid-interaction for reasons unrelated to the sidebar still resets it. Wrap the sidebar in `wire:ignore` if it sits inside such a component. The delegated event bindings are idempotent, so a re-render does not create duplicate listeners.
+
 ## License
 
 MIT. See the [LICENSE](https://github.com/mkocansey/bladewind/blob/main/LICENSE) file.

@@ -22,6 +22,10 @@ composer require bladewindui/ui
 
 Full documentation, live demos, and all available attributes are at **[bladewindui.com](https://bladewindui.com)**.
 
+## Livewire
+
+The rating value input dispatches a native `change` event when a star is picked, so `wire:model` observes it. The delegated click/keyboard bindings are idempotent, so a Livewire re-render does not create duplicate listeners.
+
 ## License
 
 MIT — see the [LICENSE](https://github.com/mkocansey/bladewind/blob/main/LICENSE) file.

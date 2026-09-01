@@ -117,6 +117,10 @@ call SortableJS methods directly — e.g. `task_list.toArray()` returns the curr
 
 Full documentation, live demos, and all available attributes are at **[bladewindui.com](https://bladewindui.com)**.
 
+## Livewire
+
+The component guards against a Livewire re-render creating a duplicate `Sortable` instance. When `input-name` is set, the hidden order input now dispatches a native `change` event on every reorder, so `wire:model` observes it. The drag order itself is runtime state kept in the DOM, so wrap the list in `wire:ignore` if it sits inside a component that re-renders for reasons unrelated to the list — otherwise an in-progress reorder can be reset.
+
 ## License
 
 MIT — see the [LICENSE](https://github.com/mkocansey/bladewind/blob/main/LICENSE) file.

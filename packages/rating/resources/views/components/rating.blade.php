@@ -119,7 +119,7 @@
         if (x <= rate) changeCss(`.bw-rating-${x}.${name}`, 'rated');
         }
         const input = domEl(`.rating-value-${name}`);
-        if (input) input.value = rate;
+        if (input) setFieldValue(input, rate);
 
         // the slider reports its own value, so it has to move with the stars
         const slider = domEl(`.bw-rating-slider-${name}`);

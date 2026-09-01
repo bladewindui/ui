@@ -910,6 +910,20 @@ const filterTableDebounced = (keyword, table, field = null, delay = 0, minLength
 
 
 /**
+ * Set a form field's value and dispatch a native `input`/`change` event so
+ * framework bindings (e.g. Livewire's wire:model) observe the change, not
+ * just listeners on the specific widget that made it.
+ * @param {HTMLElement} element - The input/hidden field to update.
+ * @param {*} value - The value to assign.
+ * @param {string} eventType - 'change' (default) or 'input'.
+ * @return {void}
+ */
+const setFieldValue = (element, value, eventType = 'change') => {
+    element.value = value;
+    element.dispatchEvent(new Event(eventType, {bubbles: true, cancelable: true}));
+};
+
+/**
  * Remove trailing comma from string.
  * @param {string} element - The input field to remove trailing comma from.
  * @return {void}
@@ -3391,6 +3405,7 @@ Object.assign(window, {
     initialiseSteppers,
     getPrefixSuffixOffsetWidth,
     positionPrefix,
+    setFieldValue,
     positionSuffix,
     togglePassword,
     partition,

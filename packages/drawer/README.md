@@ -24,6 +24,10 @@ composer require bladewindui/drawer
 
 Use `showDrawer(name)`, `hideDrawer(name)`, and `toggleDrawer(name)` to control a drawer. See the [full Drawer documentation](https://bladewindui.com/component/drawer) for positions, sizes, slots, modal behavior, and accessibility guidance.
 
+## Livewire
+
+Open/closed state (`data-state`) lives in the drawer's own DOM, not in Livewire's component state. A Livewire re-render that touches this markup for reasons unrelated to the drawer silently closes it — wrap the drawer in `wire:ignore` if it sits inside such a component, especially one that can re-render while the drawer is open.
+
 ## License
 
 MIT, see the [LICENSE](https://github.com/mkocansey/bladewind/blob/main/LICENSE) file.

@@ -22,6 +22,10 @@ composer require bladewindui/ui
 
 Full documentation, live demos, and all available attributes are at **[bladewindui.com](https://bladewindui.com)**.
 
+## Livewire
+
+The time value input dispatches a native `change` event whenever the time is set or cleared, so `wire:model` observes it. The delegated bindings (and the `@once`-guarded modal variant) are idempotent, so a Livewire re-render does not create duplicate listeners.
+
 ## License
 
 MIT — see the [LICENSE](https://github.com/mkocansey/bladewind/blob/main/LICENSE) file.

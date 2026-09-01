@@ -12,6 +12,13 @@ function initCalendar({
         console.error(`Input field with id "${inputId}" not found.`);
         return;
     }
+    // Guard against a duplicate popup and duplicate document-level listeners
+    // when a framework like Livewire re-renders this markup (and therefore
+    // re-executes this script) without a full page reload.
+    if (dateInput.dataset.bwInitialised === 'true') {
+        return;
+    }
+    dateInput.dataset.bwInitialised = 'true';
     if (minDate && !(minDate instanceof Date)) {
         minDate = new Date(minDate);
     }
@@ -349,9 +356,9 @@ function initCalendar({
             startDate = date < startDate ? date : startDate;
         }
 
-        dateInput.value = endDate
+        setFieldValue(dateInput, endDate
             ? `${formatDate(startDate)} - ${formatDate(endDate)}`
-            : formatDate(startDate);
+            : formatDate(startDate));
 
         renderCalendar();
     }

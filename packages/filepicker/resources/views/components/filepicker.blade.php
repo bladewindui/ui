@@ -183,6 +183,10 @@
     const cropButton = domEl('.bw-cropper-container-modal .okay');
     let cropper;
 @endonce @endif
+{{-- Guard against a duplicate FilePond instance (and duplicate listeners) when
+     a framework like Livewire re-renders this markup without a full page reload. --}}
+if (!(domEl('input[name="{{$name}}"]')?.dataset.bwInitialised === 'true')) {
+    domEl('input[name="{{$name}}"]').dataset.bwInitialised = 'true';
     FilePond.registerPlugin(
         FilePondPluginFileValidateSize,
         FilePondPluginFileValidateType,
@@ -348,11 +352,12 @@ const pond_{{$cleanName}} = FilePond.create(domEl('input[name="{{$name}}"]'), {
                 let hiddenInput = document.createElement('input');
                 hiddenInput.type = 'hidden';
                 hiddenInput.name = "{{$cleanName}}_b64[]"
-                hiddenInput.value = base64;
                 hiddenInput.dataset.id = fileItem.id; // Store FilePond file ID
                 base64_container.appendChild(hiddenInput);
+                setFieldValue(hiddenInput, base64);
             }
         @endif
     });
     @endif
+}
 </x-bladewind::script>

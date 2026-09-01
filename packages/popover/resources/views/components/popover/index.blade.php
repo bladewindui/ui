@@ -66,8 +66,17 @@
     <x-bladewind::script :nonce="$nonce" src="{{ asset('vendor/bladewind/js/popover.js') }}"></x-bladewind::script>
 @endonce
 <x-bladewind::script :nonce="$nonce" :modular="$modular">
-    const {{ $name }} = new BladewindPopover('{{ $name }}', {
-    triggerOn: '{{ $triggerOn }}',
-    position: '{{ $position }}'
-    });
+    (() => {
+        const root = document.querySelector('.{{ $name }}');
+        // Guard against a duplicate instance (and duplicate document-level
+        // listeners) when a framework like Livewire re-renders this markup
+        // without a full page reload.
+        if (root && root.dataset.bwInitialised === 'true') return;
+        if (root) root.dataset.bwInitialised = 'true';
+
+        new BladewindPopover('{{ $name }}', {
+            triggerOn: '{{ $triggerOn }}',
+            position: '{{ $position }}'
+        });
+    })();
 </x-bladewind::script>

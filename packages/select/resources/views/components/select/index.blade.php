@@ -269,15 +269,24 @@
     <x-bladewind::script :nonce="$nonce" :src="asset('vendor/bladewind/js/select.js')"></x-bladewind::script>
 @endonce
 <x-bladewind::script :nonce="$nonce" :modular="$modular">
-    const bw_{{ $input_name }} = new BladewindSelect('{{ $input_name }}', '{{ $placeholder }}');
-    bw_{{ $input_name }}.activate({disabled: '{{$disabled}}', readonly: '{{$readonly}}'});
-    @if(!$disabled && !$readonly)
-        bw_{{ $input_name }}.maxSelectable({{$maxSelectable}}, '{{ sprintf($maxErrorMessage, $maxSelectable) }}');
-    @endif
-    @if(!empty($filter))
-        bw_{{ $input_name }}.filter('{{ $filter }}', '', false);
-    @endif
-    @if(!$required && $multiple == 'false')
-        bw_{{ $input_name }}.clearable();
-    @endif
+    (() => {
+        const root = document.querySelector('.bw-select-{{ $input_name }}');
+        // Guard against a duplicate instance (and duplicate document-level
+        // listeners) when a framework like Livewire re-renders this markup
+        // without a full page reload.
+        if (root && root.dataset.bwInitialised === 'true') return;
+        if (root) root.dataset.bwInitialised = 'true';
+
+        const bw_{{ $input_name }} = new BladewindSelect('{{ $input_name }}', '{{ $placeholder }}');
+        bw_{{ $input_name }}.activate({disabled: '{{$disabled}}', readonly: '{{$readonly}}'});
+        @if(!$disabled && !$readonly)
+            bw_{{ $input_name }}.maxSelectable({{$maxSelectable}}, '{{ sprintf($maxErrorMessage, $maxSelectable) }}');
+        @endif
+        @if(!empty($filter))
+            bw_{{ $input_name }}.filter('{{ $filter }}', '', false);
+        @endif
+        @if(!$required && $multiple == 'false')
+            bw_{{ $input_name }}.clearable();
+        @endif
+    })();
 </x-bladewind::script>

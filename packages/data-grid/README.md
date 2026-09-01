@@ -86,6 +86,10 @@ The grid renders a native `<table>` with `scope="col"` headers, `aria-sort` on s
 
 Full examples and the complete attribute tables are available at [bladewindui.com/component/data-grid](https://bladewindui.com/component/data-grid).
 
+## Livewire
+
+Client-side sort, search, pagination, and selection state live in the grid's own DOM (`data-*` attributes and checkbox state), not in Livewire's component state, so they survive re-renders the grid itself triggers. An unrelated Livewire re-render of the surrounding component can still reset that state, so wrap the grid in `wire:ignore` if it lives inside a component that re-renders for reasons unrelated to the grid — or set `client-sort="false"`/`client-search="false"` and drive the grid from Livewire via the `before-*`/`*-change` events instead.
+
 ## License
 
 MIT. See the [LICENSE](https://github.com/mkocansey/bladewind/blob/main/LICENSE) file.
