@@ -45,6 +45,7 @@
 
             this.bubble = document.createElement('div');
             this.bubble.className = 'bw-tooltip-bubble';
+            this.bubble.id = 'bw-tooltip-bubble';
             this.bubble.setAttribute('role', 'tooltip');
             this.bubble.setAttribute('data-open', '0');
             document.body.appendChild(this.bubble);
@@ -82,6 +83,7 @@
         show = (trigger, text) => {
             const bubble = this.ensureBubble();
 
+            trigger.setAttribute('aria-describedby', bubble.id);
             bubble.textContent = text;
             bubble.setAttribute('data-size', trigger.getAttribute('data-size') || 'small');
             bubble.setAttribute('data-inverted', trigger.hasAttribute('data-inverted') ? '1' : '0');
@@ -95,6 +97,7 @@
         };
 
         hide = () => {
+            if (this.trigger) this.trigger.removeAttribute('aria-describedby');
             this.trigger = null;
             if (this.bubble) this.bubble.setAttribute('data-open', '0');
         };

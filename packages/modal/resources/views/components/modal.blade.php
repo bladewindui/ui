@@ -135,9 +135,9 @@
 <div data-name="{{$name}}" data-backdrop-can-close="{{$backdropCanClose}}"
      class="fixed inset-0 flex items-center justify-center bg-black/40 {{$blur_intensity()}} z-40 flex bw-modal bw-{{$name}}-modal hidden overscroll-contain">
     <div class="{{$sizes[$size]}} @if($size=='omg') sm:px-12 @else max-w-screen @endif px-5 m-auto bw-{{$name}} animate__faster">
-        <div class="bg-white relative dark:bg-dark-700/90 dark:border dark:border-dark-500/10 {{getRadiusString($radius)}} drop-shadow-2xl">
+        <div role="dialog" aria-modal="true" aria-labelledby="{{$name}}-title" class="bg-white relative dark:bg-dark-700/90 dark:border dark:border-dark-500/10 {{getRadiusString($radius)}} drop-shadow-2xl">
             @if( $showActionButtons && $showCloseIcon)
-                <a href="javascript:void(0)"
+                <a href="javascript:void(0)" aria-label="{{ __('bladewind::bladewind.close') }}"
                    @if($cancelIsDefault) data-bw-modal-close="{{ $name }}"
                    @else onclick="{!! $cancelAction !!}" @endif
                 >
@@ -164,7 +164,7 @@
                     </div>
                 @endif
                 <div class="modal-body grow px-2 pb-1 {{ $bodyCss  }} md:max-h-none md:overflow-visible max-h-[calc(100vh-120px)] overflow-y-auto">
-                    <h1 class="text-lg font-light leading-5 text-gray-800 dark:text-dark-200 tracking-wide modal-title text-left pt-2">{{ $title }}</h1>
+                    <h1 id="{{$name}}-title" class="text-lg font-light leading-5 text-gray-800 dark:text-dark-200 tracking-wide modal-title text-left pt-2">{{ $title }}</h1>
                     <div class="modal-text text-gray-500 dark:text-dark-300 pt-2 text-base text-left font-light tracking-wide leading-6">
                         {{ $slot }}
                     </div>

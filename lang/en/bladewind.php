@@ -10,6 +10,7 @@ return [
 
     "okay" => "Okay",
     "cancel" => "Cancel",
+    "close" => "Close",
     "delete" => "Delete",
     "confirm" => "Confirm",
     "remove" => "Remove",

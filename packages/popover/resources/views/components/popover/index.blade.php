@@ -26,7 +26,8 @@
 {{-- format-ignore-end --}}
 
 <div class="relative inline-block leading-none bw-popover !z-20 {{ $name }}" tabindex="0">
-    <div class="bw-trigger cursor-pointer inline-block {{ $triggerCss }}">
+    <div class="bw-trigger cursor-pointer inline-block {{ $triggerCss }}"
+         aria-haspopup="true" aria-expanded="false" aria-controls="{{ $name }}-content">
         @if(str_ends_with($trigger, '-icon'))
             <x-bladewind::icon
                     name="{{ trim(str_replace('-icon', '', $trigger)) }}"
@@ -36,7 +37,7 @@
         @endif
     </div>
 
-    <div @class([
+    <div id="{{ $name }}-content" role="dialog" @class([
             'opacity-0 hidden bw-popover-content absolute !z-20 animate__animated animate__fadeIn animate__faster',
             'top-full bottom-auto left-1/2 -translate-x-1/2 mt-2' => $position === 'bottom',
             'bottom-full top-auto left-1/2 -translate-x-1/2 mb-2' => $position === 'top',

@@ -241,6 +241,15 @@
          window[...] lookups, which is how the delegated search handler finds it --}}
     window.tableData_{{str_replace('-','_', $name)}} = {!! json_encode($data) !!};
 </x-bladewind::script>
+@once
+    <x-bladewind::script :nonce="$nonce">
+        bwOn('keydown', '[data-bw-table-row-clickable]', (el, e) => {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        e.preventDefault();
+        el.querySelector('[onclick]')?.click();
+        });
+    </x-bladewind::script>
+@endonce
 <div @class([
     'border-collapse max-w-full',
     'border border-gray-200/70 dark:border-dark-600' => ($hasBorder && !$celled)
@@ -336,11 +345,15 @@
                                         "$groupHeadingCss" => !empty($groupHeadingCss)])>{{ $heading }}</td>
                             </tr>
                             @foreach($rows as $row)
-                                @php $row_id =  $row['id'] ?? uniqid(); @endphp
-                                <tr data-id="{{ $row_id }}">
+                                @php
+                                    $row_id =  $row['id'] ?? uniqid();
+                                    $row_click = !empty($onclick) ? build_click($onclick, $row) : null;
+                                @endphp
+                                <tr data-id="{{ $row_id }}"
+                                    @if($row_click) tabindex="0" data-bw-table-row-clickable @endif>
                                     @foreach($tableHeadings as $th)
                                         <td data-row-id="{{ $row_id }}" data-column="{{ $th }}"
-                                            @if(!empty($onclick)) onclick="{!! build_click($onclick, $row) !!}" @endif>{!! $row[$th] !!}</td>
+                                            @if($row_click) onclick="{!! $row_click !!}" @endif>{!! $row[$th] !!}</td>
                                     @endforeach
                                     <x-bladewind::table-icons
                                             :icons_array="$actionIcons"
@@ -354,6 +367,7 @@
                             @php
                                 $row_id =  $row['id'] ?? uniqid();
                                 $row_page = (!$paginated || $loop->iteration < $pageSize) ? 1 : ceil($loop->iteration/$pageSize);
+                                $row_click = !empty($onclick) ? build_click($onclick, $row) : null;
                             @endphp
                             @if(!empty($limit) && $loop->iteration > $limit)
                                 @break
@@ -361,14 +375,15 @@
                             <tr @class([
                                 'hidden' => ($paginated && $row_page != $defaultPage),
                                 'cursor-pointer' => !empty($onclick),
-                                ]) data-id="{{ $row_id }}" data-page="{{ $row_page }}">
+                                ]) data-id="{{ $row_id }}" data-page="{{ $row_page }}"
+                                @if($row_click) tabindex="0" data-bw-table-row-clickable @endif>
                                 @if($showRowNumbers)
-                                    <td @if(!empty($onclick)) onclick="{!! build_click($onclick, $row) !!}" @endif>{{$loop->iteration}}</td>
+                                    <td @if($row_click) onclick="{!! $row_click !!}" @endif>{{$loop->iteration}}</td>
                                 @endif
                                 @foreach($tableHeadings as $th)
                                     <td data-row-id="{{ $row_id }}"
                                         data-column="{{ $th }}"
-                                        @if(!empty($onclick)) onclick="{!! build_click($onclick, $row) !!}" @endif>{!! $row[$th] !!}</td>
+                                        @if($row_click) onclick="{!! $row_click !!}" @endif>{!! $row[$th] !!}</td>
                                 @endforeach
                                 <x-bladewind::table-icons :icons_array="$actionIcons" :row="$row"/>
                             </tr>

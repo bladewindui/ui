@@ -120,6 +120,14 @@
         </x-bladewind::script>
     @endonce
     <x-bladewind::script :nonce="$nonce">
+        (() => {
+        let root = domEl('#{{$name}}');
+        // Guard against a duplicate Quill instance (and duplicate
+        // text-change listeners) when a framework like Livewire re-renders
+        // this markup without a full page reload.
+        if (root && root.dataset.bwInitialised === 'true') return;
+        if (root) root.dataset.bwInitialised = 'true';
+
         if (typeof Quill === 'undefined') {
         console.log('Unable to load assets from https://quilljs.com');
         } else {
@@ -128,11 +136,12 @@
         // Update the hidden input field whenever the textarea content changes
         quill_{{ $name }}.on('text-change', function (delta, oldDelta, source) {
         var value = quill_{{ $name }}.root.innerHTML;
-        document.getElementById('{{ $name }}-hidden').value = value;
+        setFieldValue(document.getElementById('{{ $name }}-hidden'), value);
         });
 
         // set the initial content for quill
         quill_{{ $name }}.root.innerHTML = @js($selectedValue);
         }
+        })();
     </x-bladewind::script>
 @endif

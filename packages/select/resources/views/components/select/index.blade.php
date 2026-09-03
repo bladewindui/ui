@@ -158,10 +158,10 @@
 @endphp
 {{-- format-ignore-end --}}
 
-<style xmlns:x-bladewind="http://www.w3.org/1999/html">
+<style @if($nonce) nonce="{{ $nonce }}" @endif xmlns:x-bladewind="http://www.w3.org/1999/html">
     .display-area::-webkit-scrollbar {
         display: none;
-        width: 0 !important;
+        width: 0;
     }
 
     .display-area {

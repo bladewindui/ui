@@ -1043,8 +1043,8 @@ const checkMinMax = (min, max, element, enforceLimits = false) => {
 
     if (field.value !== '') {
         if (enforceLimits) {
-            if (!isNaN(minimum) && field.value < minimum) field.value = minimum;
-            if (!isNaN(maximum) && field.value > maximum) field.value = maximum;
+            if (!isNaN(minimum) && field.value < minimum) setFieldValue(field, minimum);
+            if (!isNaN(maximum) && field.value > maximum) setFieldValue(field, maximum);
         } else {
             if (((!isNaN(minimum) && field.value < minimum) || (!isNaN(maximum) && field.value > maximum))) {
                 changeCss(field, 'focus:outline-primary-500,focus:border-primary-500', 'remove', true);

@@ -9,6 +9,7 @@
     'dotted' => config('bladewind.avatar.dotted', false),
     'label' => null,
     'plusAction' => null,
+    'nonce' => config('bladewind.script.nonce', null),
 ])
 @aware([
     // these attributes could be passed from the x-bladewind::avatars component also
@@ -70,14 +71,24 @@
 <div class="relative inline-block ltr:mr-2 rtl:ml-2 mt-1 rounded-full bw-avatar {{ $image_size }} {{$stacked_css}} {{$class}} @if($showRing) ring-2 ring-offset-2 ring-offset-white ring-{{(!empty($bgColor) ? $bgColor : 'gray')}}-200 dark:ring-0 dark:ring-offset-dark-500/50  @endif">
     @if($show_plus || $use_label)
         <div class="{{ $image_size }} {{$plus_text_size}} absolute rounded-full flex items-center justify-center font-semibold tracking-wide {{ (!empty($bgColor) ? 'text-'.$bgColor.'-600' : 'white')}}  bg-{{ (!empty($bgColor) ? $bgColor.'-100/70' : 'white')}} dark:bg-dark-600 dark:text-dark-300 @if($show_plus && !empty($plusAction)) plus-more cursor-pointer @endif"
-             @if($show_plus && !empty($plusAction)) onclick="{!! $plusAction !!}" @endif>
+             @if($show_plus && !empty($plusAction))
+                 onclick="{!! $plusAction !!}" role="button" tabindex="0" data-bw-avatar-clickable
+             @endif>
             {{$avatar}}
         </div>
     @else
         <img class="{{ $image_size }} object-cover object-center rounded-full {{$class}}" src="{{$avatar}}"
-             alt="{{$avatar}}"/>
+             alt="{{$alt}}"/>
     @endif
     @if($dotted && !$show_plus)
         <span class="-{{$dotPosition}}-1 {{$dot_position_css}} z-20 absolute w-3 h-3 bg-{{$dotColor}}-500 border-2 border-white dark:border-dark-800 rounded-full"></span>
     @endif
 </div>
+
+@if($show_plus && !empty($plusAction))
+    @once
+        <x-bladewind::script :nonce="$nonce">
+            bwActivateOnKey('[data-bw-avatar-clickable]');
+        </x-bladewind::script>
+    @endonce
+@endif
