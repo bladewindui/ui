@@ -37,7 +37,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` complete · `[!]` re
 
 ## Priority 3: content and feedback
 
-- [ ] **Carousel** (`bladewind-carousel`, Content) — Responsive content/media slides with arrows, indicators, autoplay opt-in, swipe support, and reduced-motion handling.
+- [~] **Carousel** (`bladewind-carousel`, Content) — Responsive content/media slides with arrows, indicators, autoplay opt-in, swipe support, and reduced-motion handling.
 - [!] ~~**Lightbox / gallery** (`bladewind-gallery`, Content) — Thumbnail grid with full-screen preview, captions, keyboard navigation, zoom, and lazy loading.~~
 - [!] ~~**Guided tour / spotlight** (`bladewind-tour`, Content) — Anchored product walkthroughs with progress, skip/back controls, placement fallback, and persisted completion hooks.~~
 - [!] ~~**Split button** (`bladewind-split-button`, Content) — Primary action plus related action menu with loading, disabled, and destructive variants.~~
