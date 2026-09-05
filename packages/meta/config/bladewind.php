@@ -778,6 +778,11 @@ return [
         'tiny' => false,
     ],
 
+    'meter' => [
+        'size' => 'medium',
+        'show_value' => true,
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Textarea component

@@ -47,7 +47,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` complete · `[!]` re
 - [ ] **Keyboard key** (`bladewind-kbd`, Content) — Small semantic key/shortcut display for help text, menus, and command documentation.
 - [ ] **Description list** (`bladewind-description-list`, Content) — Responsive label/value presentation for profiles, summaries, and record detail pages with action slots.
 - [ ] **Chat / message thread** (`bladewind-chat`, Content) — Message bubbles, sender/avatar metadata, timestamps, delivery states, attachments, and grouped messages.
-- [ ] **Meter / gauge** (`bladewind-meter`, Content) — Bounded value visualisation with thresholds and semantic low/medium/high states, distinct from progress completion.
+- [~] **Meter / gauge** (`bladewind-meter`, Content) — Bounded value visualisation with thresholds and semantic low/medium/high states, distinct from progress completion.
 - [ ] **Copy to clipboard button** (`bladewind-copy-button`, Content) — Copies a value or slot content to the clipboard with success/failure feedback and icon-only or labelled variants.
 
 ## Priority 4: specialised application widgets
