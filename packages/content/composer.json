@@ -34,6 +34,7 @@
         "bladewindui/tooltip": "^5.0",
         "bladewindui/popover": "^5.0",
         "bladewindui/sortable": "^5.0",
-        "bladewindui/drawer": "^5.0"
+        "bladewindui/drawer": "^5.0",
+        "bladewindui/chat": "^5.0"
     }
 }

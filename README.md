@@ -141,6 +141,7 @@ composer require bladewindui/chart
 | [Accordion](https://bladewindui.com/component/accordion)                         | `bladewindui/accordion`             | Accordion, Accordion Item     |
 | [Avatar](https://bladewindui.com/component/avatar)                               | `bladewindui/avatar`                | Avatar, Avatars               |
 | [Card](https://bladewindui.com/component/card)                                   | `bladewindui/card`                  | Card, Contact Card            |
+| [Chat](https://bladewindui.com/component/chat)                                   | `bladewindui/chat`                  | Chat, Chat Message            |
 | [Centered Content](https://bladewindui.com/component/centered-content)           | `bladewindui/centered-content`      | Centered Content              |
 | [Chart](https://bladewindui.com/component/chart)                                 | `bladewindui/chart`                 | Chart (line, bar, pie, donut) |
 | [Contact Card](https://bladewindui.com/component/contact-card)                   | `bladewindui/contact-card`          | Contact Card                  |
