@@ -143,6 +143,7 @@ composer require bladewindui/chart
 | [Card](https://bladewindui.com/component/card)                                   | `bladewindui/card`                  | Card, Contact Card            |
 | [Centered Content](https://bladewindui.com/component/centered-content)           | `bladewindui/centered-content`      | Centered Content              |
 | [Chart](https://bladewindui.com/component/chart)                                 | `bladewindui/chart`                 | Chart (line, bar, pie, donut) |
+| [Code Block](https://bladewindui.com/component/code-block)                       | `bladewindui/code-block`            | Code Block                    |
 | [Contact Card](https://bladewindui.com/component/contact-card)                   | `bladewindui/contact-card`          | Contact Card                  |
 | [Empty State](https://bladewindui.com/component/empty-state)                     | `bladewindui/empty-state`           | Empty State                   |
 | [Horizontal Line Graph](https://bladewindui.com/component/horizontal-line-graph) | `bladewindui/horizontal-line-graph` | Horizontal Line Graph         |
