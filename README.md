@@ -154,6 +154,7 @@ composer require bladewindui/chart
 | [Drawer](https://bladewindui.com/component/drawer)                               | `bladewindui/drawer`                | Drawer                        |
 | [Statistic](https://bladewindui.com/component/statistic)                         | `bladewindui/statistic`             | Statistic                     |
 | [Tag](https://bladewindui.com/component/tag)                                     | `bladewindui/tag`                   | Tag, Tags                     |
+| [Keyboard Key](https://bladewindui.com/component/kbd)                            | `bladewindui/kbd`                   | Keyboard Key                  |
 | [Timeline](https://bladewindui.com/component/timeline)                           | `bladewindui/timeline`              | Timeline, Timelines           |
 | [Tooltip](https://bladewindui.com/component/tooltip)                             | `bladewindui/tooltip`               | Tooltip                       |
 
