@@ -531,6 +531,10 @@ return [
         'icon_type' => 'outline',
     ],
 
+    'inline_edit' => [
+        'required' => false,
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Popover component
