@@ -117,6 +117,7 @@ composer require bladewindui/datepicker
 | [Filepicker](https://bladewindui.com/component/filepicker)               | `bladewindui/filepicker`  | Filepicker (powered by FilePond) |
 | [Input](https://bladewindui.com/component/input)                         | `bladewindui/input`       | Input, Error                     |
 | [Number](https://bladewindui.com/component/number)                       | `bladewindui/number`      | Number stepper                   |
+| [Password Meter](https://bladewindui.com/component/password-meter)       | `bladewindui/password-meter` | Password Strength Meter       |
 | [Radio Button](https://bladewindui.com/component/radio-button)           | `bladewindui/radio`       | Radio Button                     |
 | [Select](https://bladewindui.com/component/select)                       | `bladewindui/select`      | Select, Select Item              |
 | [Slider](https://bladewindui.com/component/slider)                       | `bladewindui/slider`      | Slider                           |

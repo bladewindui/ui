@@ -10,8 +10,13 @@ return [
 
     "okay" => "Okay",
     "cancel" => "Cancel",
+    "close" => "Close",
     "delete" => "Delete",
     "confirm" => "Confirm",
+    "password_strength_weak" => "Weak",
+    "password_strength_fair" => "Fair",
+    "password_strength_good" => "Good",
+    "password_strength_strong" => "Strong",
     "remove" => "Remove",
     "abort" => "Abort",
     "undo" => "Undo",
