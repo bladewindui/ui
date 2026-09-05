@@ -778,6 +778,11 @@ return [
         'tiny' => false,
     ],
 
+    'description_list' => [
+        'divided' => true,
+        'striped' => false,
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Textarea component
