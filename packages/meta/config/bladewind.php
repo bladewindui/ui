@@ -201,6 +201,15 @@ return [
         'escape_can_close' => true,
     ],
 
+    'context_menu' => [
+        'padded' => true,
+        'disable_native' => true,
+        'item' => [
+            'dir' => '',
+            'padded' => true,
+        ],
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Button component

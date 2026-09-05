@@ -15,7 +15,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` complete · `[!]` re
 - [!] ~~**Tree view** (`bladewind-tree`, Content) — Expandable hierarchical data with single/multiple selection, checkboxes, lazy-loaded children, and full keyboard navigation.~~
 - [x] **Data grid / Table v2** (`bladewind-data-grid`, Content) — A higher-level companion to Table with column sorting, filtering, selection, sticky headers, pagination hooks, and server-driven state.
 - [x] **Calendar** (`bladewind-calendar`, Content) — Inline month/week calendar for displaying and selecting dates or events, distinct from the input-focused Datepicker.
-- [ ] **Context menu** (`bladewind-context-menu`, Navigation) — Pointer and keyboard-triggered action menu with nested items, separators, disabled actions, and viewport-aware placement.
+- [~] **Context menu** (`bladewind-context-menu`, Navigation) — Pointer and keyboard-triggered action menu with nested items, separators, disabled actions, and viewport-aware placement.
 - [!] ~~**Segmented control** (`bladewind-segmented-control`, Forms) — Compact mutually exclusive choice control with text/icon options and form-compatible values.~~
 - [ ] **Divider / separator** (`bladewind-divider`, Content) — Horizontal or vertical rule with optional centered label, spacing variants, and decorative/semantic modes.
 - [ ] **Confirm / alert dialog** (`bladewind-confirm-dialog`, Content) — Purpose-built confirmation modal for destructive or consequential actions, with async pending state and cancel/confirm actions, distinct from the generic Modal.

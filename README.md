@@ -179,6 +179,7 @@ composer require bladewindui/pagination
 | [Command Palette](https://bladewindui.com/component/command-palette) | `bladewindui/command-palette` | Command Palette, Command Palette Group, Command Palette Item |
 | [Stepper](https://bladewindui.com/component/stepper)                 | `bladewindui/stepper`         | Stepper, Stepper Item, Stepper Content                       |
 | [Dropmenu](https://bladewindui.com/component/dropmenu)               | `bladewindui/dropmenu`        | Dropmenu, Dropmenu Item                                      |
+| [Context Menu](https://bladewindui.com/component/context-menu)       | `bladewindui/context-menu`    | Context Menu, Context Menu Item                              |
 | [Pagination](https://bladewindui.com/component/pagination)           | `bladewindui/pagination`      | Pagination                                                   |
 | [Tab](https://bladewindui.com/component/tab)                         | `bladewindui/tab`             | Tab, Tab Body, Tab Content, Tab Heading                      |
 | [Theme Switcher](https://bladewindui.com/component/theme-switcher)   | `bladewindui/theme-switcher`  | Theme Switcher (light / dark)                                |

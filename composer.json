@@ -77,6 +77,7 @@
             "Mkocansey\\Bladewind\\Sortable\\": "packages/sortable/src/",
             "Mkocansey\\Bladewind\\Tab\\": "packages/tab/src/",
             "Mkocansey\\Bladewind\\Dropmenu\\": "packages/dropmenu/src/",
+            "Mkocansey\\Bladewind\\ContextMenu\\": "packages/context-menu/src/",
             "Mkocansey\\Bladewind\\Pagination\\": "packages/pagination/src/",
             "Mkocansey\\Bladewind\\ThemeSwitcher\\": "packages/theme-switcher/src/",
             "Mkocansey\\Bladewind\\": "packages/meta/src/"
@@ -142,6 +143,7 @@
                 "Mkocansey\\Bladewind\\Sortable\\BladewindSortableServiceProvider",
                 "Mkocansey\\Bladewind\\Tab\\BladewindTabServiceProvider",
                 "Mkocansey\\Bladewind\\Dropmenu\\BladewindDropmenuServiceProvider",
+                "Mkocansey\\Bladewind\\ContextMenu\\BladewindContextMenuServiceProvider",
                 "Mkocansey\\Bladewind\\Pagination\\BladewindPaginationServiceProvider",
                 "Mkocansey\\Bladewind\\ThemeSwitcher\\BladewindThemeSwitcherServiceProvider",
                 "Mkocansey\\Bladewind\\Notification\\BladewindNotificationServiceProvider",
@@ -170,6 +172,7 @@
         "bladewindui/command-palette": "5.0.0",
         "bladewindui/contact-card": "5.0.0",
         "bladewindui/content": "5.0.0",
+        "bladewindui/context-menu": "5.0.0",
         "bladewindui/core": "5.0.0",
         "bladewindui/data-grid": "5.0.0",
         "bladewindui/datepicker": "5.0.0",
