@@ -32,7 +32,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` complete · `[!]` re
 - [!] ~~**Image cropper** (`bladewind-image-cropper`, Forms) — Preview, zoom, rotate, crop, and export an uploaded image; suitable for avatars and document capture.~~
 - [ ] **Editable text** (`bladewind-inline-edit`, Forms) — Display-to-input editing with save, cancel, validation, loading, and optimistic-update hooks.
 - [ ] **Password strength meter** (`bladewind-password-meter`, Forms) — Rules-based strength scoring and visual feedback for password fields, distinct from the generic Meter/gauge.
-- [ ] **Currency / money input** (`bladewind-currency-input`, Forms) — Locale-aware currency formatting, symbol placement, and cents handling on top of the generic Number input.
+- [~] **Currency / money input** (`bladewind-currency-input`, Forms) — Locale-aware currency formatting, symbol placement, and cents handling on top of the generic Number input.
 - [ ] **Document / file preview** (`bladewind-file-preview`, Forms) — Read-only preview of an uploaded file (thumbnail, filename, size, download/remove actions) as the display counterpart to Filepicker.
 
 ## Priority 3: content and feedback
