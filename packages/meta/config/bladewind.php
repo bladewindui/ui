@@ -531,6 +531,13 @@ return [
         'icon_type' => 'outline',
     ],
 
+    'transfer_list' => [
+        'searchable' => true,
+        'height' => 260,
+        'value_key' => 'value',
+        'label_key' => 'label',
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Popover component

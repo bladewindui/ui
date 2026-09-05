@@ -25,7 +25,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` complete · `[!]` re
 - [!] ~~**Fieldset / form section** (`bladewind-fieldset`, Forms) — Accessible grouping with legend, description, required/optional state, validation summary, and collapsible sections.~~
 - [!] ~~**Masked input** (`bladewind-masked-input`, Forms) — Formatting and validation for phone numbers, currency, percentages, account numbers, and custom masks.~~
 - [!] ~~**Cascader** (`bladewind-cascader`, Forms) — Hierarchical selection for country/region, categories, and organisational structures with searchable levels.~~
-- [ ] **Transfer list** (`bladewind-transfer-list`, Forms) — Move one or many options between available and selected lists with search and select-all controls.
+- [~] **Transfer list** (`bladewind-transfer-list`, Forms) — Move one or many options between available and selected lists with search and select-all controls.
 - [!] ~~**Mention input** (`bladewind-mention`, Forms) — Textarea-like input with `@`/`#` suggestions, keyboard selection, custom result rendering, and serialisable values.~~
 - [!] ~~**Rich text editor** (`bladewind-editor`, Forms) — Opinionated, accessible editor with a deliberately small toolbar, sanitisation guidance, and pluggable upload handling.~~
 - [!] ~~**Signature pad** (`bladewind-signature`, Forms) — Draw, clear, undo, and export a signature with touch/pointer support and a hidden form value.~~

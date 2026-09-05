@@ -120,6 +120,7 @@ composer require bladewindui/datepicker
 | [Radio Button](https://bladewindui.com/component/radio-button)           | `bladewindui/radio`       | Radio Button                     |
 | [Select](https://bladewindui.com/component/select)                       | `bladewindui/select`      | Select, Select Item              |
 | [Slider](https://bladewindui.com/component/slider)                       | `bladewindui/slider`      | Slider                           |
+| [Transfer List](https://bladewindui.com/component/transfer-list)         | `bladewindui/transfer-list` | Transfer List                  |
 | [Textarea](https://bladewindui.com/component/textarea)                   | `bladewindui/textarea`    | Textarea                         |
 | [Timepicker](https://bladewindui.com/component/timepicker)               | `bladewindui/timepicker`  | Timepicker                       |
 | [Toggle](https://bladewindui.com/component/toggle)                       | `bladewindui/toggle`      | Toggle                           |
