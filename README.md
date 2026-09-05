@@ -124,6 +124,7 @@ composer require bladewindui/datepicker
 | [Timepicker](https://bladewindui.com/component/timepicker)               | `bladewindui/timepicker`  | Timepicker                       |
 | [Toggle](https://bladewindui.com/component/toggle)                       | `bladewindui/toggle`      | Toggle                           |
 | [Verification Code](https://bladewindui.com/component/verification-code) | `bladewindui/code`        | Verification Code / OTP          |
+| [Credit Card](https://bladewindui.com/component/credit-card)             | `bladewindui/credit-card` | Credit Card                      |
 
 ### Content group — `bladewindui/content`
 
