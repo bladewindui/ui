@@ -42,7 +42,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` complete · `[!]` re
 - [!] ~~**Guided tour / spotlight** (`bladewind-tour`, Content) — Anchored product walkthroughs with progress, skip/back controls, placement fallback, and persisted completion hooks.~~
 - [!] ~~**Split button** (`bladewind-split-button`, Content) — Primary action plus related action menu with loading, disabled, and destructive variants.~~
 - [!] ~~**Floating action button / speed dial** (`bladewind-speed-dial`, Content) — Fixed primary action that expands into labelled secondary actions with safe mobile positioning.~~
-- [ ] **Banner** (`bladewind-banner`, Content) — Page-level or global announcement bar with tone, icon, actions, dismissibility, and optional persistence.
+- [~] **Banner** (`bladewind-banner`, Content) — Page-level or global announcement bar with tone, icon, actions, dismissibility, and optional persistence.
 - [ ] **Code block** (`bladewind-code-block`, Content) — Syntax-highlighted code display with language label, line numbers/highlights, wrapping, and copy action; separate from the OTP Code component.
 - [ ] **Keyboard key** (`bladewind-kbd`, Content) — Small semantic key/shortcut display for help text, menus, and command documentation.
 - [ ] **Description list** (`bladewind-description-list`, Content) — Responsive label/value presentation for profiles, summaries, and record detail pages with action slots.
