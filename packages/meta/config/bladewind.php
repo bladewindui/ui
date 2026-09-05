@@ -53,6 +53,13 @@ return [
         'contained' => false,
     ],
 
+    'confirm_dialog' => [
+        'tone' => 'danger',
+        'size' => 'small',
+        'backdrop_can_close' => false,
+        'close_after_confirm' => true,
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Pagination component

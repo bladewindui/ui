@@ -13,6 +13,7 @@ return [
     "close" => "Close",
     "delete" => "Delete",
     "confirm" => "Confirm",
+    "are_you_sure" => "Are you sure?",
     "remove" => "Remove",
     "abort" => "Abort",
     "undo" => "Undo",
