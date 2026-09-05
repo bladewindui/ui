@@ -154,6 +154,7 @@ composer require bladewindui/chart
 | [Drawer](https://bladewindui.com/component/drawer)                               | `bladewindui/drawer`                | Drawer                        |
 | [Statistic](https://bladewindui.com/component/statistic)                         | `bladewindui/statistic`             | Statistic                     |
 | [Tag](https://bladewindui.com/component/tag)                                     | `bladewindui/tag`                   | Tag, Tags                     |
+| [Copy Button](https://bladewindui.com/component/copy-button)                     | `bladewindui/copy-button`           | Copy Button                   |
 | [Timeline](https://bladewindui.com/component/timeline)                           | `bladewindui/timeline`              | Timeline, Timelines           |
 | [Tooltip](https://bladewindui.com/component/tooltip)                             | `bladewindui/tooltip`               | Tooltip                       |
 
