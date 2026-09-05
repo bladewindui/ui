@@ -531,6 +531,11 @@ return [
         'icon_type' => 'outline',
     ],
 
+    'file_preview' => [
+        'removable' => true,
+        'downloadable' => true,
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Popover component

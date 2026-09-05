@@ -2037,6 +2037,9 @@ bwOn('click', '[data-bw-tag-value]', (tag) => {
 // a closable tag with no custom onclick simply removes itself
 bwOn('click', '[data-bw-tag-remove]', (link) => link.parentElement?.remove());
 
+// a removable file preview with no custom onclick simply removes itself
+bwOn('click', '[data-bw-file-preview-remove]', (link) => link.closest('.bw-file-preview')?.remove());
+
 // the modal's own close buttons. a consumer-supplied ok/cancel action is their
 // javascript and stays inline, so it is not handled here
 bwOn('click', '[data-bw-modal-close]', (el) => hideModal(el.getAttribute('data-bw-modal-close')));

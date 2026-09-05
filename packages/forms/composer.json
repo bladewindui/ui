@@ -30,6 +30,7 @@
         "bladewindui/slider": "^5.0",
         "bladewindui/checkcards": "^5.0",
         "bladewindui/number": "^5.0",
-        "bladewindui/code": "^5.0"
+        "bladewindui/code": "^5.0",
+        "bladewindui/file-preview": "^5.0"
     }
 }

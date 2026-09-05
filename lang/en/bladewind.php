@@ -13,6 +13,8 @@ return [
     "close" => "Close",
     "delete" => "Delete",
     "confirm" => "Confirm",
+    "file_preview_download" => "Download",
+    "file_preview_remove" => "Remove",
     "remove" => "Remove",
     "abort" => "Abort",
     "undo" => "Undo",

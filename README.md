@@ -115,6 +115,7 @@ composer require bladewindui/datepicker
 | [Colorpicker](https://bladewindui.com/component/colorpicker)             | `bladewindui/colorpicker` | Colorpicker                      |
 | [Datepicker](https://bladewindui.com/component/datepicker)               | `bladewindui/datepicker`  | Datepicker                       |
 | [Filepicker](https://bladewindui.com/component/filepicker)               | `bladewindui/filepicker`  | Filepicker (powered by FilePond) |
+| [File Preview](https://bladewindui.com/component/file-preview)           | `bladewindui/file-preview` | File Preview                    |
 | [Input](https://bladewindui.com/component/input)                         | `bladewindui/input`       | Input, Error                     |
 | [Number](https://bladewindui.com/component/number)                       | `bladewindui/number`      | Number stepper                   |
 | [Radio Button](https://bladewindui.com/component/radio-button)           | `bladewindui/radio`       | Radio Button                     |
