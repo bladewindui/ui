@@ -134,7 +134,7 @@
             <div class="border-r border-gray-200 dark:border-dark-700" style="height: {{ $bodyHeightPx }}px;">
                 @for($hour = $startHour; $hour < $endHour; $hour++)
                     <div class="relative text-right pr-2 text-[11px] text-gray-400 dark:text-dark-500" style="height: {{ $hourHeightPx }}px;">
-                        <span class="absolute -top-2 right-2">{{ \Illuminate\Support\Carbon::createFromTime($hour)->format('g A') }}</span>
+                        <span class="absolute right-2 {{ $hour === $startHour ? 'top-0.5' : '-top-2' }}">{{ \Illuminate\Support\Carbon::createFromTime($hour)->format('g A') }}</span>
                     </div>
                 @endfor
             </div>
@@ -146,7 +146,9 @@
                     @foreach($packedByColumn[$column['id']] ?? [] as $event)
                         @php
                             $topPx = (($event['startMinutes'] - $startHour * 60) / $totalMinutes) * $bodyHeightPx;
-                            $heightPx = max(18, (($event['endMinutes'] - $event['startMinutes']) / $totalMinutes) * $bodyHeightPx);
+                            // tall enough for both the label and the time range line, even
+                            // when a short appointment's proportional height would clip them
+                            $heightPx = max(32, (($event['endMinutes'] - $event['startMinutes']) / $totalMinutes) * $bodyHeightPx);
                             $widthPercent = 100 / $event['totalCols'];
                             $leftPercent = $event['col'] * $widthPercent;
                         @endphp
