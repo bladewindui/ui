@@ -164,6 +164,7 @@ composer require bladewindui/chart
 | [Keyboard Key](https://bladewindui.com/component/kbd)                            | `bladewindui/kbd`                   | Keyboard Key                  |
 | [Copy Button](https://bladewindui.com/component/copy-button)                     | `bladewindui/copy-button`           | Copy Button                   |
 | [Meter](https://bladewindui.com/component/meter)                                 | `bladewindui/meter`                 | Meter                         |
+| [Description List](https://bladewindui.com/component/description-list)           | `bladewindui/description-list`      | Description List, Item        |
 | [Timeline](https://bladewindui.com/component/timeline)                           | `bladewindui/timeline`              | Timeline, Timelines           |
 | [Tooltip](https://bladewindui.com/component/tooltip)                             | `bladewindui/tooltip`               | Tooltip                       |
 
