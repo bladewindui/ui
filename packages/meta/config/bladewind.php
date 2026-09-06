@@ -53,6 +53,13 @@ return [
         'contained' => false,
     ],
 
+    'divider' => [
+        'orientation' => 'horizontal',
+        'spacing' => 'medium',
+        'decorative' => true,
+        'color' => null,
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Pagination component

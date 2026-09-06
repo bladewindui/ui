@@ -144,6 +144,7 @@ composer require bladewindui/chart
 | [Centered Content](https://bladewindui.com/component/centered-content)           | `bladewindui/centered-content`      | Centered Content              |
 | [Chart](https://bladewindui.com/component/chart)                                 | `bladewindui/chart`                 | Chart (line, bar, pie, donut) |
 | [Contact Card](https://bladewindui.com/component/contact-card)                   | `bladewindui/contact-card`          | Contact Card                  |
+| [Divider](https://bladewindui.com/component/divider)                             | `bladewindui/divider`               | Divider                       |
 | [Empty State](https://bladewindui.com/component/empty-state)                     | `bladewindui/empty-state`           | Empty State                   |
 | [Horizontal Line Graph](https://bladewindui.com/component/horizontal-line-graph) | `bladewindui/horizontal-line-graph` | Horizontal Line Graph         |
 | [List View](https://bladewindui.com/component/list-view)                         | `bladewindui/listview`              | List View, List View Item     |
