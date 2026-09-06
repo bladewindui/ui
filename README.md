@@ -149,6 +149,7 @@ composer require bladewindui/chart
 | [Chat](https://bladewindui.com/component/chat)                                   | `bladewindui/chat`                  | Chat, Chat Message            |
 | [Carousel](https://bladewindui.com/component/carousel)                           | `bladewindui/carousel`              | Carousel, Slide                |
 | [Kanban](https://bladewindui.com/component/kanban)                               | `bladewindui/kanban`                | Kanban, Column, Card          |
+| [Scheduler](https://bladewindui.com/component/scheduler)                         | `bladewindui/scheduler`             | Scheduler                     |
 | [Centered Content](https://bladewindui.com/component/centered-content)           | `bladewindui/centered-content`      | Centered Content              |
 | [Chart](https://bladewindui.com/component/chart)                                 | `bladewindui/chart`                 | Chart (line, bar, pie, donut) |
 | [Confirm Dialog](https://bladewindui.com/component/confirm-dialog)               | `bladewindui/confirm-dialog`        | Confirm Dialog                |
