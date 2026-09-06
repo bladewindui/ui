@@ -559,6 +559,12 @@ return [
         'locale' => 'en-US',
     ],
 
+    'password_meter' => [
+        'show_label' => true,
+        'min_length' => 8,
+        'strong_length' => 12,
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Popover component
