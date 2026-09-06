@@ -30,6 +30,7 @@
         "bladewindui/slider": "^5.0",
         "bladewindui/checkcards": "^5.0",
         "bladewindui/number": "^5.0",
-        "bladewindui/code": "^5.0"
+        "bladewindui/code": "^5.0",
+        "bladewindui/currency-input": "^5.0"
     }
 }

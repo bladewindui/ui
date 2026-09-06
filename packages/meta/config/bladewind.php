@@ -554,6 +554,11 @@ return [
         'icon_type' => 'outline',
     ],
 
+    'currency_input' => [
+        'currency' => 'USD',
+        'locale' => 'en-US',
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Popover component
