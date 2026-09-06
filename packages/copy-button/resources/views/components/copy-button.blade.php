@@ -43,8 +43,8 @@
     <button type="button" data-trigger
             aria-label="{{ $copyLabel }}"
             class="inline-flex items-center gap-1.5 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-dark-200 @unless($hasContent) p-1 hover:bg-gray-50 dark:hover:bg-dark-800 @endunless">
-        <span data-icon-default class="inline-flex"><x-bladewind::icon name="clipboard" class="{{ $iconSize }}"/></span>
-        <span data-icon-success class="hidden inline-flex"><x-bladewind::icon name="check" class="{{ $iconSize }} text-green-600"/></span>
+        <span data-icon-default><x-bladewind::icon name="clipboard" class="{{ $iconSize }}"/></span>
+        <span data-icon-success class="hidden"><x-bladewind::icon name="check" class="{{ $iconSize }} text-green-600"/></span>
         @if(! $hasContent && ! empty($label))
             <span data-label>{{ $label }}</span>
         @endif
