@@ -38,6 +38,7 @@
         "bladewindui/divider": "^5.0",
         "bladewindui/confirm-dialog": "^5.0",
         "bladewindui/kbd": "^5.0",
-        "bladewindui/copy-button": "^5.0"
+        "bladewindui/copy-button": "^5.0",
+        "bladewindui/meter": "^5.0"
     }
 }

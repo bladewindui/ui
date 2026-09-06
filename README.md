@@ -163,6 +163,7 @@ composer require bladewindui/chart
 | [Tag](https://bladewindui.com/component/tag)                                     | `bladewindui/tag`                   | Tag, Tags                     |
 | [Keyboard Key](https://bladewindui.com/component/kbd)                            | `bladewindui/kbd`                   | Keyboard Key                  |
 | [Copy Button](https://bladewindui.com/component/copy-button)                     | `bladewindui/copy-button`           | Copy Button                   |
+| [Meter](https://bladewindui.com/component/meter)                                 | `bladewindui/meter`                 | Meter                         |
 | [Timeline](https://bladewindui.com/component/timeline)                           | `bladewindui/timeline`              | Timeline, Timelines           |
 | [Tooltip](https://bladewindui.com/component/tooltip)                             | `bladewindui/tooltip`               | Tooltip                       |
 
