@@ -41,6 +41,7 @@
         "bladewindui/copy-button": "^5.0",
         "bladewindui/meter": "^5.0",
         "bladewindui/description-list": "^5.0",
-        "bladewindui/banner": "^5.0"
+        "bladewindui/banner": "^5.0",
+        "bladewindui/code-block": "^5.0"
     }
 }
