@@ -104,7 +104,7 @@
         $packedByColumn[$columnId] = \Mkocansey\Bladewind\Scheduler\SchedulerEventPacker::pack($columnEvents);
     }
 
-    $colourClasses = fn (string $colour) => "bg-$colour-100 dark:bg-$colour-500/20 border-$colour-300 dark:border-$colour-500/40 text-$colour-800 dark:text-$colour-200";
+    $colourClasses = fn (string $colour) => "bg-$colour-100 dark:bg-$colour-500/20 text-$colour-800 dark:text-$colour-200";
 @endphp
 {{-- format-ignore-end --}}
 
@@ -154,7 +154,7 @@
                             @if($event['href']) href="{{ $event['href'] }}" @endif
                             data-event data-event-id="{{ $event['id'] }}"
                             @class([
-                                'absolute rounded-md border px-1.5 py-0.5 text-[11px] leading-tight overflow-hidden cursor-pointer hover:brightness-95',
+                                'absolute rounded px-1.5 py-0.5 text-[11px] leading-tight overflow-hidden cursor-pointer hover:brightness-95',
                                 $colourClasses($event['color']),
                             ])
                             style="top: {{ $topPx }}px; height: {{ $heightPx }}px; left: calc({{ $leftPercent }}% + 1px); width: calc({{ $widthPercent }}% - 2px);">
