@@ -565,6 +565,11 @@ return [
         'strong_length' => 12,
     ],
 
+    'file_preview' => [
+        'removable' => true,
+        'downloadable' => true,
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Popover component

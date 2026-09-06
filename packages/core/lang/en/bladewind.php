@@ -18,6 +18,8 @@ return [
     "password_strength_fair" => "Fair",
     "password_strength_good" => "Good",
     "password_strength_strong" => "Strong",
+    "file_preview_download" => "Download",
+    "file_preview_remove" => "Remove",
     "remove" => "Remove",
     "abort" => "Abort",
     "undo" => "Undo",

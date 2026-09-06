@@ -32,6 +32,7 @@
         "bladewindui/number": "^5.0",
         "bladewindui/code": "^5.0",
         "bladewindui/currency-input": "^5.0",
-        "bladewindui/password-meter": "^5.0"
+        "bladewindui/password-meter": "^5.0",
+        "bladewindui/file-preview": "^5.0"
     }
 }
