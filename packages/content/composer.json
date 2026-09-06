@@ -42,6 +42,7 @@
         "bladewindui/meter": "^5.0",
         "bladewindui/description-list": "^5.0",
         "bladewindui/banner": "^5.0",
-        "bladewindui/code-block": "^5.0"
+        "bladewindui/code-block": "^5.0",
+        "bladewindui/chat": "^5.0"
     }
 }
