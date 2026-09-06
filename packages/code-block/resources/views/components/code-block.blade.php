@@ -88,7 +88,7 @@
 
     <pre @if($highlightLines !== '') data-line="{{ $highlightLines }}" @endif
          @class([
-            "language-$language !m-0 !rounded-none",
+            "language-$language !m-0 !rounded-none !py-2",
             'line-numbers' => $lineNumbers,
             '!whitespace-pre-wrap break-words' => $wrap,
          ])><code data-bw-code-block-source class="language-{{ $language }}">{{ $code }}</code></pre>
