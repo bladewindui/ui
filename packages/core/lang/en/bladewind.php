@@ -12,8 +12,6 @@ return [
     "cancel" => "Cancel",
     "close" => "Close",
     "delete" => "Delete",
-    "confirm" => "Confirm",
-    "are_you_sure" => "Are you sure?",
     "password_strength_weak" => "Weak",
     "password_strength_fair" => "Fair",
     "password_strength_good" => "Good",

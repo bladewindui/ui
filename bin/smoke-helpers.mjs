@@ -65,7 +65,6 @@ try {
 // the API consumers were shimming onto window by hand before #595
 const required = [
   'showModal', 'hideModal', 'showModalActionButtons', 'hideModalActionButtons',
-  'runBwConfirmDialogAction',
   'domEl', 'domEls', 'changeCss', 'goToTab', 'togglePassword', 'unhide', 'hide',
   'showDrawer', 'hideDrawer', 'toggleDrawer',
   'showStepperStep', 'nextStepperStep', 'previousStepperStep', 'resetStepper',

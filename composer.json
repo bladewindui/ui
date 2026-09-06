@@ -41,7 +41,6 @@
             "Mkocansey\\Bladewind\\Alert\\": "packages/alert/src/",
             "Mkocansey\\Bladewind\\Bell\\": "packages/bell/src/",
             "Mkocansey\\Bladewind\\Modal\\": "packages/modal/src/",
-            "Mkocansey\\Bladewind\\ConfirmDialog\\": "packages/confirm-dialog/src/",
             "Mkocansey\\Bladewind\\Drawer\\": "packages/drawer/src/",
             "Mkocansey\\Bladewind\\Divider\\": "packages/divider/src/",
             "Mkocansey\\Bladewind\\Table\\": "packages/table/src/",
@@ -125,7 +124,6 @@
                 "Mkocansey\\Bladewind\\Alert\\BladewindAlertServiceProvider",
                 "Mkocansey\\Bladewind\\Bell\\BladewindBellServiceProvider",
                 "Mkocansey\\Bladewind\\Modal\\BladewindModalServiceProvider",
-                "Mkocansey\\Bladewind\\ConfirmDialog\\BladewindConfirmDialogServiceProvider",
                 "Mkocansey\\Bladewind\\Drawer\\BladewindDrawerServiceProvider",
                 "Mkocansey\\Bladewind\\Divider\\BladewindDividerServiceProvider",
                 "Mkocansey\\Bladewind\\Table\\BladewindTableServiceProvider",
@@ -208,7 +206,6 @@
         "bladewindui/code-block": "5.1.0",
         "bladewindui/colorpicker": "5.1.0",
         "bladewindui/command-palette": "5.1.0",
-        "bladewindui/confirm-dialog": "5.1.0",
         "bladewindui/contact-card": "5.1.0",
         "bladewindui/credit-card": "5.1.0",
         "bladewindui/content": "5.1.0",
@@ -262,7 +259,7 @@
         "bladewindui/transfer-list": "5.1.0",
         "bladewindui/toggle": "5.1.0",
         "bladewindui/tooltip": "5.1.0",
-        "mkocansey/bladewind": "5.0.0",
+        "mkocansey/bladewind": "5.1.0",
         "bladewindui/bladewindui": "5.1.0"
     }
 }

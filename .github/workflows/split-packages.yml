@@ -76,7 +76,6 @@ jobs:
           - { local_path: 'packages/sortable',             split_repository: 'sortable'             }
           - { local_path: 'packages/calendar',             split_repository: 'calendar'             }
           - { local_path: 'packages/divider',              split_repository: 'divider'              }
-          - { local_path: 'packages/confirm-dialog',       split_repository: 'confirm-dialog'       }
           - { local_path: 'packages/code-block',            split_repository: 'code-block'           }
           - { local_path: 'packages/kbd',                   split_repository: 'kbd'                  }
           - { local_path: 'packages/description-list',      split_repository: 'description-list'     }

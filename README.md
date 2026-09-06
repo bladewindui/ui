@@ -153,7 +153,6 @@ composer require bladewindui/chart
 | [Scheduler](https://bladewindui.com/component/scheduler)                         | `bladewindui/scheduler`             | Scheduler                     |
 | [Centered Content](https://bladewindui.com/component/centered-content)           | `bladewindui/centered-content`      | Centered Content              |
 | [Chart](https://bladewindui.com/component/chart)                                 | `bladewindui/chart`                 | Chart (line, bar, pie, donut) |
-| [Confirm Dialog](https://bladewindui.com/component/confirm-dialog)               | `bladewindui/confirm-dialog`        | Confirm Dialog                |
 | [Code Block](https://bladewindui.com/component/code-block)                       | `bladewindui/code-block`            | Code Block                    |
 | [Contact Card](https://bladewindui.com/component/contact-card)                   | `bladewindui/contact-card`          | Contact Card                  |
 | [Divider](https://bladewindui.com/component/divider)                             | `bladewindui/divider`               | Divider                       |
