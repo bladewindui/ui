@@ -171,7 +171,6 @@ composer require bladewindui/chart
 | [Copy Button](https://bladewindui.com/component/copy-button)                     | `bladewindui/copy-button`           | Copy Button                   |
 | [Meter](https://bladewindui.com/component/meter)                                 | `bladewindui/meter`                 | Meter                         |
 | [Description List](https://bladewindui.com/component/description-list)           | `bladewindui/description-list`      | Description List, Item        |
-| [Banner](https://bladewindui.com/component/banner)                               | `bladewindui/banner`                | Banner                        |
 | [Timeline](https://bladewindui.com/component/timeline)                           | `bladewindui/timeline`              | Timeline, Timelines           |
 | [Tooltip](https://bladewindui.com/component/tooltip)                             | `bladewindui/tooltip`               | Tooltip                       |
 
