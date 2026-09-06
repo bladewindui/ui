@@ -142,4 +142,18 @@ class CodeBlockTest extends TestCase
 
         $this->assertHasClasses($html, self::ROOT, ['my-code-block']);
     }
+
+    #[Test]
+    public function it_ships_a_line_highlight_override_keeping_the_marker_aligned_and_visible_on_dark_backgrounds(): void
+    {
+        $html = $this->render($this->markup('highlight-lines="2"'));
+
+        // Prism's .line-highlight hardcodes margin-top: 1em to cancel out its own
+        // default pre[data-line] padding: 1em. Our !py-1 override changes that
+        // padding to 4px, so the margin has to move in lockstep or the highlight
+        // renders offset from the line it's meant to mark. Its background is also
+        // a warm tint tuned for Prism's light theme, invisible against our dark one.
+        $this->assertStringContainsString('.line-highlight { margin-top: 0.25rem;', $html);
+        $this->assertStringContainsString('background: rgba(255, 255, 255, 0.08)', $html);
+    }
 }

@@ -96,6 +96,13 @@
 
 @once
     <link rel="stylesheet" href="{{ asset('vendor/bladewind/css/prism-plugins.min.css') }}">
+    {{-- Prism's line-highlight plugin hardcodes its .line-highlight margin-top
+         to 1em to exactly cancel out its own default pre[data-line] padding:1em.
+         We override that padding to !py-1 above, so this override has to move
+         in lockstep or the highlight renders offset from the line it marks.
+         Its background is also a warm tint tuned for Prism's light theme,
+         nearly invisible against this component's dark background. --}}
+    <style @if($nonce) nonce="{{ $nonce }}" @endif>.bw-code-block .line-highlight { margin-top: 0.25rem; background: rgba(255, 255, 255, 0.08); }</style>
     {{-- a host page may already ship Prism (its own docs, a blog, ...). Only
          load our copy of Prism's core when there isn't one already, so we
          extend whatever is there instead of loading a clashing duplicate --}}
