@@ -335,7 +335,7 @@ return [
         'view' => 'day',
         'start_hour' => 8,
         'end_hour' => 18,
-        'slot_minutes' => 60,
+        'slot_minutes' => 30,
         'week_starts' => 1,
     ],
 

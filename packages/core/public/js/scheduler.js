@@ -14,7 +14,7 @@
             this.options = {
                 startHour: 8,
                 endHour: 18,
-                slotMinutes: 60,
+                slotMinutes: 30,
                 bodyHeightPx: 0,
                 onSlotClick: null,
                 onEventClick: null,
