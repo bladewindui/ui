@@ -52,7 +52,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` complete · `[!]` re
 
 ## Priority 4: specialised application widgets
 
-- [ ] **Kanban board** (`bladewind-kanban`, Content) — Columns and draggable cards with empty/loading states, movement hooks, and keyboard-accessible reordering.
+- [~] **Kanban board** (`bladewind-kanban`, Content) — Columns and draggable cards with empty/loading states, movement hooks, and keyboard-accessible reordering.
 - [ ] **Scheduler** (`bladewind-scheduler`, Content) — Day/week resource schedule with time slots, event rendering, selection hooks, and timezone-aware values.
 - [!] ~~**Gantt chart** (`bladewind-gantt`, Content) — Project timeline with dependencies, milestones, zoom levels, progress, and horizontal virtualisation.~~
 - [!] ~~**Organisation chart** (`bladewind-org-chart`, Content) — Expandable reporting hierarchy with custom node slots, pan/zoom, and accessible list fallback.~~
