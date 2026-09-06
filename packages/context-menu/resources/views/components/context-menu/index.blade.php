@@ -23,7 +23,7 @@
         {{ $region }}
     </div>
 
-    <div class="opacity-0 hidden bw-context-menu-items animate__animated animate__fadeIn animate__faster"
+    <div class="opacity-0 hidden bw-context-menu-items animate__animated animate__fadeIn animate__faster relative z-[9999]"
          id="{{ $name }}-menu"
          role="menu"
          aria-hidden="true"

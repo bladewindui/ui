@@ -51,7 +51,7 @@
             {!!$trigger!!}
         @endif
     </div>
-    <div class="opacity-0 hidden bw-dropmenu-items animate__animated animate__fadeIn animate__faster"
+    <div class="opacity-0 hidden bw-dropmenu-items animate__animated animate__fadeIn animate__faster relative z-[9999]"
          id="bw-dropmenu-{{ $name }}"
          role="menu"
          aria-hidden="true"
