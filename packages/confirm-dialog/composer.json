@@ -1,0 +1,38 @@
+{
+    "name": "bladewindui/confirm-dialog",
+    "description": "BladewindUI — Confirm / alert dialog component",
+    "keywords": [
+        "laravel",
+        "blade",
+        "tailwindcss",
+        "bladewindui",
+        "confirm-dialog",
+        "dialog"
+    ],
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Michael K. Ocansey",
+            "email": "mike@bladewindui.com"
+        }
+    ],
+    "require": {
+        "php": ">=8.1",
+        "bladewindui/core": "^5.0",
+        "bladewindui/modal": "^5.0",
+        "bladewindui/button": "^5.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Mkocansey\\Bladewind\\ConfirmDialog\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Mkocansey\\Bladewind\\ConfirmDialog\\BladewindConfirmDialogServiceProvider"
+            ]
+        }
+    }
+}

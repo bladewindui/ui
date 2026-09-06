@@ -536,6 +536,43 @@ const hideModalActionButtons = (element) => {
     hide(`.bw-${element} .modal-footer`);
 };
 
+/**
+ * Run a confirm dialog's confirm action, showing a spinner and disabling both
+ * buttons for as long as it is pending. A rejection re-enables the buttons and
+ * leaves the dialog open, so a consumer can surface its own error state before
+ * the user retries.
+ * @param {string} name - The confirm dialog's name.
+ * @param {function} action - Runs on confirm; its return value is passed
+ *   through Promise.resolve(), so a plain (non-async) function is fine too.
+ * @param {boolean} closeAfter - Close the dialog once action resolves.
+ * @return {void}
+ * @see {@link https://bladewindui.com/component/confirm-dialog}
+ */
+const runBwConfirmDialogAction = (name, action, closeAfter = true) => {
+    const confirmButton = domEl(`.bw-${name}-confirm`);
+    const cancelButton = domEl(`.bw-${name}-cancel`);
+
+    if (confirmButton) confirmButton.disabled = true;
+    if (cancelButton) cancelButton.disabled = true;
+    showButtonSpinner(`.bw-${name}-confirm`);
+
+    const resetButtons = () => {
+        if (confirmButton) confirmButton.disabled = false;
+        if (cancelButton) cancelButton.disabled = false;
+        hideButtonSpinner(`.bw-${name}-confirm`);
+    };
+
+    Promise.resolve()
+        .then(action)
+        .then(() => {
+            resetButtons();
+            if (closeAfter) hideModal(name);
+        })
+        .catch((error) => {
+            resetButtons();
+            console.error(error);
+        });
+};
 
 /**
  * Alias for unhide().
@@ -3389,6 +3426,7 @@ Object.assign(window, {
     hideButtonSpinner,
     showModalActionButtons,
     hideModalActionButtons,
+    runBwConfirmDialogAction,
     show,
     addToStorage,
     getFromStorage,

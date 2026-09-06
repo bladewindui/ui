@@ -35,6 +35,7 @@
         "bladewindui/popover": "^5.0",
         "bladewindui/sortable": "^5.0",
         "bladewindui/drawer": "^5.0",
-        "bladewindui/divider": "^5.0"
+        "bladewindui/divider": "^5.0",
+        "bladewindui/confirm-dialog": "^5.0"
     }
 }
