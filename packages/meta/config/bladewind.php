@@ -577,6 +577,10 @@ return [
         'label_key' => 'label',
     ],
 
+    'inline_edit' => [
+        'required' => false,
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Popover component

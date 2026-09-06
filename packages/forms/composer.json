@@ -34,6 +34,7 @@
         "bladewindui/currency-input": "^5.0",
         "bladewindui/password-meter": "^5.0",
         "bladewindui/file-preview": "^5.0",
-        "bladewindui/transfer-list": "^5.0"
+        "bladewindui/transfer-list": "^5.0",
+        "bladewindui/inline-edit": "^5.0"
     }
 }
