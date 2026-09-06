@@ -150,22 +150,28 @@
                     @foreach($packedByColumn[$column['id']] ?? [] as $event)
                         @php
                             $topPx = (($event['startMinutes'] - $startHour * 60) / $totalMinutes) * $bodyHeightPx;
-                            // tall enough for both the label and the time range line, even
-                            // when a short appointment's proportional height would clip them
-                            $heightPx = max(32, (($event['endMinutes'] - $event['startMinutes']) / $totalMinutes) * $bodyHeightPx);
+                            // never inflate past the event's actual duration — that would
+                            // visually eat into whatever comes right after it. Below 32px
+                            // there isn't room for the label and time line both, so the
+                            // time line is dropped instead of growing the box.
+                            $heightPx = max(16, (($event['endMinutes'] - $event['startMinutes']) / $totalMinutes) * $bodyHeightPx);
+                            $showTimeLine = $heightPx >= 32;
                             $widthPercent = 100 / $event['totalCols'];
                             $leftPercent = $event['col'] * $widthPercent;
                         @endphp
                         <{{ $event['href'] ? 'a' : 'div' }}
                             @if($event['href']) href="{{ $event['href'] }}" @endif
                             data-event data-event-id="{{ $event['id'] }}"
+                            title="{{ $event['label'] }} ({{ $event['startLabel'] }} – {{ $event['endLabel'] }})"
                             @class([
                                 'absolute rounded px-1.5 py-0.5 text-[11px] leading-tight overflow-hidden cursor-pointer hover:brightness-95',
                                 $colourClasses($event['color']),
                             ])
                             style="top: {{ $topPx }}px; height: {{ $heightPx }}px; left: calc({{ $leftPercent }}% + 1px); width: calc({{ $widthPercent }}% - 2px);">
                             <div class="font-medium truncate">{{ $event['label'] }}</div>
-                            <div class="truncate opacity-80">{{ $event['startLabel'] }} – {{ $event['endLabel'] }}</div>
+                            @if($showTimeLine)
+                                <div class="truncate opacity-80">{{ $event['startLabel'] }} – {{ $event['endLabel'] }}</div>
+                            @endif
                         </{{ $event['href'] ? 'a' : 'div' }}>
                     @endforeach
                 </div>

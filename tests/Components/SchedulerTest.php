@@ -118,4 +118,36 @@ class SchedulerTest extends TestCase
 
         $this->assertHasClasses($html, self::ROOT, ['my-scheduler']);
     }
+
+    #[Test]
+    public function a_short_appointment_stays_within_its_time_bounds_and_drops_the_time_line(): void
+    {
+        $html = $this->render(<<<'BLADE'
+            <x-bladewind::scheduler date="2026-03-10" slot_minutes="30" :events="[
+                ['id' => 'e1', 'label' => 'Team standup', 'start' => '2026-03-10 09:00', 'end' => '2026-03-10 09:30'],
+            ]"></x-bladewind::scheduler>
+        BLADE);
+
+        // 30 minutes at the 30-minute grid is exactly one slot (24px): tall enough
+        // for the label alone, but not for a second line without either clipping
+        // it or growing the box into the next slot's space.
+        $this->assertStringContainsString('height: 24px', $html);
+        $this->assertStringNotContainsString('truncate opacity-80', $html);
+        $this->assertStringContainsString('Team standup', $html);
+        $this->assertStringContainsString('title="Team standup (9:00 AM – 9:30 AM)"', $html);
+    }
+
+    #[Test]
+    public function an_hour_long_appointment_keeps_the_time_line_at_the_default_grid(): void
+    {
+        $html = $this->render(<<<'BLADE'
+            <x-bladewind::scheduler date="2026-03-10" :events="[
+                ['id' => 'e1', 'label' => 'Team standup', 'start' => '2026-03-10 09:00', 'end' => '2026-03-10 10:00'],
+            ]"></x-bladewind::scheduler>
+        BLADE);
+
+        // an hour at the default 30-minute grid is 48px — tall enough for both lines
+        $this->assertStringContainsString('height: 48px', $html);
+        $this->assertStringContainsString('9:00 AM', $html);
+    }
 }
