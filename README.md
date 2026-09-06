@@ -147,6 +147,7 @@ composer require bladewindui/chart
 | [Avatar](https://bladewindui.com/component/avatar)                               | `bladewindui/avatar`                | Avatar, Avatars               |
 | [Card](https://bladewindui.com/component/card)                                   | `bladewindui/card`                  | Card, Contact Card            |
 | [Chat](https://bladewindui.com/component/chat)                                   | `bladewindui/chat`                  | Chat, Chat Message            |
+| [Carousel](https://bladewindui.com/component/carousel)                           | `bladewindui/carousel`              | Carousel, Slide                |
 | [Centered Content](https://bladewindui.com/component/centered-content)           | `bladewindui/centered-content`      | Centered Content              |
 | [Chart](https://bladewindui.com/component/chart)                                 | `bladewindui/chart`                 | Chart (line, bar, pie, donut) |
 | [Confirm Dialog](https://bladewindui.com/component/confirm-dialog)               | `bladewindui/confirm-dialog`        | Confirm Dialog                |
