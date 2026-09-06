@@ -131,10 +131,14 @@
                 </div>
             @endforeach
 
+            {{-- matches the whitespace naturally trailing the last hour label, so
+                 the grid opens and closes with the same visual rhythm --}}
+            <div style="grid-column: 1 / -1; height: {{ $hourHeightPx }}px;"></div>
+
             <div class="border-r border-gray-200 dark:border-dark-700" style="height: {{ $bodyHeightPx }}px;">
                 @for($hour = $startHour; $hour < $endHour; $hour++)
                     <div class="relative text-right pr-2 text-[11px] text-gray-400 dark:text-dark-500" style="height: {{ $hourHeightPx }}px;">
-                        <span class="absolute right-2 {{ $hour === $startHour ? 'top-0.5' : '-top-2' }}">{{ \Illuminate\Support\Carbon::createFromTime($hour)->format('g A') }}</span>
+                        <span class="absolute -top-2 right-2">{{ \Illuminate\Support\Carbon::createFromTime($hour)->format('g A') }}</span>
                     </div>
                 @endfor
             </div>
