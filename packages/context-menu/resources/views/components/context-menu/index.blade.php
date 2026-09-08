@@ -7,6 +7,9 @@
     'disableNative' => config('bladewind.context_menu.disable_native', true),
     // the region that opens the menu on right-click (or the keyboard context-menu key)
     'region' => null,
+    // a CSS selector (or bare element id) for an element elsewhere on the page that
+    // should open this menu instead of the region slot, e.g. target="drive-container"
+    'target' => null,
     'class' => '',
     'modular' => false,
     'nonce' => config('bladewind.script.nonce', null),
@@ -15,14 +18,17 @@
     $name = parseBladewindName($name);
     $padded = parseBladewindVariable($padded);
     $disableNative = parseBladewindVariable($disableNative);
+    $target = is_string($target) && trim($target) !== '' ? trim($target) : null;
+    $targetSelector = $target ? (preg_match('/^[.#\[]/', $target) ? $target : "#$target") : null;
 @endphp
 {{-- format-ignore-end --}}
 
-<div class="bw-context-menu {{ $name }} inline-block" data-name="{{ $name }}" data-disable-native="{{ $disableNative ? '1' : '0' }}">
-    <div class="bw-context-menu-region">
-        {{ $region }}
-    </div>
-
+<div class="bw-context-menu {{ $name }}" data-name="{{ $name }}" data-disable-native="{{ $disableNative ? '1' : '0' }}" @if($targetSelector) data-target="{{ $targetSelector }}" @endif>
+    @unless($targetSelector)
+        <div class="bw-context-menu-region">
+            {{ $region }}
+        </div>
+    @endunless
     <div class="opacity-0 hidden bw-context-menu-items animate__animated animate__fadeIn animate__faster relative z-[9999]"
          id="{{ $name }}-menu"
          role="menu"

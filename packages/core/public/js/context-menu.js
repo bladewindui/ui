@@ -14,7 +14,10 @@
             if (! this.root) {
                 return;
             }
-            this.region = this.root.querySelector('.bw-context-menu-region');
+            const targetSelector = this.root.getAttribute('data-target');
+            this.region = targetSelector
+                ? document.querySelector(targetSelector)
+                : this.root.querySelector('.bw-context-menu-region');
             this.itemsWrap = this.root.querySelector('.bw-context-menu-items');
             this.topList = this.itemsWrap?.querySelector(':scope > .bw-items-list') || null;
             this._boundGlobal = false;

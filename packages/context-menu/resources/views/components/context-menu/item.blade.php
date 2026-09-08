@@ -18,6 +18,9 @@
     $padded = parseBladewindVariable($padded);
     $tone = in_array($tone, ['normal', 'danger']) ? $tone : 'normal';
     $hasSubmenu = ! $divider && trim((string) $submenu) !== '';
+    $iconColorClass = ($tone === 'danger' && !$disabled)
+        ? 'text-red-600! dark:text-red-400!'
+        : 'text-gray-400! dark:text-dark-500!';
 @endphp
 {{-- format-ignore-end --}}
 <div @class([
@@ -25,7 +28,7 @@
         'border-y border-t-slate-200/75 border-b-white dark:border-t-gray-800/40! dark:border-b-gray-100/10 my-1' => $divider,
         'py-2 px-2.5' => (!$divider && $padded),
         'p-0' => (!$divider && !$padded),
-        'cursor-pointer hover:rounded-md hover:bg-slate-200/75 hover:dark:bg-dark-800!' => (!$divider && !$disabled),
+        'cursor-pointer outline-none hover:rounded-md hover:bg-slate-200/75 hover:dark:bg-dark-800! focus-visible:rounded-md focus-visible:bg-slate-200/75 focus-visible:dark:bg-dark-800!' => (!$divider && !$disabled),
         'cursor-not-allowed pointer-events-none opacity-40' => $disabled,
         'text-red-600! dark:text-red-400!' => ($tone === 'danger' && !$disabled),
     ])
@@ -45,7 +48,7 @@
             <x-bladewind::icon
                     name="{{ $icon }}"
                     :dir="$dir"
-                    class="size-4! mt-0.5! shrink-0 text-gray-400! dark:text-dark-500! mr-2! -ml-0.5 {{ $iconCss }}"/>
+                    class="size-4! mt-0.5! shrink-0 {{ $iconColorClass }} mr-2! -ml-0.5 {{ $iconCss }}"/>
         @endif
         <span class="grow">{{ $slot }}</span>
         @if($hasSubmenu)
