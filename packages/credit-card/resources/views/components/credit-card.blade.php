@@ -85,7 +85,9 @@
                      ]) style="backface-visibility: hidden;">
                     <div class="flex items-start justify-between">
                         <div class="h-8 w-11 rounded-md bg-linear-to-br from-yellow-200 to-yellow-500"></div>
-                        <x-bladewind::icon name="signal" class="size-6 rotate-90 opacity-80"/>
+                        <svg class="size-6 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+                            <path d="M5 10a4 4 0 0 1 0 4M9 7a9 9 0 0 1 0 10M13 4a14 14 0 0 1 0 16M17 1a19 19 0 0 1 0 22"/>
+                        </svg>
                     </div>
 
                     <div>
@@ -128,7 +130,7 @@
 
                     @unless($disabled)
                         <button type="button" data-flip-button aria-label="Show CVC"
-                                class="absolute top-1/2 -right-3 -translate-y-1/2 size-8 rounded-full bg-white text-gray-700 shadow-md grid place-items-center hover:bg-gray-50">
+                                class="absolute top-1/2 -right-3 -translate-y-1/2 size-8 rounded-full bg-white text-gray-700 shadow-md grid place-items-center cursor-pointer hover:bg-gray-50">
                             <x-bladewind::icon name="arrow-path" class="size-4"/>
                         </button>
                     @endunless
@@ -156,7 +158,7 @@
 
                     @unless($disabled)
                         <button type="button" data-flip-button aria-label="Show card number"
-                                class="absolute top-1/2 -left-3 -translate-y-1/2 size-8 rounded-full bg-white text-gray-700 shadow-md grid place-items-center hover:bg-gray-50">
+                                class="absolute top-1/2 -right-3 -translate-y-1/2 size-8 rounded-full bg-white text-gray-700 shadow-md grid place-items-center cursor-pointer hover:bg-gray-50">
                             <x-bladewind::icon name="arrow-path" class="size-4"/>
                         </button>
                     @endunless
