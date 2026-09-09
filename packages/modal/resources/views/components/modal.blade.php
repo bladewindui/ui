@@ -207,21 +207,14 @@
 
 <x-bladewind::script :nonce="$nonce">
     domEl('.bw-{{$name}}-modal').addEventListener('click', function (e) {
+    // only the backdrop itself should close the modal on click — checking the
+    // target (rather than stopping propagation on the content) keeps clicks on
+    // data-bw-modal-close elements free to bubble to the document-level
+    // delegated listener that actually closes the modal. see #608
+    if (e.target !== this) return;
     let backdropCanClose = this.getAttribute('data-backdrop-can-close');
     if (backdropCanClose) hideModal('{{$name}}');
     });
-
-    domEl('.bw-{{$name}}').addEventListener('click', function (e) {
-    e.stopImmediatePropagation();
-    });
-
-    if (domEls('.bw-{{$name}}-modal .modal-footer>button')) {
-    domEls('.bw-{{$name}}-modal .modal-footer>button').forEach((el) => {
-    el.addEventListener('click', function (e) {
-    e.stopImmediatePropagation();
-    });
-    });
-    }
 
     document.addEventListener('keyup', function (e) {
     if (e.key === "Escape") {
