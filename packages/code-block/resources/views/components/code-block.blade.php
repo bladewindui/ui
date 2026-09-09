@@ -88,7 +88,7 @@
 
     <pre @if($highlightLines !== '') data-line="{{ $highlightLines }}" @endif
          @class([
-            "language-$language !m-0 !rounded-none !py-1",
+            "language-$language m-0! my-2! rounded-none! py-1! bg-slate-900! text-sm! dark:bg-slate-950! dark:shadow-none",
             'line-numbers' => $lineNumbers,
             '!whitespace-pre-wrap break-words' => $wrap,
          ])><code data-bw-code-block-source class="language-{{ $language }}">{{ $code }}</code></pre>
@@ -102,7 +102,7 @@
          in lockstep or the highlight renders offset from the line it marks.
          Its background is also a warm tint tuned for Prism's light theme,
          nearly invisible against this component's dark background. --}}
-    <style @if($nonce) nonce="{{ $nonce }}" @endif>.bw-code-block .line-highlight { margin-top: 0.25rem; background: rgba(255, 255, 255, 0.08); }</style>
+    <style @if($nonce) nonce="{{ $nonce }}" @endif>.bw-code-block .line-highlight { margin-top: 1px; background: rgba(255, 255, 255, 0.08); }</style>
     {{-- a host page may already ship Prism (its own docs, a blog, ...). Only
          load our copy of Prism's core when there isn't one already, so we
          extend whatever is there instead of loading a clashing duplicate --}}
