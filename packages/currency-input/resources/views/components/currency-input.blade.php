@@ -64,7 +64,10 @@
                 ? strlen(preg_replace('/\D/', '', mb_substr($sample, $decimalPos + mb_strlen($decimalSymbol))))
                 : 0;
 
-            $resolvedSymbol ??= ($currencySymbol !== '' ? $currencySymbol : null);
+            // ICU falls back to echoing the raw currency code when the locale has
+            // no real glyph for it (e.g. "GHS" in en-US) — that's not a symbol,
+            // so let the curated fallback map below have a shot at it instead.
+            $resolvedSymbol ??= ($currencySymbol !== '' && strcasecmp($currencySymbol, $currency) !== 0 ? $currencySymbol : null);
             $resolvedPosition ??= (! empty($resolvedSymbol) && mb_strpos($sample, $resolvedSymbol) === 0) ? 'prefix' : 'suffix';
             $resolvedDecimal ??= $decimalSymbol;
             $resolvedThousands ??= $thousandsSymbol;

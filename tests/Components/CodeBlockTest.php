@@ -153,7 +153,7 @@ class CodeBlockTest extends TestCase
         // padding to 4px, so the margin has to move in lockstep or the highlight
         // renders offset from the line it's meant to mark. Its background is also
         // a warm tint tuned for Prism's light theme, invisible against our dark one.
-        $this->assertStringContainsString('.line-highlight { margin-top: 0.25rem;', $html);
+        $this->assertStringContainsString('.line-highlight { margin-top: 1px;', $html);
         $this->assertStringContainsString('background: rgba(255, 255, 255, 0.08)', $html);
     }
 }
