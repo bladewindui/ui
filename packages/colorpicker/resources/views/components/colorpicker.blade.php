@@ -60,7 +60,7 @@
 @once
     <x-bladewind::script :nonce="$nonce">
         const setColour = (name, colour) => {
-        domEl(`input[name="${name}"]`).value = colour;
+        setFieldValue(domEl(`input[name="${name}"]`), colour);
         domEl(`.bw-cp-label-${name}`).textContent = colour;
         domEl(`.bw-cp-trigger.${name}`).style.background = colour;
         }

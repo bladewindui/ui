@@ -75,16 +75,25 @@
             :name="$name"/>
 </span>
 <x-bladewind::script :nonce="$nonce">
+    (() => {
+    let root = domEl('.bw-number-{{$name}}');
+    // Guard against a duplicate instance (and duplicate click listeners)
+    // when a framework like Livewire re-renders this markup without a
+    // full page reload.
+    if (root && root.dataset.bwInitialised === 'true') return;
+    if (root) root.dataset.bwInitialised = 'true';
+
     changeCss('.bw-number-{{$name}} .prefix svg', '!size-4,!size-[18px],size-6,!stroke-2', 'remove');
     changeCss('.bw-number-{{$name}} .suffix svg', '!size-4,!size-[18px],size-6,!stroke-2', 'remove');
     domEl('.bw-number-{{$name}} .suffix').addEventListener('click', () => {
-    domEl('.bw-number-{{$name}} input.{{$name}}').value = parseInt(domEl('.bw-number-{{$name}} input.{{$name}}').value)
-    + parseInt({{$step}});
+    let field = domEl('.bw-number-{{$name}} input.{{$name}}');
+    setFieldValue(field, parseInt(field.value) + parseInt({{$step}}));
     checkMinMax('{{$min}}', '{{$max}}', '{{$name}}', 1);
     });
     domEl('.bw-number-{{$name}} .prefix').addEventListener('click', () => {
-    domEl('.bw-number-{{$name}} input.{{$name}}').value = parseInt(domEl('.bw-number-{{$name}} input.{{$name}}').value)
-    - parseInt({{$step}});
+    let field = domEl('.bw-number-{{$name}} input.{{$name}}');
+    setFieldValue(field, parseInt(field.value) - parseInt({{$step}}));
     checkMinMax('{{$min}}', '{{$max}}', '{{$name}}', 1);
     });
+    })();
 </x-bladewind::script>

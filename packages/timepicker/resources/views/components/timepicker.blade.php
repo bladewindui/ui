@@ -151,7 +151,7 @@
                     let time = `${hour}${minute}${ampm ?? ''}`;
 
                     if (time.length >= 5) {
-                        field.value = time;
+                        setFieldValue(field, time);
                         if (suffix) {
                             suffix.innerHTML = clearIcon.replace('<svg', `<svg data-bw-time-clear="${name}"`);
                         }
@@ -162,7 +162,7 @@
             const clearTime = (name) => {
                 let field = domEl(`.bw-time-${name}`);
                 let suffix = domEl(`.bw-timepicker-${name} .suffix`);
-                field.value = '';
+                setFieldValue(field, '');
                 suffix.innerHTML = clockIcon;
             }
 
@@ -236,7 +236,7 @@
         let format = domEl('.bw-{{$name}}_format').value;
         let time = `${hour}${minute}${format ?? ''}`;
         if (time.length >= 4) {
-        field.value = time;
+        setFieldValue(field, time);
         }
         }
         }

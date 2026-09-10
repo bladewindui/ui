@@ -37,6 +37,8 @@
     // 0-100. renders a progress bar in place of the note
     'progress' => null,
     'progressLabel' => '',
+
+    'nonce' => config('bladewind.script.nonce', null),
 ])
 @php
     $showSpinner = parseBladewindVariable($showSpinner);
@@ -116,7 +118,8 @@
 @endphp
 {{-- format-ignore-end --}}
 
-<div {{ $attributes->exceptPropAliases(get_defined_vars())->merge(['class' => $classes])}} @if($url) onclick="{!! $redirect !!}" @endif>
+<div {{ $attributes->exceptPropAliases(get_defined_vars())->merge(['class' => $classes])}}
+     @if($url) onclick="{!! $redirect !!}" role="link" tabindex="0" data-bw-statistic-clickable @endif>
     <div class="flex space-x-4">
         @if($icon !== '' && $iconPosition=='left')
             <div class="grow-0 icon">{!! $icon !!}</div>
@@ -166,3 +169,11 @@
         @endif
     </div>
 </div>
+
+@if($url)
+    @once
+        <x-bladewind::script :nonce="$nonce">
+            bwActivateOnKey('[data-bw-statistic-clickable]');
+        </x-bladewind::script>
+    @endonce
+@endif

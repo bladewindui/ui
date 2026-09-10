@@ -69,3 +69,6 @@
 @source "./packages/**/resources/views/**/*.blade.php";
 @source "./packages/**/public/**/*.js";
 @source not "./packages/core/public/css/**";
+
+/* Credit card gradient stops are assembled dynamically in Blade. */
+@source inline("from-{primary,red,orange,amber,yellow,lime,green,emerald,teal,cyan,sky,blue,indigo,violet,purple,fuchsia,pink,rose,slate,gray,zinc,neutral,stone}-{500,700} to-{primary,red,orange,amber,yellow,lime,green,emerald,teal,cyan,sky,blue,indigo,violet,purple,fuchsia,pink,rose,slate,gray,zinc,neutral,stone}-{700,900}");

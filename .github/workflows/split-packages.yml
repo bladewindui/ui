@@ -46,6 +46,12 @@ jobs:
           - { local_path: 'packages/checkcards',  split_repository: 'checkcards'  }
           - { local_path: 'packages/number',      split_repository: 'number'      }
           - { local_path: 'packages/code',        split_repository: 'code'        }
+          - { local_path: 'packages/currency-input', split_repository: 'currency-input' }
+          - { local_path: 'packages/password-meter', split_repository: 'password-meter' }
+          - { local_path: 'packages/file-preview',   split_repository: 'file-preview'   }
+          - { local_path: 'packages/transfer-list',  split_repository: 'transfer-list'  }
+          - { local_path: 'packages/inline-edit',    split_repository: 'inline-edit'    }
+          - { local_path: 'packages/credit-card',    split_repository: 'credit-card'    }
 
           # ── Forms aggregate (metapackage) ─────────────────────────────────────
           - { local_path: 'packages/forms', split_repository: 'forms' }
@@ -69,6 +75,16 @@ jobs:
           - { local_path: 'packages/popover',              split_repository: 'popover'              }
           - { local_path: 'packages/sortable',             split_repository: 'sortable'             }
           - { local_path: 'packages/calendar',             split_repository: 'calendar'             }
+          - { local_path: 'packages/divider',              split_repository: 'divider'              }
+          - { local_path: 'packages/code-block',            split_repository: 'code-block'           }
+          - { local_path: 'packages/kbd',                   split_repository: 'kbd'                  }
+          - { local_path: 'packages/description-list',      split_repository: 'description-list'     }
+          - { local_path: 'packages/chat',                  split_repository: 'chat'                 }
+          - { local_path: 'packages/meter',                 split_repository: 'meter'                }
+          - { local_path: 'packages/copy-button',           split_repository: 'copy-button'          }
+          - { local_path: 'packages/carousel',              split_repository: 'carousel'             }
+          - { local_path: 'packages/kanban',                split_repository: 'kanban'               }
+          - { local_path: 'packages/scheduler',             split_repository: 'scheduler'            }
 
           # ── Content aggregate (metapackage) ───────────────────────────────────
           - { local_path: 'packages/content', split_repository: 'content' }
@@ -82,6 +98,7 @@ jobs:
           - { local_path: 'packages/dropmenu',      split_repository: 'dropmenu'      }
           - { local_path: 'packages/pagination',    split_repository: 'pagination'    }
           - { local_path: 'packages/theme-switcher',split_repository: 'theme-switcher'}
+          - { local_path: 'packages/context-menu',  split_repository: 'context-menu'  }
 
           # ── Navigation aggregate (metapackage) ────────────────────────────────
           - { local_path: 'packages/navigation', split_repository: 'navigation' }

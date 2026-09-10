@@ -45,9 +45,9 @@
     'outline' => config('bladewind.button.outline', false),
 
     // thickness of outline
-    // 2, 4, 8
+    // '', 2, 4, 8
     // becomes border-2, border-4, border-8
-    'borderWidth' => config('bladewind.button.border_width', 2),
+    'borderWidth' => config('bladewind.button.border_width', ''),
 
     // thickness of the ring shown on focus
     // 1, 2, 4, 8
@@ -96,6 +96,7 @@
     ];
 
     $colour = (!empty($color)) ? $color : $type;
+    $is_secondary = $colour === 'secondary';
     $outline_colour =   "border-$colour-500/50 focus:ring-$colour-500 hover:border-$colour-600
                         dark:hover:border-$colour-200 active:border-$colour-600 text-$colour-600
                         dark:text-dark-400 dark:hover:text-dark-300  %s";
@@ -106,16 +107,19 @@
         $button_colour = preg_replace('/-\d+/', '', $button_colour);
     }
     $button_type = ($canSubmit) ? 'submit' : 'button';
-    $spinner_css =  sprintf(($outline ? 'text-gray-600 dark:text-white %s' : 'text-white %s'), (!$showSpinner) ?  'hidden' : '');
+    $spinner_css =  sprintf((($outline || $is_secondary) ? 'text-gray-600 dark:text-white %s' : 'text-white %s'), (!$showSpinner) ?  'hidden' : '');
     $focus_ring_width = ($ringWidth !== '' && in_array((int)$ringWidth, [1,2,4,8])) ? '-'.$ringWidth : '';
     $focus_ring_css = (!$showFocusRing) ? 'focus:ring-0 focus:outline-0' : 'focus:ring'.$focus_ring_width;
-    $border_width = ' border-'.$borderWidth;
+    $border_width = (!is_numeric($borderWidth)) ? 'border' : ' border-'.$borderWidth;
     $primary_colour_css = (($outline) ?
         sprintf($outline_colour,$focus_ring_css.$border_width) :
         sprintf($button_colour,$focus_ring_css)
     );
+    if ($is_secondary) {
+        $primary_colour_css = 'bw-button-secondary '.$focus_ring_css;
+    }
     $radius_css = $roundness[$radius] ?? 'rounded-full';
-    $button_text_colour = (!empty($buttonTextCss)) ? $buttonTextCss : ($outline ? '' : 'text-white/90 hover:text-white');
+    $button_text_colour = (!empty($buttonTextCss)) ? $buttonTextCss : (($outline || $is_secondary) ? '' : 'text-white/90 hover:text-white');
     $disabled_css = $disabled ? 'disabled' : 'cursor-pointer';
     $outline_css = ($outline) ? 'outlined '.$border_width : '';
     $has_icon_css = (!empty($icon)) ? ' has-icon ' : '';

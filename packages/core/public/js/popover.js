@@ -17,6 +17,7 @@
             show = () => {
                 changeCss(this.content, 'opacity-0,hidden', 'remove');
                 domEl(this.content).setAttribute('data-open', '1');
+                domEl(`.${this.name} .bw-trigger`).setAttribute('aria-expanded', 'true');
                 this.reposition();
 
                 if (! this._outsideClickBound) {
@@ -107,6 +108,7 @@
 
             hide = () => {
                 domEl(this.content).setAttribute('data-open', '0');
+                domEl(`.${this.name} .bw-trigger`).setAttribute('aria-expanded', 'false');
                 changeCss(this.content, 'animate__fadeIn', 'remove');
                 changeCss(this.content, 'animate__fadeOut');
                 setTimeout(() => {

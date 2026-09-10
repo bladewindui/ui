@@ -36,6 +36,8 @@
     // tailwind padding utility, emitted verbatim, so padding="p-5" works.
     // compact and no_padding still work and are equivalent to small and none.
     'padding' => config('bladewind.card.padding', ''),
+
+    'nonce' => config('bladewind.script.nonce', null),
 ])
 @php
     $compact = parseBladewindVariable($compact);
@@ -90,7 +92,8 @@
 @endphp
 {{-- format-ignore-end --}}
 
-<div {{ $attributes->exceptPropAliases(get_defined_vars())->merge([ 'class' => $classes]) }} @if($url) onclick="{!! $redirect !!}" @endif>
+<div {{ $attributes->exceptPropAliases(get_defined_vars())->merge([ 'class' => $classes]) }}
+     @if($url) onclick="{!! $redirect !!}" role="link" tabindex="0" data-bw-card-clickable @endif>
     @if($header)
         <div class="border-b border-gray-100/30 dark:border-dark-600/60">
             {{ $header }}
@@ -108,3 +111,11 @@
         </div>
     @endif
 </div>
+
+@if($url)
+    @once
+        <x-bladewind::script :nonce="$nonce">
+            bwActivateOnKey('[data-bw-card-clickable]');
+        </x-bladewind::script>
+    @endonce
+@endif

@@ -75,10 +75,10 @@
     }
     @if($range)
         sliderValue_{{$name}}.innerHTML = `${minSlider_{{$name}}.value} - ${maxSlider_{{$name}}.value}`;
-        sliderInput_{{$name}}.value = `${minSlider_{{$name}}.value},${maxSlider_{{$name}}.value}`;
+        setFieldValue(sliderInput_{{$name}}, `${minSlider_{{$name}}.value},${maxSlider_{{$name}}.value}`);
     @else
         sliderValue_{{$name}}.innerHTML = `${minSlider_{{$name}}.value}`;
-        sliderInput_{{$name}}.value = `${minSlider_{{$name}}.value}`;
+        setFieldValue(sliderInput_{{$name}}, `${minSlider_{{$name}}.value}`);
     @endif
     };
     @if($range)
@@ -87,7 +87,7 @@
         maxSlider_{{$name}}.value = parseInt(minSlider_{{$name}}.value) + 1;
         }
         sliderValue_{{$name}}.innerHTML = `${minSlider_{{$name}}.value} - ${maxSlider_{{$name}}.value}`;
-        sliderInput_{{$name}}.value = `${minSlider_{{$name}}.value},${maxSlider_{{$name}}.value}`;
+        setFieldValue(sliderInput_{{$name}}, `${minSlider_{{$name}}.value},${maxSlider_{{$name}}.value}`);
         };
     @endif
 </x-bladewind::script>

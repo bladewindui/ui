@@ -1,7 +1,11 @@
-<p><img src="https://img.shields.io/github/license/bladewindui/bladewindui" alt="License" /></p>
+<p><img src="https://img.shields.io/github/license/bladewindui/ui" alt="License" /></p>
 <p><img src="https://bladewindui.com/assets/images/bw-logo.png" style="height: 30px; margin-bottom:10px" /></p>
 
-BladewindUI is a modern, open-source UI component library designed to help developers build beautiful, consistent, and responsive web interfaces faster. It provides a growing collection of thoughtfully designed, customizable components that are simple to integrate, easy to use, and flexible enough for everything from dashboards and internal tools to full-featured web applications.Every component is simple to use and ships with sensible defaults you can override per-project.
+BladewindUI is a modern, open-source UI component library designed to help developers build beautiful, consistent, and
+responsive web interfaces faster. It provides a growing collection of thoughtfully designed, customizable components
+that are simple to integrate, easy to use, and flexible enough for everything from dashboards and internal tools to
+full-featured web applications. Every component is simple to use and ships with sensible defaults you can override
+per-project.
 
 # Installation
 
@@ -70,15 +74,16 @@ Full installation guide: [bladewindui.com/install](https://bladewindui.com/insta
 ## Components
 
 Components are organised into groups. Each group maps directly to a Composer package.
-Standalone packages (Button, Modal, Alert, Bell, Notification, Table, Spinner) sit outside any group.
+Standalone packages (Button, Modal, Alert, Bell, Notification, Table, Data Grid, Calendar, Spinner) sit outside any
+group.
 
 ### Standalone packages
 
 These components are their own packages and are not bundled into any group.
 They are pulled in as dependencies by other components that need them.
 
-| Package                                                        | Composer name                      | Component(s)                                   |
-|----------------------------------------------------------------|------------------------------------|------------------------------------------------|
+| Package                                                        | Composer name              | Component(s)                                   |
+|----------------------------------------------------------------|----------------------------|------------------------------------------------|
 | Core                                                           | `bladewindui/core`         | Shared helpers, CSS variables, `helpers.js`    |
 | [Icon](https://bladewindui.com/component/icon)                 | `bladewindui/icon`         | SVG icon wrapper (Heroicons)                   |
 | [Alert](https://bladewindui.com/component/alert)               | `bladewindui/alert`        | Alert                                          |
@@ -89,6 +94,8 @@ They are pulled in as dependencies by other components that need them.
 | [Notification](https://bladewindui.com/component/notification) | `bladewindui/notification` | Notification                                   |
 | [Spinner](https://bladewindui.com/component/spinner)           | `bladewindui/spinner`      | Spinner, Shimmer, Processing, Process Complete |
 | [Table](https://bladewindui.com/component/table)               | `bladewindui/table`        | Table, Table Icons                             |
+| [Data Grid](https://bladewindui.com/component/data-grid)       | `bladewindui/data-grid`    | Data Grid                                      |
+| [Calendar](https://bladewindui.com/component/calendar)         | `bladewindui/calendar`     | Calendar                                       |
 
 ### Forms group — `bladewindui/forms`
 
@@ -101,22 +108,28 @@ composer require bladewindui/datepicker
 ...
 ```
 
-| Package                                                                  | Composer name                     | Component(s)                     |
-|--------------------------------------------------------------------------|-----------------------------------|----------------------------------|
+| Package                                                                  | Composer name             | Component(s)                     |
+|--------------------------------------------------------------------------|---------------------------|----------------------------------|
 | [Checkbox](https://bladewindui.com/component/checkbox)                   | `bladewindui/checkbox`    | Checkbox                         |
 | [Checkcards](https://bladewindui.com/component/checkcard)                | `bladewindui/checkcards`  | Checkcards, Checkcard            |
 | [Colorpicker](https://bladewindui.com/component/colorpicker)             | `bladewindui/colorpicker` | Colorpicker                      |
 | [Datepicker](https://bladewindui.com/component/datepicker)               | `bladewindui/datepicker`  | Datepicker                       |
 | [Filepicker](https://bladewindui.com/component/filepicker)               | `bladewindui/filepicker`  | Filepicker (powered by FilePond) |
+| [File Preview](https://bladewindui.com/component/file-preview)           | `bladewindui/file-preview` | File Preview                    |
 | [Input](https://bladewindui.com/component/input)                         | `bladewindui/input`       | Input, Error                     |
+| [Inline Edit](https://bladewindui.com/component/inline-edit)             | `bladewindui/inline-edit` | Inline Edit                      |
 | [Number](https://bladewindui.com/component/number)                       | `bladewindui/number`      | Number stepper                   |
+| [Currency Input](https://bladewindui.com/component/currency-input)       | `bladewindui/currency-input` | Currency Input                |
+| [Password Meter](https://bladewindui.com/component/password-meter)       | `bladewindui/password-meter` | Password Strength Meter       |
 | [Radio Button](https://bladewindui.com/component/radio-button)           | `bladewindui/radio`       | Radio Button                     |
 | [Select](https://bladewindui.com/component/select)                       | `bladewindui/select`      | Select, Select Item              |
 | [Slider](https://bladewindui.com/component/slider)                       | `bladewindui/slider`      | Slider                           |
+| [Transfer List](https://bladewindui.com/component/transfer-list)         | `bladewindui/transfer-list` | Transfer List                  |
 | [Textarea](https://bladewindui.com/component/textarea)                   | `bladewindui/textarea`    | Textarea                         |
 | [Timepicker](https://bladewindui.com/component/timepicker)               | `bladewindui/timepicker`  | Timepicker                       |
 | [Toggle](https://bladewindui.com/component/toggle)                       | `bladewindui/toggle`      | Toggle                           |
 | [Verification Code](https://bladewindui.com/component/verification-code) | `bladewindui/code`        | Verification Code / OTP          |
+| [Credit Card](https://bladewindui.com/component/credit-card)             | `bladewindui/credit-card` | Credit Card                      |
 
 ### Content group — `bladewindui/content`
 
@@ -129,14 +142,20 @@ composer require bladewindui/chart
 ...
 ```
 
-| Package                                                                          | Composer name                               | Component(s)                  |
-|----------------------------------------------------------------------------------|---------------------------------------------|-------------------------------|
+| Package                                                                          | Composer name                       | Component(s)                  |
+|----------------------------------------------------------------------------------|-------------------------------------|-------------------------------|
 | [Accordion](https://bladewindui.com/component/accordion)                         | `bladewindui/accordion`             | Accordion, Accordion Item     |
 | [Avatar](https://bladewindui.com/component/avatar)                               | `bladewindui/avatar`                | Avatar, Avatars               |
 | [Card](https://bladewindui.com/component/card)                                   | `bladewindui/card`                  | Card, Contact Card            |
+| [Chat](https://bladewindui.com/component/chat)                                   | `bladewindui/chat`                  | Chat, Chat Message            |
+| [Carousel](https://bladewindui.com/component/carousel)                           | `bladewindui/carousel`              | Carousel, Slide                |
+| [Kanban](https://bladewindui.com/component/kanban)                               | `bladewindui/kanban`                | Kanban, Column, Card          |
+| [Scheduler](https://bladewindui.com/component/scheduler)                         | `bladewindui/scheduler`             | Scheduler                     |
 | [Centered Content](https://bladewindui.com/component/centered-content)           | `bladewindui/centered-content`      | Centered Content              |
 | [Chart](https://bladewindui.com/component/chart)                                 | `bladewindui/chart`                 | Chart (line, bar, pie, donut) |
+| [Code Block](https://bladewindui.com/component/code-block)                       | `bladewindui/code-block`            | Code Block                    |
 | [Contact Card](https://bladewindui.com/component/contact-card)                   | `bladewindui/contact-card`          | Contact Card                  |
+| [Divider](https://bladewindui.com/component/divider)                             | `bladewindui/divider`               | Divider                       |
 | [Empty State](https://bladewindui.com/component/empty-state)                     | `bladewindui/empty-state`           | Empty State                   |
 | [Horizontal Line Graph](https://bladewindui.com/component/horizontal-line-graph) | `bladewindui/horizontal-line-graph` | Horizontal Line Graph         |
 | [List View](https://bladewindui.com/component/list-view)                         | `bladewindui/listview`              | List View, List View Item     |
@@ -147,6 +166,10 @@ composer require bladewindui/chart
 | [Drawer](https://bladewindui.com/component/drawer)                               | `bladewindui/drawer`                | Drawer                        |
 | [Statistic](https://bladewindui.com/component/statistic)                         | `bladewindui/statistic`             | Statistic                     |
 | [Tag](https://bladewindui.com/component/tag)                                     | `bladewindui/tag`                   | Tag, Tags                     |
+| [Keyboard Key](https://bladewindui.com/component/kbd)                            | `bladewindui/kbd`                   | Keyboard Key                  |
+| [Copy Button](https://bladewindui.com/component/copy-button)                     | `bladewindui/copy-button`           | Copy Button                   |
+| [Meter](https://bladewindui.com/component/meter)                                 | `bladewindui/meter`                 | Meter                         |
+| [Description List](https://bladewindui.com/component/description-list)           | `bladewindui/description-list`      | Description List, Item        |
 | [Timeline](https://bladewindui.com/component/timeline)                           | `bladewindui/timeline`              | Timeline, Timelines           |
 | [Tooltip](https://bladewindui.com/component/tooltip)                             | `bladewindui/tooltip`               | Tooltip                       |
 
@@ -158,21 +181,24 @@ composer require bladewindui/navigation
 # or install any single component
 composer require bladewindui/breadcrumbs
 composer require bladewindui/sidebar
+composer require bladewindui/command-palette
 composer require bladewindui/tab
 composer require bladewindui/stepper
 composer require bladewindui/pagination
 ...
 ```
 
-| Package                                                            | Composer name                        | Component(s)                            |
-|--------------------------------------------------------------------|--------------------------------------|-----------------------------------------|
-| [Breadcrumbs](https://bladewindui.com/component/breadcrumbs)       | `bladewindui/breadcrumbs`    | Breadcrumbs, Breadcrumbs Item           |
-| [Sidebar](https://bladewindui.com/component/sidebar)               | `bladewindui/sidebar`        | Sidebar, Sidebar Group, Sidebar Item     |
-| [Stepper](https://bladewindui.com/component/stepper)               | `bladewindui/stepper`        | Stepper, Stepper Item, Stepper Content  |
-| [Dropmenu](https://bladewindui.com/component/dropmenu)             | `bladewindui/dropmenu`       | Dropmenu, Dropmenu Item                 |
-| [Pagination](https://bladewindui.com/component/pagination)         | `bladewindui/pagination`     | Pagination                              |
-| [Tab](https://bladewindui.com/component/tab)                       | `bladewindui/tab`            | Tab, Tab Body, Tab Content, Tab Heading |
-| [Theme Switcher](https://bladewindui.com/component/theme-switcher) | `bladewindui/theme-switcher` | Theme Switcher (light / dark)           |
+| Package                                                              | Composer name                 | Component(s)                                                 |
+|----------------------------------------------------------------------|-------------------------------|--------------------------------------------------------------|
+| [Breadcrumbs](https://bladewindui.com/component/breadcrumbs)         | `bladewindui/breadcrumbs`     | Breadcrumbs, Breadcrumbs Item                                |
+| [Sidebar](https://bladewindui.com/component/sidebar)                 | `bladewindui/sidebar`         | Sidebar, Sidebar Group, Sidebar Item                         |
+| [Command Palette](https://bladewindui.com/component/command-palette) | `bladewindui/command-palette` | Command Palette, Command Palette Group, Command Palette Item |
+| [Stepper](https://bladewindui.com/component/stepper)                 | `bladewindui/stepper`         | Stepper, Stepper Item, Stepper Content                       |
+| [Dropmenu](https://bladewindui.com/component/dropmenu)               | `bladewindui/dropmenu`        | Dropmenu, Dropmenu Item                                      |
+| [Context Menu](https://bladewindui.com/component/context-menu)       | `bladewindui/context-menu`    | Context Menu, Context Menu Item                              |
+| [Pagination](https://bladewindui.com/component/pagination)           | `bladewindui/pagination`      | Pagination                                                   |
+| [Tab](https://bladewindui.com/component/tab)                         | `bladewindui/tab`             | Tab, Tab Body, Tab Content, Tab Heading                      |
+| [Theme Switcher](https://bladewindui.com/component/theme-switcher)   | `bladewindui/theme-switcher`  | Theme Switcher (light / dark)                                |
 
 ## How groups work
 

@@ -22,6 +22,10 @@ composer require bladewindui/ui
 
 Full documentation, live demos, and all available attributes are at **[bladewindui.com](https://bladewindui.com)**.
 
+## Livewire
+
+The active tab lives in the tab group's own DOM, not in Livewire's component state. A Livewire re-render that touches this markup for reasons unrelated to the tabs resets the active tab back to its initial value — wrap the tab group in `wire:ignore` if it sits inside such a component. The delegated event bindings are idempotent, so a re-render does not create duplicate listeners.
+
 ## License
 
 MIT — see the [LICENSE](https://github.com/mkocansey/bladewind/blob/main/LICENSE) file.

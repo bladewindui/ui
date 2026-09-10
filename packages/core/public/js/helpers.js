@@ -536,7 +536,6 @@ const hideModalActionButtons = (element) => {
     hide(`.bw-${element} .modal-footer`);
 };
 
-
 /**
  * Alias for unhide().
  * @see {@link https://bladewindui.com/extra/helper-functions#show}
@@ -910,6 +909,20 @@ const filterTableDebounced = (keyword, table, field = null, delay = 0, minLength
 
 
 /**
+ * Set a form field's value and dispatch a native `input`/`change` event so
+ * framework bindings (e.g. Livewire's wire:model) observe the change, not
+ * just listeners on the specific widget that made it.
+ * @param {HTMLElement} element - The input/hidden field to update.
+ * @param {*} value - The value to assign.
+ * @param {string} eventType - 'change' (default) or 'input'.
+ * @return {void}
+ */
+const setFieldValue = (element, value, eventType = 'change') => {
+    element.value = value;
+    element.dispatchEvent(new Event(eventType, {bubbles: true, cancelable: true}));
+};
+
+/**
  * Remove trailing comma from string.
  * @param {string} element - The input field to remove trailing comma from.
  * @return {void}
@@ -1029,8 +1042,8 @@ const checkMinMax = (min, max, element, enforceLimits = false) => {
 
     if (field.value !== '') {
         if (enforceLimits) {
-            if (!isNaN(minimum) && field.value < minimum) field.value = minimum;
-            if (!isNaN(maximum) && field.value > maximum) field.value = maximum;
+            if (!isNaN(minimum) && field.value < minimum) setFieldValue(field, minimum);
+            if (!isNaN(maximum) && field.value > maximum) setFieldValue(field, maximum);
         } else {
             if (((!isNaN(minimum) && field.value < minimum) || (!isNaN(maximum) && field.value > maximum))) {
                 changeCss(field, 'focus:outline-primary-500,focus:border-primary-500', 'remove', true);
@@ -2022,6 +2035,9 @@ bwOn('click', '[data-bw-tag-value]', (tag) => {
 
 // a closable tag with no custom onclick simply removes itself
 bwOn('click', '[data-bw-tag-remove]', (link) => link.parentElement?.remove());
+
+// a removable file preview with no custom onclick simply removes itself
+bwOn('click', '[data-bw-file-preview-remove]', (link) => link.closest('.bw-file-preview')?.remove());
 
 // the modal's own close buttons. a consumer-supplied ok/cancel action is their
 // javascript and stays inline, so it is not handled here
@@ -3391,6 +3407,7 @@ Object.assign(window, {
     initialiseSteppers,
     getPrefixSuffixOffsetWidth,
     positionPrefix,
+    setFieldValue,
     positionSuffix,
     togglePassword,
     partition,

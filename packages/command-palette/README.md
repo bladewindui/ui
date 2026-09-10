@@ -70,6 +70,10 @@ Every component forwards supported custom classes and HTML attributes through it
 
 Full examples and the complete attribute tables are available at [bladewindui.com/component/command-palette](https://bladewindui.com/component/command-palette).
 
+## Livewire
+
+Open/closed state and the current search filter live in the palette's own DOM, not in Livewire's component state. A Livewire re-render that touches this markup for reasons unrelated to the palette resets it to closed — wrap the palette in `wire:ignore` if it sits inside such a component. The delegated event bindings are idempotent, so a re-render does not create duplicate listeners.
+
 ## License
 
 MIT. See the [LICENSE](https://github.com/mkocansey/bladewind/blob/main/LICENSE) file.

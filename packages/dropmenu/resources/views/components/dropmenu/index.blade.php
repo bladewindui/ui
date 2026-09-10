@@ -51,7 +51,7 @@
             {!!$trigger!!}
         @endif
     </div>
-    <div class="opacity-0 hidden bw-dropmenu-items animate__animated animate__fadeIn animate__faster"
+    <div class="opacity-0 hidden bw-dropmenu-items animate__animated animate__fadeIn animate__faster relative z-[9999]"
          id="bw-dropmenu-{{ $name }}"
          role="menu"
          aria-hidden="true"
@@ -78,8 +78,17 @@
     <x-bladewind::script :nonce="$nonce" src="{{ asset('vendor/bladewind/js/dropmenu.js') }}"></x-bladewind::script>
 @endonce
 <x-bladewind::script :nonce="$nonce" :modular="$modular">
-    const {{ $name }} = new BladewindDropmenu('{{ $name }}', {
-    triggerOn: '{{$triggerOn}}',
-    hideAfterClick: '{{$hideAfterClick}}'
-    });
+    (() => {
+        const root = document.querySelector('.{{ $name }}');
+        // Guard against a duplicate instance (and duplicate document-level
+        // listeners) when a framework like Livewire re-renders this markup
+        // without a full page reload.
+        if (root && root.dataset.bwInitialised === 'true') return;
+        if (root) root.dataset.bwInitialised = 'true';
+
+        new BladewindDropmenu('{{ $name }}', {
+            triggerOn: '{{$triggerOn}}',
+            hideAfterClick: '{{$hideAfterClick}}'
+        });
+    })();
 </x-bladewind::script>

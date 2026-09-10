@@ -53,6 +53,13 @@ return [
         'contained' => false,
     ],
 
+    'divider' => [
+        'orientation' => 'horizontal',
+        'spacing' => 'medium',
+        'decorative' => true,
+        'color' => null,
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Pagination component
@@ -201,6 +208,15 @@ return [
         'escape_can_close' => true,
     ],
 
+    'context_menu' => [
+        'padded' => true,
+        'disable_native' => true,
+        'item' => [
+            'dir' => '',
+            'padded' => true,
+        ],
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Button component
@@ -246,6 +262,77 @@ return [
         // padding scale. none tiny small regular medium big large, or any
         // tailwind padding utility. wins over compact and no_padding
         'padding' => '',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Chat component
+    |--------------------------------------------------------------------------
+    */
+    'chat' => [
+        'height' => null,
+    ],
+
+    'chat_message' => [
+        'outgoing' => false,
+        'grouped' => false,
+        'show_avatar' => true,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Carousel component
+    |--------------------------------------------------------------------------
+    */
+    'carousel' => [
+        'arrows' => true,
+        'indicators' => true,
+        'autoplay' => false,
+        'interval' => 5000,
+        'loop' => true,
+        'swipe' => true,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Kanban component
+    |--------------------------------------------------------------------------
+    */
+    'kanban' => [
+        'animation' => 150,
+    ],
+
+    'kanban_column' => [
+        'loading' => false,
+        'empty_text' => 'No cards',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Scheduler component
+    |--------------------------------------------------------------------------
+    */
+    'scheduler' => [
+        'view' => 'day',
+        'start_hour' => 8,
+        'end_hour' => 18,
+        'slot_minutes' => 30,
+        'week_starts' => 1,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Credit Card component
+    |--------------------------------------------------------------------------
+    */
+    'credit_card' => [
+        'color' => 'primary',
+        'variant' => 'gradient',
+        'flipped' => false,
+        'disabled' => false,
+        'readonly' => false,
+        'required' => false,
+        'show_error_inline' => false,
     ],
 
     /*
@@ -531,6 +618,33 @@ return [
         'icon_type' => 'outline',
     ],
 
+    'currency_input' => [
+        'currency' => 'USD',
+        'locale' => 'en-US',
+    ],
+
+    'password_meter' => [
+        'show_label' => true,
+        'min_length' => 8,
+        'strong_length' => 12,
+    ],
+
+    'file_preview' => [
+        'removable' => true,
+        'downloadable' => true,
+    ],
+
+    'transfer_list' => [
+        'searchable' => true,
+        'height' => 260,
+        'value_key' => 'value',
+        'label_key' => 'label',
+    ],
+
+    'inline_edit' => [
+        'required' => false,
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Popover component
@@ -780,6 +894,44 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Meter component
+    |--------------------------------------------------------------------------
+    */
+    'meter' => [
+        'size' => 'medium',
+        'show_value' => true,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Kbd component
+    |--------------------------------------------------------------------------
+    */
+    'kbd' => [
+        'size' => 'small',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Copy button component
+    |--------------------------------------------------------------------------
+    */
+    'copy_button' => [
+        'timeout' => 1500,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Description list component
+    |--------------------------------------------------------------------------
+    */
+    'description_list' => [
+        'divided' => true,
+        'striped' => false,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Textarea component
     |--------------------------------------------------------------------------
     */
@@ -853,6 +1005,19 @@ return [
         'mask' => false,
         'hide_input' => false,
         'has_separator' => false,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Code Block component
+    |--------------------------------------------------------------------------
+    */
+    'code_block' => [
+        'language' => 'markup',
+        'line_numbers' => false,
+        'wrap' => false,
+        'show_copy' => true,
+        'show_language_label' => true,
     ],
 
 ];

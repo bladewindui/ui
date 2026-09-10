@@ -96,32 +96,44 @@
 @endif
 
 <x-bladewind::script :nonce="$nonce" :modular="$modular">
-    const {{ $name }} = new Sortable(domEl('.{{ $name }}-list'), {
-        group: { name: '{{ $groupName }}', pull: {!! $pull !!}, put: {!! $put !!} },
-        sort: {{ $sortable ? 'true' : 'false' }},
-        animation: {{ $animation }},
-        @if($hasHandle) handle: '.bw-sortable-handle', @endif
-        @if(! empty($filterSelector)) filter: '{{ $filterSelector }}', preventOnFilter: true, @endif
-        @if($multidrag) multiDrag: true, selectedClass: 'bw-sortable-selected', @endif
-        @if($swap) swap: true, swapClass: 'bw-sortable-swap-highlight', @endif
-        ghostClass: 'bw-sortable-ghost',
-        chosenClass: 'bw-sortable-chosen',
-        dragClass: 'bw-sortable-drag',
-        @if(! empty($inputName) || ! empty($onSorted))
-        onSort: function (evt) {
-            const order = {{ $name }}.toArray();
-            @if(! empty($inputName))
-            const orderInput = domEl('.{{ $name }}-order');
-            if (orderInput) orderInput.value = JSON.stringify(order);
+    (() => {
+        const list = domEl('.{{ $name }}-list');
+        // Guard against a duplicate Sortable instance when a framework like
+        // Livewire re-renders this markup without a full page reload.
+        if (list && list.dataset.bwInitialised === 'true') return;
+        if (list) list.dataset.bwInitialised = 'true';
+
+        // exposed on window, not as a local const, so it stays reachable as
+        // a bare `{{ $name }}` reference from other <script> tags on the page
+        // (see "Reading the order yourself" in the README) even though
+        // instantiation now happens inside this guarded closure.
+        window.{{ $name }} = new Sortable(list, {
+            group: { name: '{{ $groupName }}', pull: {!! $pull !!}, put: {!! $put !!} },
+            sort: {{ $sortable ? 'true' : 'false' }},
+            animation: {{ $animation }},
+            @if($hasHandle) handle: '.bw-sortable-handle', @endif
+            @if(! empty($filterSelector)) filter: '{{ $filterSelector }}', preventOnFilter: true, @endif
+            @if($multidrag) multiDrag: true, selectedClass: 'bw-sortable-selected', @endif
+            @if($swap) swap: true, swapClass: 'bw-sortable-swap-highlight', @endif
+            ghostClass: 'bw-sortable-ghost',
+            chosenClass: 'bw-sortable-chosen',
+            dragClass: 'bw-sortable-drag',
+            @if(! empty($inputName) || ! empty($onSorted))
+            onSort: function (evt) {
+                const order = {{ $name }}.toArray();
+                @if(! empty($inputName))
+                const orderInput = domEl('.{{ $name }}-order');
+                if (orderInput) setFieldValue(orderInput, JSON.stringify(order));
+                @endif
+                @if(! empty($onSorted))
+                if (typeof {{ $onSorted }} === 'function') {{ $onSorted }}(order, evt);
+                @endif
+            },
             @endif
-            @if(! empty($onSorted))
-            if (typeof {{ $onSorted }} === 'function') {{ $onSorted }}(order, evt);
-            @endif
-        },
+        });
+        @if(! empty($inputName))
+        // seed the hidden input with the initial order on load
+        domEl('.{{ $name }}-order').value = JSON.stringify({{ $name }}.toArray());
         @endif
-    });
-    @if(! empty($inputName))
-    // seed the hidden input with the initial order on load
-    domEl('.{{ $name }}-order').value = JSON.stringify({{ $name }}.toArray());
-    @endif
+    })();
 </x-bladewind::script>

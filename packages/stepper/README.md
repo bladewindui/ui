@@ -46,6 +46,10 @@ Content panels have a border by default. Set `has-border="false"` on `stepper.co
 
 Full documentation and live examples are at **[bladewindui.com/component/stepper](https://bladewindui.com/component/stepper)**.
 
+## Livewire
+
+The current step lives in the stepper's own DOM, not in Livewire's component state. A Livewire re-render that touches this markup for reasons unrelated to the stepper resets it back to its initial step — wrap the stepper in `wire:ignore` if it sits inside such a component. The delegated event bindings are idempotent, so a re-render does not create duplicate listeners.
+
 ## License
 
 MIT. See the [LICENSE](https://github.com/mkocansey/bladewind/blob/main/LICENSE) file.

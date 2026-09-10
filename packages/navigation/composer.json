@@ -23,6 +23,7 @@
         "bladewindui/stepper": "^5.0",
         "bladewindui/tab": "^5.0",
         "bladewindui/dropmenu": "^5.0",
+        "bladewindui/context-menu": "^5.0",
         "bladewindui/pagination": "^5.0",
         "bladewindui/theme-switcher": "^5.0"
     }

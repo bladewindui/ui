@@ -43,11 +43,13 @@
     @php
         $row = (array) $row;
         $row_id = $row['id'] ?? uniqid();
+        $row_click = !empty($onclick) ? build_click($onclick, $row) : null;
     @endphp
     {{-- paginationRow() is emitted whether or not the table is paginated, the same
          as the legacy data path. sortTableByColumn filters rows by data-page, so
          without it a non-paginated table sorts nothing at all. --}}
-    <tr {!! paginationRow($loop->iteration, $pageSize, $defaultPage) !!} data-id="{{ $row_id }}">
+    <tr {!! paginationRow($loop->iteration, $pageSize, $defaultPage) !!} data-id="{{ $row_id }}"
+        @if($row_click) tabindex="0" data-bw-table-row-clickable @endif>
         @if($showRowNumbers)
             <td>{{ $loop->iteration }}</td>
         @endif
@@ -62,7 +64,7 @@
             <td @class([$column_alignment[$column['align']], $column['class']])
                 data-row-id="{{ $row_id }}"
                 data-column="{{ $column['key'] }}"
-                @if(!empty($onclick)) onclick="{!! build_click($onclick, $row) !!}" @endif>{!! $value !!}</td>
+                @if($row_click) onclick="{!! $row_click !!}" @endif>{!! $value !!}</td>
         @endforeach
         <x-bladewind::table-icons :icons_array="$actionIcons" :row="$row"/>
     </tr>
