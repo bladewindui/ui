@@ -17,14 +17,14 @@
         }
     ],
     "require": {
-        "bladewindui/breadcrumbs": "^5.0",
-        "bladewindui/sidebar": "^5.0",
-        "bladewindui/command-palette": "^5.0",
-        "bladewindui/stepper": "^5.0",
-        "bladewindui/tab": "^5.0",
-        "bladewindui/dropmenu": "^5.0",
-        "bladewindui/context-menu": "^5.0",
-        "bladewindui/pagination": "^5.0",
-        "bladewindui/theme-switcher": "^5.0"
+        "bladewindui/breadcrumbs": "^5.1",
+        "bladewindui/sidebar": "^5.1",
+        "bladewindui/command-palette": "^5.1",
+        "bladewindui/stepper": "^5.1",
+        "bladewindui/tab": "^5.1",
+        "bladewindui/dropmenu": "^5.1",
+        "bladewindui/context-menu": "^5.1",
+        "bladewindui/pagination": "^5.1",
+        "bladewindui/theme-switcher": "^5.1"
     }
 }
