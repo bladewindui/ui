@@ -4,8 +4,10 @@
     'title' => '',
     'value' => '',
     'icon_css' => '',
+    'disabled' => false,
 ])
 @aware([
+    'disabled' => $disabled,
     'compact' => config('bladewind.checkcards.compact', false),
     'color' => config('bladewind.checkcards.color', 'primary'),
     'radius' => config('bladewind.checkcards.radius', 'medium'),
@@ -22,6 +24,7 @@
 @php
     $name = parseBladewindName($name);
     $compact = parseBladewindVariable($compact);
+    $disabled = parseBladewindVariable($disabled);
     $colour = defaultBladewindColour($color);
     $border_colour = defaultBladewindColour($borderColor);
     $border_width = !in_array($borderWidth, ['', 2,4,8]) ? '' : '-'.$borderWidth;
@@ -37,6 +40,7 @@
 
 <div @class([
         'bg-white dark:bg-dark-800/30 bw-selectable-card cursor-pointer focus:outline-none flex relative',
+        'aria-disabled:cursor-not-allowed aria-disabled:opacity-50',
         'items-center' => ($alignItems == 'center'),
         'items-start' => ($alignItems != 'center'),
         "border$border_width border-$border_colour-400/50 hover:border-$border_colour-500/80 dark:border-dark-500/80 dark:hover:border-dark-400/70",
@@ -50,6 +54,7 @@
      tabindex="0"
      aria-checked="{{ in_array((string) $value, array_map('strval', (array) explode(',', (string) $selectedValue)), true) ? 'true' : 'false' }}"
      @if($title !== '') aria-label="{{ strip_tags($title) }}" @endif
+     @if($disabled) aria-disabled="true" @endif
      data-value="{{$value}}">
     <div class="flex">
         <span>
@@ -97,6 +102,7 @@
         arrInputValue = arrInputValue.filter(item => item !== value);
         input.value = arrInputValue.join(',');
         hide(checkmark, true);
+        el.setAttribute('aria-checked', 'false');
         changeCss(el, border_default, 'add', true);
         changeCss(el, border_active, 'remove', true);
         } else {
@@ -112,20 +118,37 @@
         arrInputValue.push(value);
         input.value = arrInputValue.join(',');
         unhide(checkmark, true);
+        el.setAttribute('aria-checked', 'true');
         changeCss(el, border_default, 'remove', true);
         changeCss(el, border_active, 'add', true);
         }
         }
 
+        /* disable every card in a group, or only the card with the given value.
+           selectCheckcard() still works on a disabled card, so a selection can
+           be made in code and then locked in */
+        var disableCheckcards = (name, value = null, disabled = true) => {
+        domEls(`[data-bw-checkcard="${name}"]`).forEach((card) => {
+        if (value === null || card.getAttribute('data-value') === String(value)) {
+        card.setAttribute('aria-disabled', disabled);
+        }
+        });
+        }
+        var enableCheckcards = (name, value = null) => disableCheckcards(name, value, false);
+
         /* bound by delegation rather than an inline onclick, so a strict CSP does
            not disable selection, and Enter/Space work on a card that is not a
            native control. see #608 */
         bwOn('click', '[data-bw-checkcard]', (card) => {
-        selectCheckcard(
-        card.getAttribute('data-bw-checkcard'),
-        card.getAttribute('data-value'),
-        card.getAttribute('data-bw-checkcard-colour')
-        );
+        if (card.getAttribute('aria-disabled') === 'true') return;
+        const name = card.getAttribute('data-bw-checkcard');
+        const value = card.getAttribute('data-value');
+        selectCheckcard(name, value, card.getAttribute('data-bw-checkcard-colour'));
+
+        /* the group's onclick names a function rather than holding inline code,
+           so it can be called without eval under a strict CSP */
+        const onclick = domEl(`input.${name}`).getAttribute('data-onclick');
+        if (onclick) window[onclick](value, card.getAttribute('aria-checked') === 'true', card);
         });
         bwActivateOnKey('[data-bw-checkcard]');
     </x-bladewind::script>

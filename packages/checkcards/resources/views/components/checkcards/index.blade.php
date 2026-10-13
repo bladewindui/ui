@@ -18,6 +18,10 @@
     'errorHeading' => config('bladewind.checkcards.error_heading', __('bladewind::bladewind.checkcard_error_heading')),
     'errorMessage' => config('bladewind.checkcards.error_message', __('bladewind::bladewind.checkcard_error_message')),
     'selectedValue' => '',
+    // disables every card in the group. cards read this through @aware
+    'disabled' => false,
+    // name of a global function called as fn(value, selected, card) when a card is clicked
+    'onclick' => null,
     'nonce' => config('bladewind.script.nonce', null),
 ])
 @php
@@ -40,6 +44,7 @@
             data-max-selection="{{$max_selection}}"
             data-show-error="{{$show_error}}"
             data-auto-select="{{$auto_select_new}}"
+            :data-onclick="$onclick"
             type="hidden"
             class="{{ ($required) ? 'required':''}}"/>
     {{ $slot }}

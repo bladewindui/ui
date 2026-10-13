@@ -661,4 +661,37 @@ class BuildFixturesTest extends TestCase
 
         $this->assertFileExists(self::OUT.'/calendar.html');
     }
+
+    #[Test]
+    public function it_writes_the_checkcards_fixture(): void
+    {
+        // one render, so the card's @once script (and its click listener) is emitted once
+        $body = $this->render(
+            '<section id="plan" style="max-width:420px">'
+            .'<x-bladewind::checkcards name="plan" max="2" onclick="picked">'
+            .'<x-bladewind::checkcards.card value="pro" title="Pro">Pro plan</x-bladewind::checkcards.card>'
+            .'<x-bladewind::checkcards.card value="lite" title="Lite">Lite plan</x-bladewind::checkcards.card>'
+            .'<x-bladewind::checkcards.card value="legacy" title="Legacy" disabled="true">Legacy plan</x-bladewind::checkcards.card>'
+            .'</x-bladewind::checkcards></section>'
+            .'<section id="locked" style="max-width:420px;margin-top:30px">'
+            .'<x-bladewind::checkcards name="locked" disabled="true" selected_value="yes">'
+            .'<x-bladewind::checkcards.card value="yes" title="Yes">Yes</x-bladewind::checkcards.card>'
+            .'<x-bladewind::checkcards.card value="no" title="No">No</x-bladewind::checkcards.card>'
+            .'</x-bladewind::checkcards></section>'
+        );
+
+        $scripts = <<<'HTML'
+        <script>
+          window.picks = [];
+          function picked(value, selected, card) { window.picks.push([value, selected, card.dataset.value]); }
+        </script>
+        HTML;
+
+        file_put_contents(
+            self::OUT.'/checkcards.html',
+            $this->relative($this->page('Checkcards', $body, $scripts))
+        );
+
+        $this->assertFileExists(self::OUT.'/checkcards.html');
+    }
 }
